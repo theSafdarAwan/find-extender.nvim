@@ -3,7 +3,7 @@
 This Plugin lets you extend the capability of find command in nvim. With the help of this
 Plugin you can find multiple characters rather then one at a time.
 
-By default after pressing `f` in normal mode now you have to type two characters rather then
+By default after pressing `f` in **normal** and **visual** mode now you have to type two characters rather then
 One to find it.
 You can change the amount of characters you want to find by this specifying the amount in
 this key.
