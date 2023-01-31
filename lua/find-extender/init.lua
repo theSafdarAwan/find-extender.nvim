@@ -6,14 +6,14 @@
 local api = vim.api
 local fn = vim.fn
 
+-- how many characters to find for
+vim.find_extender_find_chars_length = nil
+-- timeout before the quick movement goes to the default behavior of f to find 1
+-- char false or timeout in ms nil by default
+vim.find_extender_find_timeout = nil
+
 -- to remember the last pattern and the command when using the ; and , command
 vim._previous_find_info = { pattern = nil, key = nil }
-
--- how many characters to find for
-vim.quick_movement_find_chars_length = 2
--- timeout before the quick movement goes to the default behavior of f to find 1
--- char false or timeout in ms false by default
-vim.quick_movement_find_timeout = false
 
 local function reverse_tbl(tbl)
 	local transformed_tbl = {}
@@ -81,8 +81,9 @@ local function get_position(pattern, direction)
 end
 
 local function get_chars()
+	local find_chars_lenght = 2 or vim.find_extender_find_chars_length
 	local break_loop = false
-	local timeout = vim.quick_movement_find_timeout
+	local timeout = vim.find_extender_find_timeout
 	local chars = ""
 	while true do
 		-- this timer will only stop waiting the second character
@@ -109,7 +110,7 @@ local function get_chars()
 		end
 
 		chars = chars .. fn.nr2char(c)
-		if #chars == vim.quick_movement_find_chars_length then
+		if #chars == find_chars_lenght then
 			break
 		end
 	end
