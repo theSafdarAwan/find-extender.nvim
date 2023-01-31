@@ -5,6 +5,7 @@ Plugin you can find multiple characters rather then one at a time.
 
 By default after pressing `f` in **normal** and **visual** mode now you have to type two characters rather then
 One to find it.
+This plugin also changes the `;` and `,` to repeat the last pattern like the find command.
 You can change the amount of characters you want to find by this specifying the amount in
 this key.
 
