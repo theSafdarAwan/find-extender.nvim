@@ -31,7 +31,7 @@ function M.finder(config)
 	end
 
 	-- maps the occurrences of the pattern in a string
-	local function get_pattern_positions(str, pattern)
+	local function map_pattern_positions(str, pattern)
 		local mapped_tbl = {}
 		local pattern_last_idx = mapped_tbl[#mapped_tbl] or 1
 		while true do
@@ -46,21 +46,19 @@ function M.finder(config)
 	end
 
 	-- get the position for the next or previous chars pattern position
-	local function get_position(pattern, direction)
+	local function get_position(pattern, direction, threshold)
 		local cursor_position = api.nvim_win_get_cursor(0)[2]
 		local current_line = api.nvim_get_current_line()
-		local pattern_positions = get_pattern_positions(current_line, pattern)
+		local pattern_positions = map_pattern_positions(current_line, pattern)
 
 		local target_position
-		-- TODO: refactor this so that it only gives you the position and doesn't
-		-- try to analyse the position for the cursor and the target position
-		-- instead do it in the move_to_char_position function
+		-- gives target position location
 		if direction == "l" then
 			for key, position in ipairs(pattern_positions) do
 				if position > cursor_position then
 					target_position = position
 					-- if the cursor is already on one occurrence then move to the next one
-					if cursor_position == position - 1 then
+					if cursor_position == position - threshold then
 						target_position = pattern_positions[key + 1]
 					end
 					break
@@ -74,7 +72,7 @@ function M.finder(config)
 				if position < cursor_position then
 					target_position = position
 					-- if the cursor is already on one occurrence then move to the previous one
-					if cursor_position == position + 1 then
+					if cursor_position == position + threshold then
 						target_position = pattern_positions[key - 1]
 					end
 					break
@@ -94,7 +92,7 @@ function M.finder(config)
 			-- this timer will only stop waiting the second character
 			if timeout and #chars == 1 then
 				vim.defer_fn(function()
-					-- to get rid of the getchar will through dummy value which won't
+					-- to get rid of the getchar will throw dummy value which won't
 					-- be added to the chars list
 					api.nvim_feedkeys("�", "n", false)
 					break_loop = true
@@ -160,8 +158,19 @@ function M.finder(config)
 			return
 		end
 
+		-- this variable is threshold between the pattern under the cursor position
+		-- it it exists the pattern exists within this threshold then move to the
+		-- next one or previous one depending on the key
+		local threshold = nil
+		if till_direction_l or till_direction_h then
+			threshold = 2
+		elseif find_direction_l or find_direction_h then
+			threshold = 1
+		end
+
 		local chars_pattern
-		if key == "f" or key == "F" or key == "t" or key == "T" then
+		local normal_keys = key == "f" or key == "F" or key == "t" or key == "T"
+		if normal_keys then
 			-- if find or till command is executed then add the pattern and the key to the
 			-- _previous_find_info table.
 			chars_pattern = get_chars()
@@ -175,8 +184,9 @@ function M.finder(config)
 			-- for , or ; command
 			chars_pattern = previous_find_info.pattern
 		end
-		local position = get_position(chars_pattern, direction)
+		local position = get_position(chars_pattern, direction, threshold)
 
+		print(vim.inspect(position))
 		if not position.target_position then
 			notify(chars_pattern)
 			return
@@ -185,13 +195,13 @@ function M.finder(config)
 		-- to determine how much away the target position is
 		local target_distance
 		if find_direction_l then
-			target_distance = position.target_position - position.cursor_position - 1
+			target_distance = position.target_position - position.cursor_position - threshold
 		elseif find_direction_h then
-			target_distance = position.cursor_position - position.target_position + 1
+			target_distance = position.cursor_position - position.target_position + threshold
 		elseif till_direction_l then
-			target_distance = position.target_position - position.cursor_position - 2
+			target_distance = position.target_position - position.cursor_position - threshold
 		elseif till_direction_h then
-			target_distance = position.target_position - position.cursor_position + 2
+			target_distance = position.cursor_position - position.target_position + threshold
 		end
 
 		fn.feedkeys(target_distance)
