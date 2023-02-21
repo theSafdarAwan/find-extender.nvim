@@ -51,6 +51,8 @@ function M.finder(config)
 		local current_line = api.nvim_get_current_line()
 		local pattern_positions = map_pattern_positions(current_line, pattern)
 
+		-- BUG: there is a bug when the till command is executed and the pattern
+		-- is in the start of the line get rid of that bug
 		local target_position
 		-- gives target position location
 		if direction == "l" then
