@@ -31,7 +31,7 @@ function M.finder(config)
 	end
 
 	-- maps the occurrences of the pattern in a string
-	local function map_string(str, pattern)
+	local function get_pattern_positions(str, pattern)
 		local mapped_tbl = {}
 		local pattern_last_idx = mapped_tbl[#mapped_tbl] or 1
 		while true do
@@ -49,16 +49,19 @@ function M.finder(config)
 	local function get_position(pattern, direction)
 		local cursor_position = api.nvim_win_get_cursor(0)[2]
 		local current_line = api.nvim_get_current_line()
-		local mapped_string = map_string(current_line, pattern)
+		local pattern_positions = get_pattern_positions(current_line, pattern)
 
 		local target_position
+		-- TODO: refactor this so that it only gives you the position and doesn't
+		-- try to analyse the position for the cursor and the target position
+		-- instead do it in the move_to_char_position function
 		if direction == "l" then
-			for key, position in ipairs(mapped_string) do
+			for key, position in ipairs(pattern_positions) do
 				if position > cursor_position then
 					target_position = position
 					-- if the cursor is already on one occurrence then move to the next one
 					if cursor_position == position - 1 then
-						target_position = mapped_string[key + 1]
+						target_position = pattern_positions[key + 1]
 					end
 					break
 				end
@@ -66,13 +69,13 @@ function M.finder(config)
 		elseif direction == "h" then
 			-- need to reverse the tbl of the mapped_string because now we have to
 			-- start searching from the end of the string rather then from the start
-			mapped_string = reverse_tbl(mapped_string)
-			for key, position in ipairs(mapped_string) do
+			pattern_positions = reverse_tbl(pattern_positions)
+			for key, position in ipairs(pattern_positions) do
 				if position < cursor_position then
 					target_position = position
 					-- if the cursor is already on one occurrence then move to the previous one
 					if cursor_position == position + 1 then
-						target_position = mapped_string[key - 1]
+						target_position = pattern_positions[key - 1]
 					end
 					break
 				end
@@ -132,17 +135,25 @@ function M.finder(config)
 		end
 
 		-- to determine which direction to go
-		local direction_l = key == "f"
+		-- > find
+		local find_direction_l = key == "f"
 			or previous_find_info.key == "F" and key == ","
 			or previous_find_info.key == "f" and key == ";"
-		local direction_h = key == "F"
+		local find_direction_h = key == "F"
 			or previous_find_info.key == "f" and key == ","
 			or previous_find_info.key == "F" and key == ";"
+		-- > till
+		local till_direction_l = key == "t"
+			or previous_find_info.key == "T" and key == ","
+			or previous_find_info.key == "t" and key == ";"
+		local till_direction_h = key == "T"
+			or previous_find_info.key == "t" and key == ","
+			or previous_find_info.key == "T" and key == ";"
 
 		local direction
-		if direction_h then
+		if find_direction_h or till_direction_h then
 			direction = "h"
-		elseif direction_l then
+		elseif find_direction_l or till_direction_l then
 			direction = "l"
 		else
 			notify(previous_find_info.pattern)
@@ -150,8 +161,8 @@ function M.finder(config)
 		end
 
 		local chars_pattern
-		if key == "f" or key == "F" then
-			-- if find command is executed then add the pattern and the key to the
+		if key == "f" or key == "F" or key == "t" or key == "T" then
+			-- if find or till command is executed then add the pattern and the key to the
 			-- _previous_find_info table.
 			chars_pattern = get_chars()
 			if not chars_pattern then
@@ -160,7 +171,7 @@ function M.finder(config)
 			previous_find_info.key = key
 			previous_find_info.pattern = chars_pattern
 		else
-			-- if f or F command wasn't pressed then search for the _previous_find_info.pattern
+			-- if f or F or t or T command wasn't pressed then search for the _previous_find_info.pattern
 			-- for , or ; command
 			chars_pattern = previous_find_info.pattern
 		end
@@ -173,10 +184,14 @@ function M.finder(config)
 
 		-- to determine how much away the target position is
 		local target_distance
-		if direction_l then
+		if find_direction_l then
 			target_distance = position.target_position - position.cursor_position - 1
-		elseif direction_h then
+		elseif find_direction_h then
 			target_distance = position.cursor_position - position.target_position + 1
+		elseif till_direction_l then
+			target_distance = position.target_position - position.cursor_position - 2
+		elseif till_direction_h then
+			target_distance = position.target_position - position.cursor_position + 2
 		end
 
 		fn.feedkeys(target_distance)
@@ -184,6 +199,8 @@ function M.finder(config)
 	end
 
 	local find_keys_tbl = {
+		"t",
+		"T",
 		"f",
 		"F",
 		";",
