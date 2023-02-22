@@ -1,3 +1,6 @@
+### WARNING
+⚠️ This Plugin is broken at the moment need to re-write some of the functionality.
+
 ## Description
 
 This Plugin lets you extend the capability of find command in nvim. With the help of this

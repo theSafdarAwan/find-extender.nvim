@@ -31,11 +31,11 @@ function M.finder(config)
 	end
 
 	-- maps the occurrences of the pattern in a string
-	local function map_pattern_positions(str, pattern)
+	local function get_string_nodes(string, pattern)
 		local mapped_tbl = {}
 		local pattern_last_idx = mapped_tbl[#mapped_tbl] or 1
 		while true do
-			local pattern_idx = string.find(str, pattern, pattern_last_idx, true)
+			local pattern_idx = string.find(string, pattern, pattern_last_idx, true)
 			if pattern_last_idx == pattern_idx or not pattern_idx then
 				break
 			end
@@ -45,44 +45,74 @@ function M.finder(config)
 		return mapped_tbl
 	end
 
+	-- TODO: re-write this function a separate this into find command get
+	-- position function and till command get_position
+
 	-- get the position for the next or previous chars pattern position
 	local function get_position(pattern, direction, threshold)
 		local cursor_position = api.nvim_win_get_cursor(0)[2]
 		local current_line = api.nvim_get_current_line()
-		local pattern_positions = map_pattern_positions(current_line, pattern)
+		local string_nodes = get_string_nodes(current_line, pattern)
 
-		-- BUG: there is a bug when the till command is executed and the pattern
-		-- is in the start of the line get rid of that bug
-		local target_position
-		-- gives target position location
+		local target_node
+		-- gives target node location
 		if direction == "l" then
-			for key, position in ipairs(pattern_positions) do
-				if position > cursor_position then
-					target_position = position
-					-- if the cursor is already on one occurrence then move to the next one
-					if cursor_position == position - threshold then
-						target_position = pattern_positions[key + 1]
-					end
+			for key, current_node in ipairs(string_nodes) do
+				-- need to deal with the first node
+				if cursor_position == 0 then
+					target_node = string_nodes[1] - threshold
+					return target_node
+				elseif
+					current_node == cursor_position + threshold
+					or current_node == cursor_position
+					or current_node == cursor_position + 1
+				then
+					-- if current node and the cursor position are same then go
+					-- one node ahead
+					target_node = string_nodes[key + 1]
+					break
+				elseif current_node > cursor_position then
+					target_node = current_node
 					break
 				end
 			end
 		elseif direction == "h" then
-			-- need to reverse the tbl of the mapped_string because now we have to
-			-- start searching from the end of the string rather then from the start
-			pattern_positions = reverse_tbl(pattern_positions)
-			for key, position in ipairs(pattern_positions) do
-				if position < cursor_position then
-					target_position = position
-					-- if the cursor is already on one occurrence then move to the previous one
-					if cursor_position == position + threshold then
-						target_position = pattern_positions[key - 1]
-					end
+			-- need to reverse the tbl of the string_nodes because now
+			-- we have to start searching from the end of the string rather then from
+			-- the start
+			string_nodes = reverse_tbl(string_nodes)
+			for key, current_node in ipairs(string_nodes) do
+				if cursor_position - current_node < 1 then
+					target_node = cursor_position - current_node
+					print(cursor_position, current_node, target_node)
+					return
+				elseif cursor_position == #current_line - 1 then
+					-- need to deal with the last node
+					target_node = string_nodes[1]
+				elseif
+					current_node == cursor_position - threshold
+					or current_node == cursor_position
+					or current_node == cursor_position - 1
+				then
+					-- if current node and the cursor position are same then go
+					-- one node behind
+					target_node = string_nodes[key - 1]
+					break
+				elseif current_node < cursor_position then
+					target_node = current_node
 					break
 				end
 			end
 		end
 
-		return { target_position = target_position, cursor_position = cursor_position }
+		local target_node_distance
+		if target_node and direction == "l" then
+			target_node_distance = target_node - cursor_position - threshold
+		elseif target_node and direction == "h" then
+			target_node_distance = cursor_position - target_node + threshold
+		end
+
+		return target_node_distance
 	end
 
 	local function get_chars()
@@ -123,7 +153,7 @@ function M.finder(config)
 	end
 
 	local function notify(chars_pattern)
-		api.nvim_notify(chars_pattern .. " pattern not found", vim.log.levels.WARN, {})
+		-- api.nvim_notify(chars_pattern .. " pattern not found", vim.log.levels.WARN, {})
 	end
 
 	local function move_to_char_position(key)
@@ -186,27 +216,14 @@ function M.finder(config)
 			-- for , or ; command
 			chars_pattern = previous_find_info.pattern
 		end
-		local position = get_position(chars_pattern, direction, threshold)
+		local target_position = get_position(chars_pattern, direction, threshold)
 
-		print(vim.inspect(position))
-		if not position.target_position then
+		if not target_position then
 			notify(chars_pattern)
 			return
 		end
 
-		-- to determine how much away the target position is
-		local target_distance
-		if find_direction_l then
-			target_distance = position.target_position - position.cursor_position - threshold
-		elseif find_direction_h then
-			target_distance = position.cursor_position - position.target_position + threshold
-		elseif till_direction_l then
-			target_distance = position.target_position - position.cursor_position - threshold
-		elseif till_direction_h then
-			target_distance = position.cursor_position - position.target_position + threshold
-		end
-
-		fn.feedkeys(target_distance)
+		fn.feedkeys(target_position)
 		api.nvim_feedkeys(direction, "m", true)
 	end
 
