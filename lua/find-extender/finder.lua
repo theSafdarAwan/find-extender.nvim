@@ -159,6 +159,7 @@ function M.finder(config)
 		end
 
 		-- to determine which direction to go
+		-- THIS is the only way i found efficient without heaving overhead
 		-- > find
 		local find_direction_l = key == "f"
 			or previous_find_info.key == "F" and key == ","
