@@ -21,7 +21,7 @@ function M.finder(config)
 	local start_timeout_after_chars = config.start_timeout_after_chars -- 2 by default
 
 	-- to remember the last pattern and the command when using the ; and , command
-	local _last_search_info = { pattern = nil, key = nil }
+	local _previous_find_info = { pattern = nil, key = nil }
 
 	local function reverse_tbl(tbl)
 		local transformed_tbl = {}
@@ -154,10 +154,9 @@ function M.finder(config)
 	end
 
 	local function move_to_char_position(key)
-		local last_search_info = _previous_find_info
 		-- if no find command was executed previously then there's no last pattern for
 		-- , or ; so return
-		if not last_search_info.pattern and key == "," or key == ";" and not previous_find_info.pattern then
+		if not _previous_find_info.pattern and key == "," or key == ";" and not _previous_find_info.pattern then
 			return
 		end
 
@@ -165,18 +164,18 @@ function M.finder(config)
 		-- THIS is the only way i found efficient without heaving overhead
 		-- > find
 		local find_direction_l = key == "f"
-			or last_search_info.key == "F" and key == ","
-			or last_search_info.key == "f" and key == ";"
+			or _previous_find_info.key == "F" and key == ","
+			or _previous_find_info.key == "f" and key == ";"
 		local find_direction_h = key == "F"
-			or last_search_info.key == "f" and key == ","
-			or last_search_info.key == "F" and key == ";"
+			or _previous_find_info.key == "f" and key == ","
+			or _previous_find_info.key == "F" and key == ";"
 		-- > till
 		local till_direction_l = key == "t"
-			or last_search_info.key == "T" and key == ","
-			or last_search_info.key == "t" and key == ";"
+			or _previous_find_info.key == "T" and key == ","
+			or _previous_find_info.key == "t" and key == ";"
 		local till_direction_h = key == "T"
-			or last_search_info.key == "t" and key == ","
-			or last_search_info.key == "T" and key == ";"
+			or _previous_find_info.key == "t" and key == ","
+			or _previous_find_info.key == "T" and key == ";"
 
 		local direction
 		if find_direction_h or till_direction_h then
@@ -204,12 +203,12 @@ function M.finder(config)
 			if not chars_pattern then
 				return
 			end
-			last_search_info.key = key
-			last_search_info.pattern = chars_pattern
+			_previous_find_info.key = key
+			_previous_find_info.pattern = chars_pattern
 		else
 			-- if f or F or t or T command wasn't pressed then search for the _last_search_info.pattern
 			-- for , or ; command
-			chars_pattern = last_search_info.pattern
+			chars_pattern = _previous_find_info.pattern
 		end
 		local target_position = get_position(chars_pattern, direction, threshold)
 
