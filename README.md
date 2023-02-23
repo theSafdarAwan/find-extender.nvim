@@ -56,7 +56,8 @@ Default is _2_ characters and more then that is not recommended because it will 
 and that's not what i intend this plugin to do.
 
 You can also alter the behaviour of this plugin to go to default _1_
-character behaviour by specifying time in _milli secconds_ in this key.
+character behaviour by specifying time in _milli secconds_ in this key. Also you
+can change the _1_ to any other number using the _start_timeout_after_chars_ key.
 If you don't input the next character within the time specified in this key then it will go
 to default behaviour of _1_ character.<BR>
 By default this is set to false:
@@ -72,5 +73,5 @@ How many characters after which the timeout should be triggered. Important when
 we have more set more then _2_ chars lenght in _chars_lenght_.
 
 ```lua
-start_timeout_after_chars = 2, -- 2 by default
+start_timeout_after_chars = 1, -- 1 by default
 ```
