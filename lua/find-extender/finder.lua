@@ -51,11 +51,11 @@ function M.finder(config)
 		local current_line = api.nvim_get_current_line()
 		local string_nodes = get_string_nodes(current_line, pattern)
 
-		local is_start_of_line = false
 		local target_node
 		-- direction is to know which direction to search in
 		if direction == "l" then
 			for key, current_node in ipairs(string_nodes) do
+				-- if the cursor is on the start of the line
 				if cursor_position == 0 then
 					target_node = current_node
 					break
@@ -76,11 +76,21 @@ function M.finder(config)
 				if cursor_position < current_node and current_node == string_nodes[#string_nodes] then
 					break
 				end
-				if threshold == 2 and current_node == string_nodes[#string_nodes] then
-					is_start_of_line = true
+				-- in case the node is in the start of the string then behave
+				-- like find
+				if
+					threshold == 2
+					and current_node == string_nodes[#string_nodes]
+					and current_node < 3
+				then
+					threshold = 1
 					target_node = current_node
 					break
 				elseif cursor_position == #current_line - 1 then
+					-- if the cursor is on the end of the line then first node
+					-- would be the target node because we reversed the table it in case
+					-- you are wondering else it would have been the last
+					-- like tbl[#tbl] but in this case its the first
 					target_node = current_node
 					break
 				elseif current_node + threshold < cursor_position or cursor_position > current_node then
@@ -91,10 +101,6 @@ function M.finder(config)
 					break
 				end
 			end
-		end
-
-		if is_start_of_line then
-			threshold = 1
 		end
 
 		local target_node_distance
