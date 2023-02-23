@@ -73,20 +73,17 @@ function M.finder(config)
 			-- the start
 			string_nodes = reverse_tbl(string_nodes)
 			for key, current_node in ipairs(string_nodes) do
-				-- TODO: work here
-				-- if threshold == 2 and cursor_position == string_nodes[1] - threshold then
-				-- 	break
-				-- end
+				if cursor_position < current_node and current_node == string_nodes[#string_nodes] then
+					break
+				end
 				if threshold == 2 and current_node == string_nodes[#string_nodes] then
-					-- BUG: do this if the node is in the start of the line not
-					-- the first node
 					is_start_of_line = true
 					target_node = current_node
 					break
 				elseif cursor_position == #current_line - 1 then
 					target_node = current_node
 					break
-				elseif current_node + threshold < cursor_position then
+				elseif current_node + threshold < cursor_position or cursor_position > current_node then
 					target_node = current_node
 					break
 				elseif current_node == cursor_position - threshold then
