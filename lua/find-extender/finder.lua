@@ -45,34 +45,25 @@ function M.finder(config)
 		return mapped_tbl
 	end
 
-	-- TODO: re-write this function a separate this into find command get
-	-- position function and till command get_position
-
 	-- get the position for the next or previous chars pattern position
 	local function get_position(pattern, direction, threshold)
 		local cursor_position = api.nvim_win_get_cursor(0)[2]
 		local current_line = api.nvim_get_current_line()
 		local string_nodes = get_string_nodes(current_line, pattern)
 
+		local is_start_of_line = false
 		local target_node
-		-- gives target node location
+		-- direction is to know which direction to search in
 		if direction == "l" then
 			for key, current_node in ipairs(string_nodes) do
-				-- need to deal with the first node
 				if cursor_position == 0 then
-					target_node = string_nodes[1] - threshold
-					return target_node
-				elseif
-					current_node == cursor_position + threshold
-					or current_node == cursor_position
-					or current_node == cursor_position + 1
-				then
-					-- if current node and the cursor position are same then go
-					-- one node ahead
-					target_node = string_nodes[key + 1]
-					break
-				elseif current_node > cursor_position then
 					target_node = current_node
+					break
+				elseif current_node - threshold > cursor_position then
+					target_node = current_node
+					break
+				elseif current_node == cursor_position + threshold then
+					target_node = string_nodes[key + 1]
 					break
 				end
 			end
@@ -82,27 +73,31 @@ function M.finder(config)
 			-- the start
 			string_nodes = reverse_tbl(string_nodes)
 			for key, current_node in ipairs(string_nodes) do
-				if cursor_position - current_node < 1 then
-					target_node = cursor_position - current_node
-					print(cursor_position, current_node, target_node)
-					return
-				elseif cursor_position == #current_line - 1 then
-					-- need to deal with the last node
-					target_node = string_nodes[1]
-				elseif
-					current_node == cursor_position - threshold
-					or current_node == cursor_position
-					or current_node == cursor_position - 1
-				then
-					-- if current node and the cursor position are same then go
-					-- one node behind
-					target_node = string_nodes[key - 1]
-					break
-				elseif current_node < cursor_position then
+				-- TODO: work here
+				-- if threshold == 2 and cursor_position == string_nodes[1] - threshold then
+				-- 	break
+				-- end
+				if threshold == 2 and current_node == string_nodes[#string_nodes] then
+					-- BUG: do this if the node is in the start of the line not
+					-- the first node
+					is_start_of_line = true
 					target_node = current_node
+					break
+				elseif cursor_position == #current_line - 1 then
+					target_node = current_node
+					break
+				elseif current_node + threshold < cursor_position then
+					target_node = current_node
+					break
+				elseif current_node == cursor_position - threshold then
+					target_node = string_nodes[key - 1]
 					break
 				end
 			end
+		end
+
+		if is_start_of_line then
+			threshold = 1
 		end
 
 		local target_node_distance
@@ -126,7 +121,7 @@ function M.finder(config)
 				vim.defer_fn(function()
 					-- to get rid of the getchar will throw dummy value which won't
 					-- be added to the chars list
-					api.nvim_feedkeys("�", "n", false)
+					api.nvim_feedksafdar.veys("�", "n", false)
 					break_loop = true
 				end, timeout)
 			end
@@ -150,10 +145,6 @@ function M.finder(config)
 			end
 		end
 		return chars
-	end
-
-	local function notify(chars_pattern)
-		-- api.nvim_notify(chars_pattern .. " pattern not found", vim.log.levels.WARN, {})
 	end
 
 	local function move_to_char_position(key)
@@ -185,9 +176,6 @@ function M.finder(config)
 			direction = "h"
 		elseif find_direction_l or till_direction_l then
 			direction = "l"
-		else
-			notify(previous_find_info.pattern)
-			return
 		end
 
 		-- this variable is threshold between the pattern under the cursor position
@@ -219,7 +207,6 @@ function M.finder(config)
 		local target_position = get_position(chars_pattern, direction, threshold)
 
 		if not target_position then
-			notify(chars_pattern)
 			return
 		end
 
