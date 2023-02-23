@@ -1,11 +1,14 @@
 local M = {}
-function M.setup(config)
+function M.setup(user_config)
 	local default_config = {
-		find_extender_find_chars_length = 2,
-		find_extender_find_timeout = false,
+		chars_length = 2,
+		timeout = false,
+		start_timeout_after_chars = 2,
 	}
+	-- merge the user config and the default config
+	local config = vim.tbl_extend("force", default_config, user_config)
 
-	require("find-extender.finder").finder(config or default_config)
+	require("find-extender.finder").finder(config)
 end
 
 return M

@@ -30,11 +30,13 @@ use {
     config = function()
         require("find-extender").setup({
             -- how many characters to find for
-            find_extender_find_chars_length = 2, -- default value is 2 chars
+            chars_length = 2, -- default value is 2 chars
             -- timeout before the find-extender.nvim goes to the default behavior to find 1
             -- char
             -- * timeout in ms
-            find_extender_find_timeout = false -- false by default
+            timeout = false -- false by default
+            -- timeout starting point
+            start_timeout_after_chars = 2, -- 2 by default
         })
     end,
 }
@@ -47,7 +49,7 @@ this key.
 
 ```lua
 -- how many characters to find for
-find_extender_find_chars_length = 2 -- default value is 2 chars
+chars_length = 2 -- default value is 2 chars
 ```
 
 Default is _2_ characters and more then that is not recommended because it will slow you down
@@ -63,5 +65,12 @@ By default this is set to false:
 -- timeout before the find-extender.nvim goes to the default behavior to find 1
 -- char
 -- * timeout in ms
-find_extender_find_timeout = false -- false by default
+timeout = false -- false by default
+```
+
+How many characters after which the timeout should be triggered. Important when
+we have more set more then _2_ chars lenght in _chars_lenght_.
+
+```lua
+start_timeout_after_chars = 2, -- 2 by default
 ```

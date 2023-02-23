@@ -9,10 +9,16 @@ function M.finder(config)
 	local fn = vim.fn
 
 	-- how many characters to find for
-	local find_extender_find_chars_length = config.find_extender_find_chars_length
-	-- timeout before the quick movement goes to the default behavior of f to find 1
-	-- char false or timeout in ms false by default
-	local find_extender_find_timeout = config.find_extender_find_timeout
+	local chars_length = config.chars_length
+	-- timeout before the find-extender.nvim goes to the default behavior to find 1
+	-- char
+	-- * timeout in ms
+	local timeout = config.timeout
+
+	-- How many characters after which the timeout should be triggered. Important when
+	-- we have more set more then _2_ chars lenght in _chars_lenght_.
+	--
+	local start_timeout_after_chars = config.start_timeout_after_chars -- 2 by default
 
 	-- to remember the last pattern and the command when using the ; and , command
 	local _previous_find_info = { pattern = nil, key = nil }
@@ -114,17 +120,14 @@ function M.finder(config)
 	end
 
 	local function get_chars()
-		local find_chars_lenght = 2 or find_extender_find_chars_length
 		local break_loop = false
-		local timeout = find_extender_find_timeout
 		local chars = ""
 		while true do
-			-- this timer will only stop waiting the second character
-			if timeout and #chars == 1 then
+			if timeout and #chars == start_timeout_after_chars then
 				vim.defer_fn(function()
 					-- to get rid of the getchar will throw dummy value which won't
 					-- be added to the chars list
-					api.nvim_feedksafdar.veys("�", "n", false)
+					api.nvim_feedkeys("�", "n", false)
 					break_loop = true
 				end, timeout)
 			end
@@ -143,7 +146,7 @@ function M.finder(config)
 			end
 
 			chars = chars .. fn.nr2char(c)
-			if #chars == find_chars_lenght then
+			if #chars == chars_length then
 				break
 			end
 		end
