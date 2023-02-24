@@ -7,19 +7,15 @@ local M = {}
 function M.finder(config)
 	local api = vim.api
 	local fn = vim.fn
-
 	-- how many characters to find for
 	local chars_length = config.chars_length
 	-- timeout before the find-extender.nvim goes to the default behavior to find 1
 	-- char
 	-- * timeout in ms
 	local timeout = config.timeout
-
 	-- How many characters after which the timeout should be triggered. Important when
 	-- we have more set more then _2_ chars lenght in _chars_lenght_.
-	--
 	local start_timeout_after_chars = config.start_timeout_after_chars -- 2 by default
-
 	-- to remember the last pattern and the command when using the ; and , command
 	local _previous_find_info = { pattern = nil, key = nil }
 
@@ -119,11 +115,9 @@ function M.finder(config)
 				end, timeout)
 			end
 			local c = fn.getchar()
-
 			if type(c) ~= "number" then
 				return
 			end
-
 			if break_loop then
 				return chars
 			elseif c < 32 or c > 127 then
@@ -131,7 +125,6 @@ function M.finder(config)
 				-- space as input
 				return
 			end
-
 			chars = chars .. fn.nr2char(c)
 			if #chars == chars_length then
 				break
@@ -146,7 +139,6 @@ function M.finder(config)
 		if not _previous_find_info.pattern and key == "," or key == ";" and not _previous_find_info.pattern then
 			return
 		end
-
 		-- to determine which direction to go
 		-- THIS is the only way i found efficient without heaving overhead
 		-- > find
@@ -170,7 +162,6 @@ function M.finder(config)
 		elseif find_direction_l or till_direction_l then
 			direction = "l"
 		end
-
 		-- this variable is threshold between the pattern under the cursor position
 		-- it it exists the pattern exists within this threshold then move to the
 		-- next one or previous one depending on the key
