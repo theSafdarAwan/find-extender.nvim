@@ -78,6 +78,9 @@ function M.finder(config)
 			-- the start
 			string_nodes = reverse_tbl(string_nodes)
 			for _, current_node in ipairs(string_nodes) do
+				-- TODO: for till command check if the pattern is in the start of
+				-- the line but Also before it if there is empty space or some
+				-- character loop lover the node previous entries to confirm it
 				if
 					current_node < last_cursor_position - threshold and current_node < 3
 					or last_cursor_position - threshold == current_node
