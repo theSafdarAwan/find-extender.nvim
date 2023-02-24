@@ -47,6 +47,19 @@ function M.finder(config)
 		return mapped_tbl
 	end
 
+	local function string_start_validation(string_end_position, str)
+		local string = str.sub(str, 1, string_end_position)
+		local i = 0
+		for _ in string.gmatch(string, "%a") do
+			i = i + 1
+		end
+		if i > 1 then
+			return false
+		else
+			return true
+		end
+	end
+
 	-- Gets you the position for you next target node depending on direction
 	local function set_cursor(pattern, direction, threshold)
 		local cursor_position = api.nvim_win_get_cursor(0)
@@ -78,16 +91,13 @@ function M.finder(config)
 			-- the start
 			string_nodes = reverse_tbl(string_nodes)
 			for _, current_node in ipairs(string_nodes) do
-				-- TODO: find a way to deal with the spaces and tabs in the start
-				-- of the line maybe use ^ with feed_keys to get rid of this bug
 				if
-					current_node < last_cursor_position - threshold and current_node < 3
-					or last_cursor_position - threshold == current_node
+					last_cursor_position - threshold == current_node
+					or last_cursor_position - threshold > current_node
 				then
-					reset_threshold = true
-					node = current_node
-					break
-				elseif last_cursor_position - threshold > current_node then
+					if string_start_validation(current_node, current_line) then
+						reset_threshold = true
+					end
 					node = current_node
 					break
 				end
