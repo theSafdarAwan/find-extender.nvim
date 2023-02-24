@@ -60,14 +60,15 @@ function M.finder(config)
 		-- direction is to know which direction to search in
 		local last_cursor_position = cursor_position[2]
 		local node = nil
+		-- in cases of node in the start of the line and node in the end of the
+		-- line we need to reset the threshold
+		local reset_threshold = false
 		if direction == "l" then
 			for _, current_node in ipairs(string_nodes) do
 				if last_cursor_position < 1 and current_node < 3 then
 					-- need to deal with the till command threshold if the
 					-- node is on the start of the line
-					if threshold > 1 then
-						threshold = 1
-					end
+					reset_threshold = true
 					node = current_node
 					break
 				elseif last_cursor_position + threshold < current_node then
@@ -83,9 +84,7 @@ function M.finder(config)
 			for _, current_node in ipairs(string_nodes) do
 				if current_node > #current_line - threshold or current_node < 3 then
 					-- if the first node is in the end of the line
-					if threshold > 1 then
-						threshold = 1
-					end
+					reset_threshold = true
 					node = current_node
 					break
 				elseif last_cursor_position - threshold > current_node then
@@ -95,6 +94,9 @@ function M.finder(config)
 			end
 		end
 		if node then
+			if reset_threshold then
+				threshold = 1
+			end
 			last_cursor_position = node - threshold
 		end
 		cursor_position[2] = last_cursor_position
