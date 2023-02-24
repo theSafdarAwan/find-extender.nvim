@@ -47,7 +47,7 @@ function M.finder(config)
 		return mapped_tbl
 	end
 
-	local function string_start_validation(string_end_position, str)
+	local function node_validation(string_end_position, str)
 		local string = str.sub(str, 1, string_end_position)
 		local i = 0
 		for _ in string.gmatch(string, "%a") do
@@ -74,13 +74,13 @@ function M.finder(config)
 		local reset_threshold = false
 		if direction == "l" then
 			for _, current_node in ipairs(string_nodes) do
-				if last_cursor_position < 1 and current_node < 3 then
-					-- need to deal with the till command threshold if the
-					-- node is on the start of the line
-					reset_threshold = true
-					node = current_node
-					break
-				elseif last_cursor_position + threshold < current_node then
+				if
+					last_cursor_position + threshold < current_node
+					or last_cursor_position < 1 and current_node < 3
+				then
+					if node_validation(current_node, current_line) then
+						reset_threshold = true
+					end
 					node = current_node
 					break
 				end
@@ -95,7 +95,7 @@ function M.finder(config)
 					last_cursor_position - threshold == current_node
 					or last_cursor_position - threshold > current_node
 				then
-					if string_start_validation(current_node, current_line) then
+					if node_validation(current_node, current_line) then
 						reset_threshold = true
 					end
 					node = current_node
