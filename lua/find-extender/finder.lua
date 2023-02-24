@@ -37,7 +37,7 @@ function M.finder(config)
 	end
 
 	-- maps the occurrences of the pattern in a string
-	local function get_string_nodes(string, pattern)
+	local function map_string_nodes(string, pattern)
 		local mapped_tbl = {}
 		local pattern_last_idx = mapped_tbl[#mapped_tbl] or 1
 		while true do
@@ -52,24 +52,26 @@ function M.finder(config)
 	end
 
 	-- Gets you the position for you next target node depending on direction
-	local function get_position(pattern, direction, threshold)
-		local cursor_position = api.nvim_win_get_cursor(0)[2]
+	local function set_cursor(pattern, direction, threshold)
+		local cursor_position = api.nvim_win_get_cursor(0)
 		local current_line = api.nvim_get_current_line()
-		local string_nodes = get_string_nodes(current_line, pattern)
+		local string_nodes = map_string_nodes(current_line, pattern)
 
-		local target_node
 		-- direction is to know which direction to search in
+		local last_cursor_position = cursor_position[2]
+		local node = nil
 		if direction == "l" then
-			for key, current_node in ipairs(string_nodes) do
-				-- if the cursor is on the start of the line
-				if cursor_position == 0 then
-					target_node = current_node
+			for _, current_node in ipairs(string_nodes) do
+				if last_cursor_position < 1 and current_node < 3 then
+					-- need to deal with the till command threshold if the
+					-- node is on the start of the line
+					if threshold > 1 then
+						threshold = 1
+					end
+					node = current_node
 					break
-				elseif current_node - threshold > cursor_position then
-					target_node = current_node
-					break
-				elseif current_node == cursor_position + threshold then
-					target_node = string_nodes[key + 1]
+				elseif last_cursor_position + threshold < current_node then
+					node = current_node
 					break
 				end
 			end
@@ -78,45 +80,24 @@ function M.finder(config)
 			-- we have to start searching from the end of the string rather then from
 			-- the start
 			string_nodes = reverse_tbl(string_nodes)
-			for key, current_node in ipairs(string_nodes) do
-				if cursor_position < current_node and current_node == string_nodes[#string_nodes] then
+			for _, current_node in ipairs(string_nodes) do
+				if current_node > #current_line - threshold or current_node < 3 then
+					-- if the first node is in the end of the line
+					if threshold > 1 then
+						threshold = 1
+					end
+					node = current_node
 					break
-				end
-				-- in case the node is in the start of the string then behave
-				-- like find
-				if
-					threshold == 2
-					and current_node == string_nodes[#string_nodes]
-					and current_node < 3
-				then
-					threshold = 1
-					target_node = current_node
-					break
-				elseif cursor_position == #current_line - 1 then
-					-- if the cursor is on the end of the line then first node
-					-- would be the target node because we reversed the table it in case
-					-- you are wondering else it would have been the last
-					-- like tbl[#tbl] but in this case its the first
-					target_node = current_node
-					break
-				elseif current_node + threshold < cursor_position or cursor_position > current_node then
-					target_node = current_node
-					break
-				elseif current_node == cursor_position - threshold then
-					target_node = string_nodes[key - 1]
+				elseif last_cursor_position - threshold > current_node then
+					node = current_node
 					break
 				end
 			end
 		end
+		last_cursor_position = node - threshold
+		cursor_position[2] = last_cursor_position
 
-		local target_node_distance
-		if target_node and direction == "l" then
-			target_node_distance = target_node - cursor_position - threshold
-		elseif target_node and direction == "h" then
-			target_node_distance = cursor_position - target_node + threshold
-		end
-
-		return target_node_distance
+		api.nvim_win_set_cursor(0, cursor_position)
 	end
 
 	local function get_chars()
@@ -153,7 +134,7 @@ function M.finder(config)
 		return chars
 	end
 
-	local function move_to_char_position(key)
+	local function move_to_next_target(key)
 		-- if no find command was executed previously then there's no last pattern for
 		-- , or ; so return
 		if not _previous_find_info.pattern and key == "," or key == ";" and not _previous_find_info.pattern then
@@ -210,14 +191,7 @@ function M.finder(config)
 			-- for , or ; command
 			chars_pattern = _previous_find_info.pattern
 		end
-		local target_position = get_position(chars_pattern, direction, threshold)
-
-		if not target_position then
-			return
-		end
-
-		fn.feedkeys(target_position)
-		api.nvim_feedkeys(direction, "m", true)
+		set_cursor(chars_pattern, direction, threshold)
 	end
 
 	local find_keys_tbl = {
@@ -231,7 +205,7 @@ function M.finder(config)
 
 	for _, key in ipairs(find_keys_tbl) do
 		vim.keymap.set({ "n", "v" }, key, function()
-			move_to_char_position(key)
+			move_to_next_target(key)
 		end)
 	end
 end
