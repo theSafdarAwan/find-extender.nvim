@@ -66,12 +66,12 @@ function M.finder(config)
 		local current_line = api.nvim_get_current_line()
 		local string_nodes = map_string_nodes(current_line, pattern)
 
-		-- direction is to know which direction to search in
 		local last_cursor_position = cursor_position[2]
 		local node = nil
 		-- in cases of node in the start of the line and node in the end of the
 		-- line we need to reset the threshold
 		local reset_threshold = false
+		-- direction is to know which direction to search in
 		if direction == "l" then
 			for _, current_node in ipairs(string_nodes) do
 				if
