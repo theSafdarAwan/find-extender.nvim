@@ -94,7 +94,9 @@ function M.finder(config)
 				end
 			end
 		end
-		last_cursor_position = node - threshold
+		if node then
+			last_cursor_position = node - threshold
+		end
 		cursor_position[2] = last_cursor_position
 
 		api.nvim_win_set_cursor(0, cursor_position)
