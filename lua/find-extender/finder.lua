@@ -78,7 +78,7 @@ function M.finder(config)
 					last_cursor_position + threshold < current_node
 					or last_cursor_position < 1 and current_node < 3
 				then
-					if node_validation(current_node, current_line) then
+					if threshold > 1 and node_validation(current_node, current_line) then
 						reset_threshold = true
 					end
 					node = current_node
@@ -95,7 +95,7 @@ function M.finder(config)
 					last_cursor_position - threshold == current_node
 					or last_cursor_position - threshold > current_node
 				then
-					if node_validation(current_node, current_line) then
+					if threshold > 1 and node_validation(current_node, current_line) then
 						reset_threshold = true
 					end
 					node = current_node
