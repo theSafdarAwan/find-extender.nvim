@@ -82,9 +82,10 @@ function M.finder(config)
 			-- the start
 			string_nodes = reverse_tbl(string_nodes)
 			for _, current_node in ipairs(string_nodes) do
-				-- TODO: in case of node on the #line - 2 or #line - 4
-				if current_node > #current_line - threshold or current_node < 3 then
-					-- if the first node is in the end of the line
+				if
+					current_node < last_cursor_position - threshold and current_node < 3
+					or last_cursor_position - threshold == current_node
+				then
 					reset_threshold = true
 					node = current_node
 					break
