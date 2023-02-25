@@ -143,5 +143,5 @@ it then you will come to a realization why this plugin is amazing. I have addded
 commands that lets you enable and disable this plugin. You can use that to see
 the difference.
 
-I would say use this plugin its free you won't loose any monkey anyway. If you
+I would say use this plugin its free you won't loose any money anyway. If you
 don't like it then just remove it 👍.
