@@ -1,4 +1,8 @@
 local M = {}
+-- TODO: add the enable = true if it was disabled using command line then remove
+-- the mappings and add the default find and till maps if it was disabled from
+-- the setup function then don't add maps
+-- And add the command line option to disable this plugin
 function M.setup(user_config)
 	local default_config = {
 		chars_length = 2,
