@@ -2,7 +2,6 @@
 --        replace find command to find more characters rather       --
 --                             then one                             --
 ----------------------------------------------------------------------
-
 local M = {}
 function M.finder(config)
 	local api = vim.api
@@ -203,17 +202,39 @@ function M.finder(config)
 		set_cursor(chars_pattern, direction, threshold)
 	end
 
-	local find_keys_tbl = {
-		"t",
-		"T",
-		"f",
-		"F",
+	local function merge_tables(tbl_a, tbl_b)
+		for _, val in pairs(tbl_a) do
+			table.insert(tbl_b, val)
+		end
+		return tbl_b
+	end
+
+	local keys_tbl = {
+		-- these keys aren't optional
 		";",
 		",",
 	}
 
-	for _, key in ipairs(find_keys_tbl) do
-		vim.keymap.set({ "n", "v" }, key, function()
+	local modes_tbl = {}
+
+	local keymaps = config.keymaps
+	keys_tbl = merge_tables(keymaps.find, keys_tbl)
+	keys_tbl = merge_tables(keymaps.till, keys_tbl)
+
+	local modes = keymaps.modes
+	-- adding modes list
+	if modes.normal then
+		table.insert(modes_tbl, "n")
+	end
+	if modes.visual then
+		table.insert(modes_tbl, "v")
+	end
+	if not modes.normal and not modes.visual then
+		modes_tbl = { "n" }
+	end
+
+	for _, key in ipairs(keys_tbl) do
+		vim.keymap.set(modes_tbl, key, function()
 			move_to_next_target(key)
 		end)
 	end
