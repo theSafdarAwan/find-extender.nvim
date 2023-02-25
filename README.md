@@ -69,6 +69,8 @@ There are three commands available.
 You can change the amount of characters you want to find by specifying the amount in
 this key.
 
+##### chars_length
+
 ```lua
 -- how many characters to find for
 chars_length = 2 -- default value is 2 chars
@@ -77,26 +79,25 @@ chars_length = 2 -- default value is 2 chars
 Default is _2_ characters and more then that is not recommended because it will slow you down
 and that's not what i intend this plugin to do.
 
-You can also alter the behaviour of this plugin to go to default _1_
-character behaviour by specifying time in _milli secconds_ in this key. Also you
-can change the _1_ to any other number using the _start_timeout_after_chars_ key.
-If you don't input the next character within the time specified in this key then it will go
-to default behaviour of _1_ character.<BR>
-By default this is set to false:
+##### timeout
+
+Timeout before the find-extender.nvim goes to find the characters that you have entered.
+before you complete the chars_length character's limit.
 
 ```lua
--- timeout before the find-extender.nvim goes to the default behavior to find 1
--- char
--- * timeout in ms
+-- timeout in ms
 timeout = false -- false by default
 ```
 
-How many characters after which the timeout should be triggered. Important when
-we have more set more then _2_ chars lenght in _chars_lenght_.
+##### start_timeout_after_chars
+
+How many characters after which the timeout should be triggered.
 
 ```lua
 start_timeout_after_chars = 1, -- 1 by default
 ```
+
+##### keymaps
 
 Keymaps are exposed to user if any key you want to remove just remove it from the
 tbl
