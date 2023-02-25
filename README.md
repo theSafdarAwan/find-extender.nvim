@@ -1,18 +1,27 @@
 ## Description
 
-This Plugin lets you extend the capability of find command in nvim. With the help of this
-Plugin you can find multiple characters rather then one at a time.
+This Plugin lets you extend the capability of find and till command's in nvim. With the help
+of this Plugin you can find multiple characters rather then one at a time.
 
 By default after pressing `f` and `F` or `t` and `T` in **normal** or **visual** mode now
-you have to type two characters rather then One to go to you desired position.<BR>
-This plugin also changes the `;` and `,` to repeat the last pattern like the find and till
-command's do.
+you have to type two characters(or more you can specify characters lenght) rather then One
+to go to next Characters position.
+
+This plugin also changes the `;` and `,` to repeat the last pattern like the find and till command's do.
 
 > NOTE: This plugin is just extending the capability of neovim default find and
 > till commands. It doesn't try to imitate the functionality of plugins like
-> these [clever-f.vim](https://github.com/rhysd/clever-f.vim), [leap.nvim](https://github.com/ggandor/leap.nvim),
+> [clever-f.vim](https://github.com/rhysd/clever-f.vim), [leap.nvim](https://github.com/ggandor/leap.nvim),
 > or [lightspeed.nvim](https://github.com/ggandor/lightspeed.nvim) or any plugin like that.
-> Its just a personal plugin that i though someone might find useful.
+> Its just a personal plugin that i though someone might find useful. The main
+
+Reason why i don't use these mentioned Plugins.
+
+> Reason why i don't use the mentioned plugins is because rather then extending
+> the vim(nvim)'s default find command these plugins try to do something
+> completely different. Also these plugin change the colors which i don't like at
+> all i just wanted a simple plugin that i could use to navigate more efficiently.
+> These plugins are great but these are not for the people like me.
 
 ### Installation
 
