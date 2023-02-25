@@ -120,3 +120,28 @@ keymaps = {
 ```
 
 Modes is a string with the modes name initials.
+
+### Is this Plugin really useful?
+
+Well some people asked me how this plugin is useful think of why we need find
+command in vim anyway we can just use _l_ or _h_ but that won't be very useful.
+It will take a lot of time and we would get frustrated. Now lets now add the find
+command back in vim and now it makes our life much easier but when it comes to
+find command. It lacks one thing that is to search more characters rather then one.
+Which is a bummer considering why we started to use vim in the first place to
+edit and navigate code more efficiently.
+
+This plugin might not satisfy you in just one line of code search but after you
+use it for an hour when writing code and navigating then only you can notice its
+capability and what it gives you as user.
+
+Now some people might disagree with this plugin functionality because they might
+think it make navigation more complex i thought the same thing but after i used
+this plugin i came to realization that i was missing many things. Now i can go on
+and on about this but the only thing i can say try this plugin and then disable
+it then you will come to a realization why this plugin is amazing. I have addded
+commands that lets you enable and disable this plugin. You can use that to see
+the difference.
+
+I would say use this plugin its free you won't loose any monkey anyway. If you
+don't like it then just remove it 👍.
