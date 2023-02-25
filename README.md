@@ -8,6 +8,12 @@ you have to type two characters rather then One to go to you desired position.<B
 This plugin also changes the `;` and `,` to repeat the last pattern like the find and till
 command's do.
 
+> NOTE: This plugin is just extending the capability of neovim default find and
+> till commands. It doesn't try to imitate the functionality of plugins like
+> these [clever-f.vim](https://github.com/rhysd/clever-f.vim), [leap.nvim](https://github.com/ggandor/leap.nvim),
+> or [lightspeed.nvim](https://github.com/ggandor/lightspeed.nvim) or any plugin like that.
+> Its just a personal plugin that i though someone might find useful.
+
 ### Installation
 
 #### Using Packer
