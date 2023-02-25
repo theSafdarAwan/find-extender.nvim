@@ -5,7 +5,7 @@ function M.setup(user_config)
 		timeout = false,
 		start_timeout_after_chars = 1,
 		keymaps = {
-			modes = { normal = true, visual = true },
+			modes = "nv",
 			till = { "T", "t" },
 			find = { "F", "f" },
 		},

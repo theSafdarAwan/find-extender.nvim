@@ -39,7 +39,7 @@ use {
             start_timeout_after_chars = 2, -- 2 by default
             -- key maps config
             keymaps = {
-                modes = { normal = true, visual = true },
+                modes = "nv",
                 till = { "T", "t" },
                 find = { "F", "f" },
             },
@@ -87,12 +87,10 @@ tbl
 
 ```lua
 keymaps = {
-    modes = { normal = true, visual = true },
+    modes = "nv",
     till = { "T", "t" },
     find = { "F", "f" },
 },
 ```
 
-One of the modes has to be enabled if both are set to _false_ then _normal_ modes
-is enabled by default. In case only _visual_ modes is enabled then only _visual_
-mode is enabled.
+Modes is a string with the modes name initials.

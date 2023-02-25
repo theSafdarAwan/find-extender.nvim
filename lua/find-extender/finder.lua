@@ -217,20 +217,24 @@ function M.finder(config)
 
 	local modes_tbl = {}
 
+	local function notify(msg)
+		local level = vim.log.levels.WARN
+		vim.api.nvim_notify(msg, level, {})
+	end
+
 	local keymaps = config.keymaps
 	keys_tbl = merge_tables(keymaps.find, keys_tbl)
 	keys_tbl = merge_tables(keymaps.till, keys_tbl)
 
 	local modes = keymaps.modes
-	-- adding modes list
-	if modes.normal then
-		table.insert(modes_tbl, "n")
-	end
-	if modes.visual then
-		table.insert(modes_tbl, "v")
-	end
-	if not modes.normal and not modes.visual then
-		modes_tbl = { "n" }
+	if #modes > 0 then
+		-- adding modes to the list
+		for i = 1, #modes, 1 do
+			local mode = string.sub(modes, i, i)
+			table.insert(modes_tbl, mode)
+		end
+	else
+		notify("find-extender.nvim: no modes provided in keymaps table.")
 	end
 
 	for _, key in ipairs(keys_tbl) do
