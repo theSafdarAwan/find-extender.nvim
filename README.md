@@ -29,6 +29,8 @@ use {
     },
     config = function()
         require("find-extender").setup({
+            -- if you want do disable the plugin the set this to false
+            enable = true,
             -- how many characters to find for
             chars_length = 2, -- default value is 2 chars
             -- timeout before the find-extender.nvim goes to the default behavior to find 1
@@ -47,6 +49,14 @@ use {
     end,
 }
 ```
+
+### Commands
+
+There are three commands available.
+
+- FindExtenderDisable
+- FindExtenderEnable
+- FindExtenderToggle
 
 ### Configuration
 

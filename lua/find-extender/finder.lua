@@ -6,6 +6,7 @@ local M = {}
 function M.finder(config)
 	local api = vim.api
 	local fn = vim.fn
+	local plugin_enabled = config.enable
 	-- how many characters to find for
 	local chars_length = config.chars_length
 	-- timeout before the find-extender.nvim goes to the default behavior to find 1
@@ -144,7 +145,7 @@ function M.finder(config)
 		return chars
 	end
 
-	local function move_to_next_target(key)
+	local function find_target(key)
 		-- if no find command was executed previously then there's no last pattern for
 		-- , or ; so return
 		if not _previous_find_info.pattern and key == "," or key == ";" and not _previous_find_info.pattern then
@@ -237,10 +238,55 @@ function M.finder(config)
 		notify("find-extender.nvim: no modes provided in keymaps table.")
 	end
 
-	for _, key in ipairs(keys_tbl) do
-		vim.keymap.set(modes_tbl, key, function()
-			move_to_next_target(key)
-		end)
+	local set_keymap = vim.keymap.set
+	local function set_maps()
+		for _, key in ipairs(keys_tbl) do
+			set_keymap(modes_tbl, key, function()
+				find_target(key)
+			end)
+		end
+	end
+
+	local function remove_maps()
+		for _, key in ipairs(keys_tbl) do
+			set_keymap(modes_tbl, key, key)
+		end
+	end
+
+	local function enable_plugin()
+		plugin_enabled = true
+		set_maps()
+	end
+	local function disable_plugin()
+		plugin_enabled = false
+		remove_maps()
+	end
+
+	-- create the commands for the plugin
+	local cmds = {
+		["FindExtenderDisable"] = function()
+			disable_plugin()
+		end,
+		["FindExtenderEnable"] = function()
+			enable_plugin()
+		end,
+		["FindExtenderToggle"] = function()
+			if plugin_enabled then
+				disable_plugin()
+			else
+				enable_plugin()
+			end
+		end,
+	}
+	for cmd_name, cmd_func in pairs(cmds) do
+		api.nvim_create_user_command(cmd_name, function()
+			cmd_func()
+		end, {})
+	end
+
+	-- enable plugin on startup if it was enabled
+	if plugin_enabled then
+		enable_plugin()
 	end
 end
 
