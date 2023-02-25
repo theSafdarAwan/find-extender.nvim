@@ -37,6 +37,12 @@ use {
             timeout = false -- false by default
             -- timeout starting point
             start_timeout_after_chars = 2, -- 2 by default
+            -- key maps config
+            keymaps = {
+                modes = { normal = true, visual = true },
+                till = { "T", "t" },
+                find = { "F", "f" },
+            },
         })
     end,
 }
@@ -75,3 +81,18 @@ we have more set more then _2_ chars lenght in _chars_lenght_.
 ```lua
 start_timeout_after_chars = 1, -- 1 by default
 ```
+
+Keymaps are exposed to user if any key you want to remove just remove it from the
+tbl
+
+```lua
+keymaps = {
+    modes = { normal = true, visual = true },
+    till = { "T", "t" },
+    find = { "F", "f" },
+},
+```
+
+One of the modes has to be enabled if both are set to _false_ then _normal_ modes
+is enabled by default. In case only _visual_ modes is enabled then only _visual_
+mode is enabled.
