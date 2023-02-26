@@ -48,7 +48,7 @@ function M.finder(config)
 	end
 
 	local function node_validation(string_end_position, str)
-		local string = str.sub(str, 1, string_end_position)
+		local string = string.sub(str, 1, string_end_position)
 		local i = 0
 		for _ in string.gmatch(string, "%a") do
 			i = i + 1
@@ -72,7 +72,7 @@ function M.finder(config)
 		-- line we need to reset the threshold
 		local reset_threshold = false
 		-- direction is to know which direction to search in
-		if direction == "l" then
+		if direction.left then
 			for _, current_node in ipairs(string_nodes) do
 				if
 					last_cursor_position + threshold < current_node
@@ -85,7 +85,7 @@ function M.finder(config)
 					break
 				end
 			end
-		elseif direction == "h" then
+		elseif direction.right then
 			-- need to reverse the tbl of the string_nodes because now
 			-- we have to start searching from the end of the string rather then from
 			-- the start
@@ -154,33 +154,33 @@ function M.finder(config)
 		-- to determine which direction to go
 		-- THIS is the only way i found efficient without heaving overhead
 		-- > find
-		local find_direction_l = key == "f"
+		local find_direction_left = key == "f"
 			or _previous_find_info.key == "F" and key == ","
 			or _previous_find_info.key == "f" and key == ";"
-		local find_direction_h = key == "F"
+		local find_direction_right = key == "F"
 			or _previous_find_info.key == "f" and key == ","
 			or _previous_find_info.key == "F" and key == ";"
 		-- > till
-		local till_direction_l = key == "t"
+		local till_direction_left = key == "t"
 			or _previous_find_info.key == "T" and key == ","
 			or _previous_find_info.key == "t" and key == ";"
-		local till_direction_h = key == "T"
+		local till_direction_right = key == "T"
 			or _previous_find_info.key == "t" and key == ","
 			or _previous_find_info.key == "T" and key == ";"
 
-		local direction
-		if find_direction_h or till_direction_h then
-			direction = "h"
-		elseif find_direction_l or till_direction_l then
-			direction = "l"
+		local direction = { left = false, right = false }
+		if find_direction_right or till_direction_right then
+			direction.right = true
+		elseif find_direction_left or till_direction_left then
+			direction.left = true
 		end
 		-- this variable is threshold between the pattern under the cursor position
 		-- it it exists the pattern exists within this threshold then move to the
 		-- next one or previous one depending on the key
 		local threshold = nil
-		if till_direction_l or till_direction_h then
+		if till_direction_left or till_direction_right then
 			threshold = 2
-		elseif find_direction_l or find_direction_h then
+		elseif find_direction_left or find_direction_right then
 			threshold = 1
 		end
 
