@@ -1,10 +1,10 @@
 ## Description
 
 This Plugin lets you extend the capability of find and till command's in nvim. With the help
-of this Plugin you can find multiple characters rather then one at a time.
+of this Plugin you can find multiple characters rather than one at a time.
 
 By default after pressing `f` and `F` or `t` and `T` in **normal** or **visual** mode now
-you have to type two characters(or more you can specify characters lenght) rather then One
+you have to type two characters(or more you can specify characters lenght) rather than One
 to go to next Characters position.
 
 This plugin also changes the `;` and `,` to repeat the last pattern like the find and till command's do.
@@ -17,7 +17,7 @@ This plugin also changes the `;` and `,` to repeat the last pattern like the fin
 
 Reason why i don't use these mentioned Plugins.
 
-> Reason why i don't use the mentioned plugins is because rather then extending
+> Reason why i don't use the mentioned plugins is because rather than extending
 > the vim(nvim)'s default find command these plugins try to do something
 > completely different. Also these plugin change the colors which i don't like at
 > all i just wanted a simple plugin that i could use to navigate more efficiently.
@@ -85,7 +85,7 @@ this key.
 chars_length = 2 -- default value is 2 chars
 ```
 
-Default is _2_ characters and more then that is not recommended because it will slow you down
+Default is _2_ characters and more than that is not recommended because it will slow you down
 and that's not what i intend this plugin to do.
 
 ##### timeout
@@ -127,21 +127,21 @@ Well some people asked me how this plugin is useful think of why we need find
 command in vim anyway we can just use _l_ or _h_ but that won't be very useful.
 It will take a lot of time and we would get frustrated. Now lets now add the find
 command back in vim and now it makes our life much easier but when it comes to
-find command. It lacks one thing that is to search more characters rather then one.
+find command. It lacks one thing that is to search more characters rather than one.
 Which is a bummer considering why we started to use vim in the first place to
 edit and navigate code more efficiently.
 
 This plugin might not satisfy you in just one line of code search but after you
-use it for an hour when writing code and navigating then only you can notice its
+use it for an hour when writing code and navigating than only you can notice its
 capability and what it gives you as user.
 
 Now some people might disagree with this plugin functionality because they might
 think it make navigation more complex i thought the same thing but after i used
 this plugin i came to realization that i was missing many things. Now i can go on
-and on about this but the only thing i can say try this plugin and then disable
-it then you will come to a realization why this plugin is amazing. I have addded
+and on about this but the only thing i can say try this plugin and than disable
+it than you will come to a realization why this plugin is amazing. I have addded
 commands that lets you enable and disable this plugin. You can use that to see
 the difference.
 
 I would say use this plugin its free you won't loose any money anyway. If you
-don't like it then just remove it 👍.
+don't like it than just remove it 👍.
