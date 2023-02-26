@@ -12,10 +12,10 @@ This plugin also changes the `;` and `,` to repeat the last pattern like the fin
 > NOTE: This plugin is just extending the capability of neovim default find and
 > till commands. It doesn't try to imitate the functionality of plugins like
 > [clever-f.vim](https://github.com/rhysd/clever-f.vim), [leap.nvim](https://github.com/ggandor/leap.nvim),
-> or [lightspeed.nvim](https://github.com/ggandor/lightspeed.nvim) or any plugin like that.
-> Its just a personal plugin that i though someone might find useful. The main
+> or [lightspeed.nvim](https://github.com/ggandor/lightspeed.nvim), [flit.nvim](https://github.com/ggandor/flit.nvim/)
+> or any plugin like that. Its just a personal plugin that i though someone might find useful.
 
-Reason why i don't use these mentioned Plugins.
+The main Reason why i don't use these mentioned Plugins.
 
 > Reason why i don't use the mentioned plugins is because rather than extending
 > the vim(nvim)'s default find command these plugins try to do something
