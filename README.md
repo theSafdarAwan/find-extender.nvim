@@ -51,7 +51,7 @@ use {
             -- timeout before the find-extender.nvim goes to the default behavior to find 1
             -- char
             -- * timeout in ms
-            timeout = false -- false by default
+            timeout = false, -- false by default
             -- timeout starting point
             start_timeout_after_chars = 2, -- 2 by default
             -- key maps config
