@@ -117,14 +117,22 @@ function M.finder(config)
 	local function get_chars()
 		local break_loop = false
 		local chars = ""
+		local i = 0
 		while true do
-			-- BUG: this timer gets created multiple times which isn't good
 			if timeout and #chars > start_timeout_after_chars - 1 then
+				-- this is a trick to solve issue of multiple timers being
+				-- created and once the guard condition becomes true the previous
+				-- timers jeopardised the timeout
+				-- So for now the i and id variable's acts as a id validation
+				i = i + 1
+				local id = i
 				vim.defer_fn(function()
-					-- to get rid of the getchar will throw dummy value which won't
-					-- be added to the chars list
-					api.nvim_feedkeys("�", "n", false)
-					break_loop = true
+					if i == id then
+						-- to get rid of the getchar will throw dummy value which won't
+						-- be added to the chars list
+						api.nvim_feedkeys("�", "n", false)
+						break_loop = true
+					end
 				end, timeout)
 			end
 			local c = fn.getchar()
