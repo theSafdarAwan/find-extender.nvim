@@ -118,7 +118,8 @@ function M.finder(config)
 		local break_loop = false
 		local chars = ""
 		while true do
-			if timeout and #chars == start_timeout_after_chars then
+			-- BUG: this timer gets created multiple times which isn't good
+			if timeout and #chars > start_timeout_after_chars - 1 then
 				vim.defer_fn(function()
 					-- to get rid of the getchar will throw dummy value which won't
 					-- be added to the chars list
