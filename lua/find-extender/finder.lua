@@ -38,7 +38,7 @@ function M.finder(config)
 		local pattern_last_idx = mapped_tbl[#mapped_tbl] or 1
 		while true do
 			local pattern_idx = string.find(string, pattern, pattern_last_idx, true)
-			if pattern_last_idx == pattern_idx or not pattern_idx then
+			if not pattern_idx then
 				break
 			end
 			table.insert(mapped_tbl, pattern_idx)
@@ -62,11 +62,11 @@ function M.finder(config)
 
 	-- Gets you the position for you next target node depending on direction
 	local function set_cursor(pattern, direction, threshold, skip_nodes)
-		local cursor_position = api.nvim_win_get_cursor(0)
+		local get_cursor = api.nvim_win_get_cursor(0)
 		local current_line = api.nvim_get_current_line()
 		local string_nodes = map_string_nodes(current_line, pattern)
 
-		local last_cursor_position = cursor_position[2]
+		local cursor_position = get_cursor[2]
 		local node = nil
 		-- in cases of node in the start of the line and node in the end of the
 		-- line we need to reset the threshold
@@ -76,8 +76,8 @@ function M.finder(config)
 		if direction.left then
 			for node_position, current_node in ipairs(string_nodes) do
 				if
-					last_cursor_position + threshold < current_node
-					or last_cursor_position < 1 and current_node < 3
+					cursor_position + threshold < current_node
+					or cursor_position < 1 and current_node < 3
 				then
 					if threshold > 1 and node_validation(current_node, current_line) then
 						reset_threshold = true
@@ -97,8 +97,8 @@ function M.finder(config)
 			string_nodes = reverse_tbl(string_nodes)
 			for node_position, current_node in ipairs(string_nodes) do
 				if
-					last_cursor_position - threshold == current_node
-					or last_cursor_position - threshold > current_node
+					cursor_position - threshold == current_node
+					or cursor_position - threshold > current_node
 				then
 					if threshold > 1 and node_validation(current_node, current_line) then
 						reset_threshold = true
@@ -116,11 +116,11 @@ function M.finder(config)
 			if reset_threshold then
 				threshold = 1
 			end
-			last_cursor_position = node - threshold
+			cursor_position = node - threshold
 		end
-		cursor_position[2] = last_cursor_position
+		get_cursor[2] = cursor_position
 
-		api.nvim_win_set_cursor(0, cursor_position)
+		api.nvim_win_set_cursor(0, get_cursor)
 	end
 
 	local function get_chars()
