@@ -61,7 +61,7 @@ function M.finder(config)
 	end
 
 	-- Gets you the position for you next target node depending on direction
-	local function set_cursor(pattern, direction, threshold)
+	local function set_cursor(pattern, direction, threshold, skip_nodes)
 		local cursor_position = api.nvim_win_get_cursor(0)
 		local current_line = api.nvim_get_current_line()
 		local string_nodes = map_string_nodes(current_line, pattern)
@@ -72,8 +72,9 @@ function M.finder(config)
 		-- line we need to reset the threshold
 		local reset_threshold = false
 		-- direction is to know which direction to search in
+		-- BUG: rerere this plugin doesn't work on this patter
 		if direction.left then
-			for _, current_node in ipairs(string_nodes) do
+			for node_position, current_node in ipairs(string_nodes) do
 				if
 					last_cursor_position + threshold < current_node
 					or last_cursor_position < 1 and current_node < 3
@@ -81,7 +82,11 @@ function M.finder(config)
 					if threshold > 1 and node_validation(current_node, current_line) then
 						reset_threshold = true
 					end
-					node = current_node
+					if skip_nodes then
+						node = string_nodes[node_position + skip_nodes - 1]
+					else
+						node = current_node
+					end
 					break
 				end
 			end
@@ -90,7 +95,7 @@ function M.finder(config)
 			-- we have to start searching from the end of the string rather then from
 			-- the start
 			string_nodes = reverse_tbl(string_nodes)
-			for _, current_node in ipairs(string_nodes) do
+			for node_position, current_node in ipairs(string_nodes) do
 				if
 					last_cursor_position - threshold == current_node
 					or last_cursor_position - threshold > current_node
@@ -98,7 +103,11 @@ function M.finder(config)
 					if threshold > 1 and node_validation(current_node, current_line) then
 						reset_threshold = true
 					end
-					node = current_node
+					if skip_nodes then
+						node = string_nodes[node_position + skip_nodes - 1]
+					else
+						node = current_node
+					end
 					break
 				end
 			end
@@ -155,6 +164,11 @@ function M.finder(config)
 	end
 
 	local function find_target(key)
+		-- to get the count
+		local skip_nodes = vim.v.count
+		if skip_nodes < 2 then
+			skip_nodes = nil
+		end
 		-- if no find command was executed previously then there's no last pattern for
 		-- , or ; so return
 		if not _previous_find_info.pattern and key == "," or key == ";" and not _previous_find_info.pattern then
@@ -209,7 +223,7 @@ function M.finder(config)
 			-- for , or ; command
 			chars_pattern = _previous_find_info.pattern
 		end
-		set_cursor(chars_pattern, direction, threshold)
+		set_cursor(chars_pattern, direction, threshold, skip_nodes)
 	end
 
 	local function merge_tables(tbl_a, tbl_b)
