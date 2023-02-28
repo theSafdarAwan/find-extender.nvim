@@ -72,14 +72,17 @@ function M.finder(config)
 		-- line we need to reset the threshold
 		local reset_threshold = false
 		-- direction is to know which direction to search in
-		-- BUG: rerere this plugin doesn't work on this patter
 		if direction.left then
 			for node_position, current_node in ipairs(string_nodes) do
 				if
 					cursor_position + threshold < current_node
 					or cursor_position < 1 and current_node < 3
 				then
-					if threshold > 1 and node_validation(current_node, current_line) then
+					if
+						threshold > 1
+						and node_validation(current_node, current_line)
+						and not skip_nodes
+					then
 						reset_threshold = true
 					end
 					if skip_nodes then
@@ -104,7 +107,13 @@ function M.finder(config)
 						reset_threshold = true
 					end
 					if skip_nodes then
-						node = string_nodes[node_position + skip_nodes - 1]
+						local x = string_nodes[node_position + skip_nodes - 1]
+						-- need to reset the threshold here because previous
+						-- guard wasn't for this x node
+						if threshold > 1 and node_validation(x, current_line) then
+							reset_threshold = true
+						end
+						node = x
 					else
 						node = current_node
 					end

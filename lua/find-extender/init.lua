@@ -1,5 +1,4 @@
 local M = {}
--- TODO: add the count feature
 -- TODO: add the y/d/c features
 function M.setup(user_config)
 	local default_config = {
