@@ -1,5 +1,4 @@
 local M = {}
--- TODO: add the y/d/c features
 function M.setup(user_config)
 	local default_config = {
 		enable = true,
@@ -10,6 +9,7 @@ function M.setup(user_config)
 			modes = "nv",
 			till = { "T", "t" },
 			find = { "F", "f" },
+			text_manipulation = { yank = true, delete = true, change = true },
 		},
 	}
 	-- merge the user config and the default config

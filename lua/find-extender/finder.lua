@@ -60,8 +60,7 @@ function M.finder(config)
 		end
 	end
 
-	-- Gets you the position for you next target node depending on direction
-	local function set_cursor(pattern, direction, threshold, skip_nodes)
+	local function get_node(pattern, direction, threshold, skip_nodes)
 		local get_cursor = api.nvim_win_get_cursor(0)
 		local current_line = api.nvim_get_current_line()
 		local string_nodes = map_string_nodes(current_line, pattern)
@@ -127,7 +126,62 @@ function M.finder(config)
 			end
 			cursor_position = node - threshold
 		end
-		get_cursor[2] = cursor_position
+		return cursor_position
+	end
+
+	local function get_remaining_str(str, position_start, position_end)
+		local a = string.sub(str, 1, position_start)
+		local b = string.sub(str, position_end, #str)
+		return a .. b
+	end
+	local function manipulate_text(pattern, direction, threshold, skip_nodes, types)
+		local current_line = api.nvim_get_current_line()
+		local register = vim.v.register
+		local get_cursor = api.nvim_win_get_cursor(0)
+		local target_position = get_node(pattern, direction, threshold, skip_nodes)
+		local str_start
+		local str_end
+		if direction.right then
+			str_end = get_cursor[2]
+			str_start = target_position
+		elseif direction.left then
+			str_end = target_position
+			str_start = get_cursor[2]
+		end
+		if direction.left then
+			str_end = str_end + 1
+		end
+		if get_cursor[2] == 0 and target_position == 1 and threshold == 2 then
+			return
+		end
+		local range_str = string.sub(current_line, str_start, str_end)
+		if types.delete or types.change then
+			str_end = str_end + 1
+			local remaining_line = get_remaining_str(current_line, str_start, str_end)
+			api.nvim_buf_set_lines(0, get_cursor[1] - 1, get_cursor[1], false, { remaining_line })
+			if direction.right then
+				get_cursor[2] = get_cursor[2] - #range_str + 1
+				api.nvim_win_set_cursor(0, get_cursor)
+			end
+			if types.change then
+				api.nvim_command("startinsert")
+			end
+		end
+		if direction.left then
+			if get_cursor[2] == 0 then
+				range_str = string.sub(range_str, 1, #range_str)
+			else
+				range_str = string.sub(range_str, 2, #range_str)
+			end
+		elseif direction.right then
+			range_str = string.sub(range_str, 2, #range_str)
+		end
+		fn.setreg(register, range_str)
+	end
+
+	local function set_cursor(pattern, direction, threshold, skip_nodes)
+		local get_cursor = api.nvim_win_get_cursor(0)
+		get_cursor[2] = get_node(pattern, direction, threshold, skip_nodes)
 
 		api.nvim_win_set_cursor(0, get_cursor)
 	end
@@ -189,16 +243,28 @@ function M.finder(config)
 		local find_direction_left = key == "f"
 			or _previous_find_info.key == "F" and key == ","
 			or _previous_find_info.key == "f" and key == ";"
+			or key == "cf"
+			or key == "df"
+			or key == "yf"
 		local find_direction_right = key == "F"
 			or _previous_find_info.key == "f" and key == ","
 			or _previous_find_info.key == "F" and key == ";"
+			or key == "cF"
+			or key == "dF"
+			or key == "yF"
 		-- > till
 		local till_direction_left = key == "t"
 			or _previous_find_info.key == "T" and key == ","
 			or _previous_find_info.key == "t" and key == ";"
+			or key == "ct"
+			or key == "dt"
+			or key == "yt"
 		local till_direction_right = key == "T"
 			or _previous_find_info.key == "t" and key == ","
 			or _previous_find_info.key == "T" and key == ";"
+			or key == "cT"
+			or key == "dT"
+			or key == "yT"
 
 		local direction = { left = false, right = false }
 		if find_direction_right or till_direction_right then
@@ -218,6 +284,19 @@ function M.finder(config)
 
 		local chars_pattern
 		local normal_keys = key == "f" or key == "F" or key == "t" or key == "T"
+		local text_manipulation_keys = key == "cT"
+			or key == "dT"
+			or key == "yT"
+			or key == "ct"
+			or key == "dt"
+			or key == "yt"
+			or key == "cf"
+			or key == "df"
+			or key == "yf"
+			or key == "cF"
+			or key == "dF"
+			or key == "yF"
+
 		if normal_keys then
 			-- if find or till command is executed then add the pattern and the key to the
 			-- _last_search_info table.
@@ -227,12 +306,30 @@ function M.finder(config)
 			end
 			_previous_find_info.key = key
 			_previous_find_info.pattern = chars_pattern
+		elseif text_manipulation_keys then
+			chars_pattern = get_chars()
+			if not chars_pattern then
+				return
+			end
 		else
 			-- if f or F or t or T command wasn't pressed then search for the _last_search_info.pattern
 			-- for , or ; command
 			chars_pattern = _previous_find_info.pattern
 		end
-		set_cursor(chars_pattern, direction, threshold, skip_nodes)
+		local text_manipulation_types = { change = false, yank = false, delete = false }
+		if #key > 1 then
+			local type = string.sub(key, 1, 1)
+			if type == "c" then
+				text_manipulation_types.change = true
+			elseif type == "d" then
+				text_manipulation_types.delete = true
+			elseif type == "y" then
+				text_manipulation_types.yank = true
+			end
+			manipulate_text(chars_pattern, direction, threshold, skip_nodes, text_manipulation_types)
+		else
+			set_cursor(chars_pattern, direction, threshold, skip_nodes)
+		end
 	end
 
 	local function merge_tables(tbl_a, tbl_b)
@@ -247,6 +344,7 @@ function M.finder(config)
 		";",
 		",",
 	}
+	local text_manipulation_keys = {}
 
 	local modes_tbl = {}
 
@@ -258,6 +356,21 @@ function M.finder(config)
 	local keymaps = config.keymaps
 	keys_tbl = merge_tables(keymaps.find, keys_tbl)
 	keys_tbl = merge_tables(keymaps.till, keys_tbl)
+	if keymaps.text_manipulation then
+		local type = keymaps.text_manipulation
+		if type.yank then
+			local keys = { "yf", "yF", "yt", "yT" }
+			text_manipulation_keys = merge_tables(keys, text_manipulation_keys)
+		end
+		if type.delete then
+			local keys = { "df", "dF", "dt", "dT" }
+			text_manipulation_keys = merge_tables(keys, text_manipulation_keys)
+		end
+		if type.change then
+			local keys = { "cf", "cF", "ct", "cT" }
+			text_manipulation_keys = merge_tables(keys, text_manipulation_keys)
+		end
+	end
 
 	local modes = keymaps.modes
 	if #modes > 0 then
@@ -274,6 +387,11 @@ function M.finder(config)
 	local function set_maps()
 		for _, key in ipairs(keys_tbl) do
 			set_keymap(modes_tbl, key, function()
+				find_target(key)
+			end)
+		end
+		for _, key in ipairs(text_manipulation_keys) do
+			set_keymap("n", key, function()
 				find_target(key)
 			end)
 		end
