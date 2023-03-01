@@ -123,6 +123,16 @@ keymaps = {
 
 Modes is a string with the modes name initials.
 
+##### text_manipulation
+
+Mappings related to the text manipulation like change, delete and yank(copy).
+If you want to disable any of the macro then set it to false.
+
+```lua
+-- to delete, copy or change using t,f or T,F commands
+text_manipulation = { yank = true, delete = true, change = true },
+```
+
 ### Is this Plugin really useful?
 
 Well some people asked me how this plugin is useful think of why we need find
