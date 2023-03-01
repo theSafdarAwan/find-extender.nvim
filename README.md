@@ -130,7 +130,7 @@ If you want to disable any of the macro then set it to false.
 
 ```lua
 -- to delete, copy or change using t,f or T,F commands
-text_manipulation = { yank = true, delete = true, change = true },
+keymaps.text_manipulation = { yank = true, delete = true, change = true },
 ```
 
 ### Is this Plugin really useful?
