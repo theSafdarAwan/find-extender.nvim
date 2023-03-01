@@ -59,6 +59,8 @@ use {
                 modes = "nv",
                 till = { "T", "t" },
                 find = { "F", "f" },
+                -- to delete, copy or change using t,f or T,F commands
+                text_manipulation = { yank = true, delete = true, change = true },
             },
         })
     end,
