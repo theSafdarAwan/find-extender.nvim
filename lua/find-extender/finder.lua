@@ -142,11 +142,11 @@ function M.finder(config)
 		local str_start
 		local str_end
 		if direction.right then
+			str_start = target_position + 1
 			str_end = get_cursor[2]
-			str_start = target_position
 		elseif direction.left then
-			str_end = target_position
 			str_start = get_cursor[2]
+			str_end = target_position
 		end
 		if direction.left then
 			str_end = str_end + 1
