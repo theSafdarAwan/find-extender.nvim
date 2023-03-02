@@ -182,12 +182,12 @@ Some People use vim or neovim for Configuration purposes to change configuration
 of servers or maybe you are a member of **Unix Porn** and change configuration
 files or your Linux Desktop🐧. Then this plugin might not be useful to you.
 
-This Plugin is for people like me who spend most of their day. Writing code or
-editing code to get rid of "He who must not be named" -> 🐞 lol. Then this Plugin
+This Plugin is for people like me who spend most of their day or night. Writing code
+or editing code to get rid of "He who must not be named 🐞" lol. Then this Plugin
 is right for you.
 
-I can't tell you if this plugin will improve your workflow or not. You would have
-to test it for Yourself. And i promise after using this plugin you won't regret
+I can't convince you if this plugin will improve your workflow or not. You would
+have to test it for Yourself. And i promise after using this plugin you won't regret
 spending your time testing it. This is a huge game changer for me. When moving
 in long lines of code.
 
