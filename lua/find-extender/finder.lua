@@ -202,7 +202,11 @@ function M.finder(config)
 
 	local function set_cursor(pattern, direction, threshold, skip_nodes)
 		local get_cursor = api.nvim_win_get_cursor(0)
-		get_cursor[2] = get_node(pattern, direction, threshold, skip_nodes)
+		local target_position = get_node(pattern, direction, threshold, skip_nodes)
+		if not target_position then
+			return
+		end
+		get_cursor[2] = target_position
 
 		api.nvim_win_set_cursor(0, get_cursor)
 	end
