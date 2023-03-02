@@ -11,8 +11,6 @@ function M.finder(config)
 	-- How many characters after which the timeout should be triggered. Important when
 	-- we have more set more then _2_ chars lenght in _chars_lenght_.
 	local start_timeout_after_chars = config.start_timeout_after_chars -- 2 by default
-	-- highlight yanked area
-	local yank = config.keymaps.text_manipulation.yank
 	-- to remember the last pattern and the command when using the ; and , command
 	local _previous_find_info = { pattern = nil, key = nil }
 
@@ -32,7 +30,7 @@ function M.finder(config)
 		require("vim.highlight").range(
 			buf_id,
 			buf_ns,
-			yank.hl_group,
+			config.highlight_on_yank_hl_group,
 			{ line_nr, start },
 			{ line_nr, finish },
 			{ regtype = event.regtype, inclusive = event.inclusive, priority = 200 }
@@ -42,7 +40,7 @@ function M.finder(config)
 			if api.nvim_buf_is_valid(buf_id) then
 				api.nvim_buf_clear_namespace(buf_id, buf_ns, 0, -1)
 			end
-		end, yank.timeout)
+		end, config.highlight_on_yank_timeout)
 	end
 
 	local function reverse_tbl(tbl)
@@ -209,7 +207,7 @@ function M.finder(config)
 				api.nvim_command("startinsert")
 			end
 		end
-		if types.yank then
+		if types.yank and config.highlight_on_yank_enabled then
 			on_yank(start, finish)
 		end
 		-- NOTE> we are doing this text substitution using lua string.sub which
