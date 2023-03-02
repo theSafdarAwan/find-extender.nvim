@@ -163,17 +163,31 @@ function M.finder(config)
 		end
 		local range_str = string.sub(current_line, str_start, str_end)
 		if types.delete or types.change then
+			-- to go one character more then we usually do when finding a
+			-- character think of it as a syntactic sugar to make it fill like we
+			-- are deleting or changing till a pattern
 			str_end = str_end + 1
+			-- substitute the remaining line from the cursor position till the
+			-- next target position
 			local remaining_line = get_remaining_str(current_line, str_start, str_end)
+			-- replace the current line with the remaining line
 			api.nvim_buf_set_lines(0, get_cursor[1] - 1, get_cursor[1], false, { remaining_line })
+			-- if we substitute from right to left the cursor resets to the end
+			-- of the line after line gets swapped so we have to get the cursor
+			-- position and then set it to the appropriate position
 			if direction.right then
 				get_cursor[2] = get_cursor[2] - #range_str + 1
 				api.nvim_win_set_cursor(0, get_cursor)
 			end
+			-- in case of change text start insert after the text gets deleted
 			if types.change then
 				api.nvim_command("startinsert")
 			end
 		end
+		-- NOTE> we are doing this text substitution using lua string.sub which
+		-- isn't same as the nvim's delete or change so we have to adjust how
+		-- much characters we got into our register in some case we have to sometimes
+		-- discard one character.
 		if direction.left then
 			if get_cursor[2] == 0 then
 				range_str = string.sub(range_str, 1, #range_str)
