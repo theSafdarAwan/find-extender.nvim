@@ -18,6 +18,11 @@ go to next Characters position.
 
 #### Other find Plugins
 
+Different Philosophy: When we are trying to navigate to a point in line we already
+have a position and the characters in that position in our mind. So to go exactly
+to that position. I can use more characters in find command to navigate to that
+position more efficiently.
+
 This plugin is just extending the capability of neovim default commands.
 It doesn't try to imitate the functionality of plugins like:
 
@@ -25,22 +30,6 @@ It doesn't try to imitate the functionality of plugins like:
 - [leap.nvim](https://github.com/ggandor/leap.nvim),
 - [lightspeed.nvim](https://github.com/ggandor/lightspeed.nvim)
 - [flit.nvim](https://github.com/ggandor/flit.nvim/)
-
-##### 🎯 Personal Reason's why i don't use the mentioned Plugins:<br>
-
-> NOTE: These are my personal views and why i don't use these plugins. I don't
-> want to inflict hate or anything to anyone.
-
-These are The reasons why i don't Personally Use these plugins:
-
-- 🧧 Rather than extending the neovim's default command's. These plugins add
-  complicated features rather then easing the problem because of which these
-  plugins got created in the first place.
-- 🌈 Adding colors which just disturb the focus.
-- 🔭 Adding pick and choose from the next pattern positions.
-
-Maybe some people like these features and they want to use these plugins. But
-these Plugins are not for people like me.
 
 I want a simple plugin that doesn't clutter up the editor screen with colors and
 just does the job of finding on a single line.
