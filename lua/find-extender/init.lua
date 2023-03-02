@@ -16,9 +16,7 @@ function M.setup(user_config)
 				change = true,
 			},
 		},
-		highlight_on_yank_enabled = true,
-		highlight_on_yank_timeout = 40,
-		highlight_on_yank_hl_group = "IncSearch",
+		highlight_on_yank = { enable = true, timeout = 40, hl_group = "IncSearch" },
 	}
 	-- merge the user config and the default config
 	local config = vim.tbl_extend("force", default_config, user_config or {})
