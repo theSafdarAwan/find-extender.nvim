@@ -1,4 +1,5 @@
 local M = {}
+local utils = require("find-extender.utils")
 function M.finder(config)
 	local api = vim.api
 	local fn = vim.fn
@@ -16,79 +17,10 @@ function M.finder(config)
 	-- to remember the last pattern and the command when using the ; and , command
 	local _previous_find_info = { pattern = nil, key = nil }
 
-	-- highlight the yanked area
-	local function on_yank(start, finish)
-		local yank_timer
-		local buf_id = api.nvim_get_current_buf()
-		local line_nr = fn.getpos(".")[2] - 1
-
-		local buf_ns = api.nvim_create_namespace("my namespace")
-		local event = vim.v.event
-
-		if yank_timer then
-			yank_timer:close()
-		end
-
-		require("vim.highlight").range(
-			buf_id,
-			buf_ns,
-			highlight_on_yank.hl_group,
-			{ line_nr, start },
-			{ line_nr, finish },
-			{ regtype = event.regtype, inclusive = event.inclusive, priority = 200 }
-		)
-		yank_timer = vim.defer_fn(function()
-			yank_timer = nil
-			if api.nvim_buf_is_valid(buf_id) then
-				api.nvim_buf_clear_namespace(buf_id, buf_ns, 0, -1)
-			end
-		end, highlight_on_yank.timeout)
-	end
-
-	local function reverse_tbl(tbl)
-		local transformed_tbl = {}
-		local idx = #tbl
-		while true do
-			table.insert(transformed_tbl, tbl[idx])
-			if idx < 1 then
-				break
-			end
-			idx = idx - 1
-		end
-		return transformed_tbl
-	end
-
-	-- maps the occurrences of the pattern in a string
-	local function map_string_nodes(string, pattern)
-		local mapped_tbl = {}
-		local pattern_last_idx = mapped_tbl[#mapped_tbl] or 1
-		while true do
-			local pattern_idx = string.find(string, pattern, pattern_last_idx, true)
-			if not pattern_idx then
-				break
-			end
-			table.insert(mapped_tbl, pattern_idx)
-			pattern_last_idx = mapped_tbl[#mapped_tbl] + 2
-		end
-		return mapped_tbl
-	end
-
-	local function node_validation(string_end_position, str)
-		local string = string.sub(str, 1, string_end_position)
-		local i = 0
-		for _ in string.gmatch(string, "%a") do
-			i = i + 1
-		end
-		if i > 1 then
-			return false
-		end
-		return true
-	end
-
 	local function get_node(pattern, direction, threshold, skip_nodes)
 		local get_cursor = api.nvim_win_get_cursor(0)
 		local current_line = api.nvim_get_current_line()
-		local string_nodes = map_string_nodes(current_line, pattern)
+		local string_nodes = utils.map_string_nodes(current_line, pattern)
 
 		local cursor_position = get_cursor[2]
 		local node = nil
@@ -104,7 +36,7 @@ function M.finder(config)
 				then
 					if
 						threshold > 1
-						and node_validation(current_node, current_line)
+						and utils.node_validation(current_node, current_line)
 						and not skip_nodes
 					then
 						reset_threshold = true
@@ -117,24 +49,26 @@ function M.finder(config)
 					break
 				end
 			end
-		elseif direction.right then
+		end
+
+		if direction.right then
 			-- need to reverse the tbl of the string_nodes because now
 			-- we have to start searching from the end of the string rather then from
 			-- the start
-			string_nodes = reverse_tbl(string_nodes)
+			string_nodes = utils.reverse_tbl(string_nodes)
 			for node_position, current_node in ipairs(string_nodes) do
 				if
 					cursor_position - threshold == current_node
 					or cursor_position - threshold > current_node
 				then
-					if threshold > 1 and node_validation(current_node, current_line) then
+					if threshold > 1 and utils.node_validation(current_node, current_line) then
 						reset_threshold = true
 					end
 					if skip_nodes then
 						local x = string_nodes[node_position + skip_nodes - 1]
 						-- need to reset the threshold here because previous
 						-- guard wasn't for this x node
-						if threshold > 1 and node_validation(x, current_line) then
+						if threshold > 1 and utils.node_validation(x, current_line) then
 							reset_threshold = true
 						end
 						node = x
@@ -145,21 +79,13 @@ function M.finder(config)
 				end
 			end
 		end
+
 		if node then
 			if reset_threshold then
 				threshold = 1
 			end
-			cursor_position = node - threshold
-		else
-			cursor_position = nil
+			return node - threshold
 		end
-		return cursor_position
-	end
-
-	local function get_remaining_str(str, before_end, after_start)
-		local a = string.sub(str, 1, before_end)
-		local b = string.sub(str, after_start, #str)
-		return a .. b
 	end
 
 	-- don't disturb this function
@@ -189,12 +115,12 @@ function M.finder(config)
 		local range_str = string.sub(current_line, start, finish)
 		if types.delete or types.change then
 			-- to go one character more then we usually do when finding a
-			-- character think of it as a syntactic sugar to make it fill like we
+			-- character think of it as a syntactic sugar to make it feel like we
 			-- are deleting or changing till a pattern
 			finish = finish + 1
 			-- substitute the remaining line from the cursor position till the
 			-- next target position
-			local remaining_line = get_remaining_str(current_line, start, finish)
+			local remaining_line = utils.get_remaining_str(current_line, start, finish)
 			-- replace the current line with the remaining line
 			api.nvim_buf_set_lines(0, get_cursor[1] - 1, get_cursor[1], false, { remaining_line })
 			-- if we substitute from right to left the cursor resets to the end
@@ -210,7 +136,7 @@ function M.finder(config)
 			end
 		end
 		if types.yank and highlight_on_yank.enable then
-			on_yank(start, finish)
+			require("find-extender.utils").on_yank(highlight_on_yank, start, finish)
 		end
 		-- NOTE> we are doing this text substitution using lua string.sub which
 		-- isn't same as the nvim's delete or change so we have to adjust how
@@ -278,7 +204,7 @@ function M.finder(config)
 		return chars
 	end
 
-	local function find_target(key)
+	local function finder(key)
 		-- to get the count
 		local skip_nodes = vim.v.count
 		if skip_nodes < 2 then
@@ -384,13 +310,6 @@ function M.finder(config)
 		end
 	end
 
-	local function merge_tables(tbl_a, tbl_b)
-		for _, val in pairs(tbl_a) do
-			table.insert(tbl_b, val)
-		end
-		return tbl_b
-	end
-
 	local keys_tbl = {
 		-- these keys aren't optional
 		";",
@@ -406,21 +325,21 @@ function M.finder(config)
 	end
 
 	local keymaps = config.keymaps
-	keys_tbl = merge_tables(keymaps.find, keys_tbl)
-	keys_tbl = merge_tables(keymaps.till, keys_tbl)
+	keys_tbl = utils.merge_tables(keymaps.find, keys_tbl)
+	keys_tbl = utils.merge_tables(keymaps.till, keys_tbl)
 	if keymaps.text_manipulation then
 		local type = keymaps.text_manipulation
 		if type.yank then
 			local keys = { "yf", "yF", "yt", "yT" }
-			text_manipulation_keys = merge_tables(keys, text_manipulation_keys)
+			text_manipulation_keys = utils.merge_tables(keys, text_manipulation_keys)
 		end
 		if type.delete then
 			local keys = { "df", "dF", "dt", "dT" }
-			text_manipulation_keys = merge_tables(keys, text_manipulation_keys)
+			text_manipulation_keys = utils.merge_tables(keys, text_manipulation_keys)
 		end
 		if type.change then
 			local keys = { "cf", "cF", "ct", "cT" }
-			text_manipulation_keys = merge_tables(keys, text_manipulation_keys)
+			text_manipulation_keys = utils.merge_tables(keys, text_manipulation_keys)
 		end
 	end
 
@@ -439,12 +358,12 @@ function M.finder(config)
 	local function set_maps()
 		for _, key in ipairs(keys_tbl) do
 			set_keymap(modes_tbl, key, function()
-				find_target(key)
+				finder(key)
 			end)
 		end
 		for _, key in ipairs(text_manipulation_keys) do
 			set_keymap("n", key, function()
-				find_target(key)
+				finder(key)
 			end)
 		end
 	end
