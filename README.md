@@ -25,7 +25,7 @@ The main Reason why i don't use these mentioned Plugins.
 
 ### Installation
 
-#### Using Packer
+### Using Packer
 
 ```lua
 use {
@@ -91,7 +91,7 @@ There are three commands available.
 You can change the amount of characters you want to find by specifying the amount in
 this key.
 
-##### chars_length
+### chars_length
 
 ```lua
 -- how many characters to find for
@@ -101,7 +101,7 @@ chars_length = 2 -- default value is 2 chars
 Default is _2_ characters and more than that is not recommended because it will slow you down
 and that's not what i intend this plugin to do.
 
-##### timeout
+### timeout
 
 Timeout before the find-extender.nvim goes to find the characters that you have entered.
 before you complete the chars_length character's limit.
@@ -111,7 +111,7 @@ before you complete the chars_length character's limit.
 timeout = false -- false by default
 ```
 
-##### start_timeout_after_chars
+### start_timeout_after_chars
 
 How many characters after which the timeout should be triggered.
 
@@ -119,7 +119,7 @@ How many characters after which the timeout should be triggered.
 start_timeout_after_chars = 1, -- 1 by default
 ```
 
-##### keymaps
+### keymaps
 
 Keymaps are exposed to user if any key you want to remove just remove it from the
 tbl
@@ -134,7 +134,7 @@ keymaps = {
 
 Modes is a string with the modes name initials.
 
-##### text_manipulation
+### text_manipulation
 
 Mappings related to the text manipulation like change, delete and yank(copy).
 If you want to disable any of the macro then set it to false.
@@ -144,7 +144,7 @@ If you want to disable any of the macro then set it to false.
 keymaps.text_manipulation = { yank = true, delete = true, change = true },
 ```
 
-##### highlight on yank
+### highlight on yank
 
 These options control the highlight when yanking text.
 
