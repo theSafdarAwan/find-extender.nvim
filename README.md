@@ -62,9 +62,10 @@ use {
             enable = true,
             -- how many characters to find for
             chars_length = 2, -- default value is 2 chars
-            -- timeout before the find-extender.nvim goes to the default behavior to find 1
-            -- char
-            -- * timeout in ms
+            -- timeout before the find-extender.nvim goes to find the available
+            -- characters on timeout after the limit of start_timeout_after_chars
+            -- has been reached
+            -- timeout in ms
             timeout = false, -- false by default
             -- timeout starting point
             start_timeout_after_chars = 2, -- 2 by default
