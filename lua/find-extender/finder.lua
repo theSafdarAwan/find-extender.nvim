@@ -125,6 +125,8 @@ function M.finder(config)
 				threshold = 1
 			end
 			cursor_position = node - threshold
+		else
+			cursor_position = nil
 		end
 		return cursor_position
 	end
@@ -134,11 +136,16 @@ function M.finder(config)
 		local b = string.sub(str, position_end, #str)
 		return a .. b
 	end
+
+	-- don't disturb this function
 	local function manipulate_text(pattern, direction, threshold, skip_nodes, types)
 		local current_line = api.nvim_get_current_line()
 		local register = vim.v.register
 		local get_cursor = api.nvim_win_get_cursor(0)
 		local target_position = get_node(pattern, direction, threshold, skip_nodes)
+		if not target_position then
+			return
+		end
 		local str_start
 		local str_end
 		if direction.right then
