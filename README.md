@@ -65,6 +65,12 @@ use {
                 -- to delete, copy or change using t,f or T,F commands
                 text_manipulation = { yank = true, delete = true, change = true },
             },
+            -- whether to highlight the yanked are or not
+            highlight_on_yank_enabled = true,
+            -- time for which the area will be highlighted
+            highlight_on_yank_timeout = 40,
+            -- highlight group for the yanked are color
+            highlight_on_yank_hl_group = "IncSearch",
         })
     end,
 }
@@ -134,6 +140,19 @@ If you want to disable any of the macro then set it to false.
 ```lua
 -- to delete, copy or change using t,f or T,F commands
 keymaps.text_manipulation = { yank = true, delete = true, change = true },
+```
+
+##### highlight on yank options
+
+These options control the highlight when yanking text.
+
+```lua
+-- whether to highlight the yanked are or not
+highlight_on_yank_enabled = true,
+-- time for which the area will be highlighted
+highlight_on_yank_timeout = 40,
+-- highlight group for the yanked are color
+highlight_on_yank_hl_group = "IncSearch",
 ```
 
 ### Is this Plugin really useful?
