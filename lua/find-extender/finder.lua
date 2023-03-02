@@ -422,6 +422,11 @@ function M.finder(config)
 		for _, key in ipairs(keys_tbl) do
 			set_keymap(modes_tbl, key, key)
 		end
+		for _, key in ipairs(text_manipulation_keys) do
+			set_keymap("n", key, function()
+				set_keymap(modes_tbl, key, key)
+			end)
+		end
 	end
 
 	local function enable_plugin()
