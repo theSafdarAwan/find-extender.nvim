@@ -9,7 +9,15 @@ function M.setup(user_config)
 			modes = "nv",
 			till = { "T", "t" },
 			find = { "F", "f" },
-			text_manipulation = { yank = true, delete = true, change = true },
+			text_manipulation = {
+				yank = {
+					highlight_on_yank = true,
+					timeout = 80,
+					hl_group = "IncSearch",
+				},
+				delete = true,
+				change = true,
+			},
 		},
 	}
 	-- merge the user config and the default config
