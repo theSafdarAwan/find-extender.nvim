@@ -164,7 +164,7 @@ highlight_on_yank = {
 Well some people asked me how this plugin is useful think of why we need find
 command in vim anyway we can just use _l_ or _h_ but that won't be very useful.
 It will take a lot of time and we would get frustrated. Now lets now add the find
-command back in vim and now it makes our life much easier but when it comes to
+command back in vim and now it makes our life much easier. But when it comes to
 find command. It lacks one thing that is to search more characters rather than one.
 Which is a bummer considering why we started to use vim in the first place to
 edit and navigate code more efficiently.
