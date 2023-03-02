@@ -33,14 +33,17 @@ use {
     "TheSafdarAwan/find-extender.nvim",
     -- to lazy load this plugin
     keys = {
-        { "n", "f" },
-        { "v", "f" },
-        { "n", "F" },
-        { "v", "F" },
-        { "n", "T" },
-        { "v", "t" },
-        { "n", "t" },
-        { "v", "T" },
+			{ "v", "f" },
+			{ "v", "F" },
+			{ "n", "f" },
+			{ "n", "F" },
+			{ "n", "T" },
+			{ "n", "t" },
+			{ "v", "T" },
+			{ "v", "t" },
+			{ "n", "c" },
+			{ "n", "d" },
+			{ "n", "y" },
     },
     config = function()
         require("find-extender").setup({
