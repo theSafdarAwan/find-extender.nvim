@@ -3,25 +3,47 @@
 This Plugin lets you extend the capability of find and till command's in nvim. With the help
 of this Plugin you can find multiple characters rather than one at a time.
 
-By default after pressing `f` and `F` or `t` and `T` in **normal** or **visual** mode now
-you have to type two characters(or more you can specify characters lenght) rather than One
-to go to next Characters position.
+🔥 This Plugins Effects these maps:
 
-This plugin also changes the `;` and `,` to repeat the last pattern like the find and till command's do.
+    f|F (find commands)
+    t|T (till commands)
+    ;|, (last pattern commands)
+    c{t|T|f|f} (change command)
+    d{t|T|f|f} (delete command)
+    y{t|T|f|f} (yank command)
 
-> NOTE: This plugin is just extending the capability of neovim default find and
-> till commands. It doesn't try to imitate the functionality of plugins like
-> [clever-f.vim](https://github.com/rhysd/clever-f.vim), [leap.nvim](https://github.com/ggandor/leap.nvim),
-> [lightspeed.nvim](https://github.com/ggandor/lightspeed.nvim), [flit.nvim](https://github.com/ggandor/flit.nvim/)
-> or any plugin like that. Its just a personal plugin that i though someone might find useful.
+By default after pressing any of these commands now you have to type two
+characters(or more you can specify characters length) rather than One to
+go to next Characters position.
 
-The main Reason why i don't use these mentioned Plugins.
+#### Other find Plugins
 
-> Reason why i don't use the mentioned plugins is because rather than extending
-> the vim(nvim)'s default find command these plugins try to do something
-> completely different. Also these plugin change the colors which i don't like at
-> all i just wanted a simple plugin that i could use to navigate more efficiently.
-> These plugins are great but these are not for the people like me.
+This plugin is just extending the capability of neovim default commands.
+It doesn't try to imitate the functionality of plugins like:
+
+- [clever-f.vim](https://github.com/rhysd/clever-f.vim)
+- [leap.nvim](https://github.com/ggandor/leap.nvim),
+- [lightspeed.nvim](https://github.com/ggandor/lightspeed.nvim)
+- [flit.nvim](https://github.com/ggandor/flit.nvim/)
+
+##### 🎯 Personal Reason's why i don't use the mentioned Plugins:<br>
+
+> NOTE: These are my personal views and why i don't use these plugins. I don't
+> want to inflict hate or anything to anyone.
+
+These are The reasons why i don't Personally Use these plugins:
+
+- 🧧 Rather than extending the neovim's default command's. These plugins add
+  complicated features rather then easing the problem because of which these
+  plugins got created in the first place.
+- 🌈 Adding colors which just disturb the focus.
+- 🔭 Adding pick and choose from the next pattern positions.
+
+Maybe some people like these features and they want to use these plugins. But
+these Plugins are not for people like me.
+
+I want a simple plugin that doesn't clutter up the editor screen with colors and
+just does the job of finding on a single line.
 
 ### Installation
 
@@ -140,8 +162,11 @@ Mappings related to the text manipulation like change, delete and yank(copy).
 If you want to disable any of the macro then set it to false.
 
 ```lua
--- to delete, copy or change using t,f or T,F commands
-keymaps.text_manipulation = { yank = true, delete = true, change = true },
+keymaps = {
+    ...,
+    -- to delete, copy or change using t,f or T,F commands
+    text_manipulation = { yank = true, delete = true, change = true },
+}
 ```
 
 ### highlight on yank
@@ -161,25 +186,32 @@ highlight_on_yank = {
 
 ### Is this Plugin really useful?
 
-Well some people asked me how this plugin is useful think of why we need find
-command in vim anyway we can just use _l_ or _h_ but that won't be very useful.
-It will take a lot of time and we would get frustrated. Now lets now add the find
-command back in vim and now it makes our life much easier. But when it comes to
-find command. It lacks one thing that is to search more characters rather than one.
-Which is a bummer considering why we started to use vim in the first place to
-edit and navigate code more efficiently.
+This Plugin was created so that I can navigate the code more efficiently and edit
+the changes i want. But i can't say that everyone will like this plugin.
 
-This plugin might not satisfy you in just one line of code search but after you
-use it for an hour when writing code and navigating than only you can notice its
-capability and what it gives you as user.
+Some People use vim or neovim for Configuration purposes to change configuration
+of servers or maybe you are a member of **Unix Porn** and change configuration
+files or your Linux Desktop🐧. Then this plugin might not be useful to you.
 
-Now some people might disagree with this plugin functionality because they might
-think it make navigation more complex i thought the same thing but after i used
-this plugin i came to realization that i was missing many things. Now i can go on
-and on about this but the only thing i can say try this plugin and than disable
-it than you will come to a realization why this plugin is amazing. I have addded
-commands that lets you enable and disable this plugin. You can use that to see
-the difference.
+This Plugin is for people like me who spend most of their day. Writing code or
+editing code to get rid of "He who must not be named" -> 🐞 lol. Then this Plugin
+is right for you.
 
-I would say use this plugin its free you won't loose any money anyway. If you
-don't like it than just remove it 👍.
+I can't tell you if this plugin will improve your workflow or not. You would have
+to test it for Yourself. And i promise after using this plugin you won't regret
+spending your time testing it. This is a huge game changer for me. When moving
+in long lines of code.
+
+You might not get feel for it in just one line of code but if you use it for an
+Hour of your time when you are writing code. Then you will know the capability of
+this plugin.
+
+### 🌃 Story Behind this Plugin:
+
+I wrote a simple function for `f` command that got two characters and then got
+you to the next position for those characters. But after doing that i got used to
+it And thought maybe i can also map the other pattern finding commands like this
+for that i had to separate this into its own file and from that it grow into a
+Plugin which i shared on reddit people liked it. And from then on i added some
+new functionality to it. And now its a whole plugin. Which i didn't anticipated
+this would become one day.
