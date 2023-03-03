@@ -17,7 +17,7 @@ By default after pressing any of these commands now you have to type two
 characters(or more you can specify characters length) rather than One to
 go to next position.
 
-#### Why this plugin and not Other find Plugins?
+#### Why this plugin?
 
 When we are trying to navigate to a point in line we already have a position and the
 characters in that position in our mind. So to go exactly to that position. If its on
