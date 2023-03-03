@@ -66,11 +66,20 @@ function M.get_node(opts)
 
 	local target_node = nil
 	if node_value then
+		local trim = nil
 		if reset_threshold then
 			opts.threshold = 1
 		end
+
+		-- in case of left to right movement have to do some adjustments
+		if opts.node_direction.right and opts.threshold == 1 then
+			trim = 2
+		elseif opts.node_direction.right and opts.threshold == 2 then
+			trim = 1
+		end
+
 		if opts.node_direction.right then
-			target_node = node_value + #opts.pattern - opts.threshold
+			target_node = node_value + #opts.pattern - trim
 		elseif opts.node_direction.left then
 			target_node = node_value - opts.threshold
 		end

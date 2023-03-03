@@ -5,6 +5,7 @@ function M.setup(user_config)
 		chars_length = 2,
 		timeout = false,
 		start_timeout_after_chars = 1,
+		backword_search_cursor_behavior = "after", -- before | after
 		keymaps = {
 			modes = "nv",
 			till = { "T", "t" },
