@@ -41,8 +41,8 @@ function M.get_node(opts)
 		string_nodes = utils.reverse_tbl(string_nodes)
 		for node_position, node in ipairs(string_nodes) do
 			if
-				cursor_position - #opts.pattern - opts.threshold == node
-				or cursor_position - #opts.pattern - opts.threshold > node
+				cursor_position - opts.threshold == node
+				or cursor_position - opts.threshold > node
 			then
 				if opts.threshold > 1 and utils.node_validation(node, current_line) then
 					reset_threshold = true
@@ -66,23 +66,10 @@ function M.get_node(opts)
 
 	local target_node = nil
 	if node_value then
-		local trim = nil
 		if reset_threshold then
 			opts.threshold = 1
 		end
-
-		-- in case of left to right movement have to do some adjustments
-		if opts.node_direction.right and opts.threshold == 1 then
-			trim = 2
-		elseif opts.node_direction.right and opts.threshold == 2 then
-			trim = 1
-		end
-
-		if opts.node_direction.right then
-			target_node = node_value + #opts.pattern - trim
-		elseif opts.node_direction.left then
-			target_node = node_value - opts.threshold
-		end
+		target_node = node_value - opts.threshold
 	end
 	return target_node
 end
