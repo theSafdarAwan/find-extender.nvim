@@ -23,28 +23,26 @@ function M.finder(config)
 		local string_nodes = utils.map_string_nodes(current_line, pattern)
 
 		local cursor_position = get_cursor[2]
-		local node = nil
+		local node_value = nil
 		-- in cases of node in the start of the line and node in the end of the
 		-- line we need to reset the threshold
 		local reset_threshold = false
 		-- direction is to know which direction to search in
 		if direction.left then
-			for node_position, current_node in ipairs(string_nodes) do
-				if
-					cursor_position + threshold < current_node
-					or cursor_position < 1 and current_node < 3
-				then
+			for node_position, node in ipairs(string_nodes) do
+				if cursor_position + threshold < node or cursor_position < 1 and node < 3 then
 					if
 						threshold > 1
-						and utils.node_validation(current_node, current_line)
+						and utils.node_validation(node, current_line)
 						and not skip_nodes
 					then
 						reset_threshold = true
 					end
+
 					if skip_nodes then
-						node = string_nodes[node_position + skip_nodes - 1]
+						node_value = string_nodes[node_position + skip_nodes - 1]
 					else
-						node = current_node
+						node_value = node
 					end
 					break
 				end
@@ -56,36 +54,36 @@ function M.finder(config)
 			-- we have to start searching from the end of the string rather then from
 			-- the start
 			string_nodes = utils.reverse_tbl(string_nodes)
-			for node_position, current_node in ipairs(string_nodes) do
-				if
-					cursor_position - threshold == current_node
-					or cursor_position - threshold > current_node
-				then
-					if threshold > 1 and utils.node_validation(current_node, current_line) then
+			for node_position, node in ipairs(string_nodes) do
+				if cursor_position - threshold == node or cursor_position - threshold > node then
+					if threshold > 1 and utils.node_validation(node, current_line) then
 						reset_threshold = true
 					end
+
 					if skip_nodes then
-						local x = string_nodes[node_position + skip_nodes - 1]
+						local n = string_nodes[node_position + skip_nodes - 1]
 						-- need to reset the threshold here because previous
 						-- guard wasn't for this x node
-						if threshold > 1 and utils.node_validation(x, current_line) then
+						if threshold > 1 and utils.node_validation(n, current_line) then
 							reset_threshold = true
 						end
-						node = x
+						node_value = n
 					else
-						node = current_node
+						node_value = node
 					end
 					break
 				end
 			end
 		end
 
-		if node then
+		local target_node = nil
+		if node_value then
 			if reset_threshold then
 				threshold = 1
 			end
-			return node - threshold
+			target_node = node_value - threshold
 		end
+		return target_node
 	end
 
 	-- don't disturb this function
@@ -101,23 +99,16 @@ function M.finder(config)
 		local finish
 		if direction.right then
 			start = target_position + 1
-			finish = get_cursor[2]
+			finish = get_cursor[2] + 1
 		elseif direction.left then
 			start = get_cursor[2]
-			finish = target_position
-		end
-		if direction.left then
-			finish = finish + 1
+			finish = target_position + 2
 		end
 		if get_cursor[2] == 0 and target_position == 1 and threshold == 2 then
 			return
 		end
-		local range_str = string.sub(current_line, start, finish)
+		local in_range_str = string.sub(current_line, start, finish - 1)
 		if types.delete or types.change then
-			-- to go one character more then we usually do when finding a
-			-- character think of it as a syntactic sugar to make it feel like we
-			-- are deleting or changing till a pattern
-			finish = finish + 1
 			-- substitute the remaining line from the cursor position till the
 			-- next target position
 			local remaining_line = utils.get_remaining_str(current_line, start, finish)
@@ -127,7 +118,7 @@ function M.finder(config)
 			-- of the line after line gets swapped so we have to get the cursor
 			-- position and then set it to the appropriate position
 			if direction.right then
-				get_cursor[2] = get_cursor[2] - #range_str + 1
+				get_cursor[2] = get_cursor[2] - #in_range_str + 1
 				api.nvim_win_set_cursor(0, get_cursor)
 			end
 			-- in case of change text start insert after the text gets deleted
@@ -135,23 +126,22 @@ function M.finder(config)
 				api.nvim_command("startinsert")
 			end
 		end
+
+		-- highlight's the yanked area
 		if types.yank and highlight_on_yank.enable then
-			require("find-extender.utils").on_yank(highlight_on_yank, start, finish)
+			require("find-extender.utils").on_yank(highlight_on_yank, start, finish - 1)
 		end
-		-- NOTE> we are doing this text substitution using lua string.sub which
+
+		-- NOTE-> we are doing this text substitution using lua string.sub which
 		-- isn't same as the nvim's delete or change so we have to adjust how
 		-- much characters we got into our register in some case we have to sometimes
 		-- discard one character.
-		if direction.left then
-			if get_cursor[2] == 0 then
-				range_str = string.sub(range_str, 1, #range_str)
-			else
-				range_str = string.sub(range_str, 2, #range_str)
-			end
-		elseif direction.right then
-			range_str = string.sub(range_str, 2, #range_str)
+		if get_cursor[2] == 0 then
+			in_range_str = string.sub(in_range_str, 1, #in_range_str)
+		else
+			in_range_str = string.sub(in_range_str, 2, #in_range_str)
 		end
-		fn.setreg(register, range_str)
+		fn.setreg(register, in_range_str)
 	end
 
 	local function set_cursor(pattern, direction, threshold, skip_nodes)
