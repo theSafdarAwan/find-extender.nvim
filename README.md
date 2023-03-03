@@ -84,37 +84,42 @@ use {
         { "n", "y" },
     },
     config = function()
-        require("find-extender").setup({
-            -- if you want do disable the plugin the set this to false
-            enable = true,
-            -- how many characters to find for
-            chars_length = 2, -- default value is 2 chars
-            -- timeout before the find-extender.nvim goes to find the available
-            -- characters on timeout after the limit of start_timeout_after_chars
-            -- has been reached
-            -- timeout in ms
-            timeout = false, -- false by default
-            -- timeout starting point
-            start_timeout_after_chars = 2, -- 2 by default
-            -- key maps config
-            keymaps = {
-                modes = "nv",
-                till = { "T", "t" },
-                find = { "F", "f" },
-                -- to delete, copy or change using t,f or T,F commands
-                text_manipulation = { yank = true, delete = true, change = true },
-            },
-            highlight_on_yank = {
-                -- whether to highlight the yanked are or not
-                enable = true,
-                -- time for which the area will be highlighted
-                timeout = 40,
-                -- highlight group for the yanked are color
-                hl_group = "IncSearch",
-            }
-        })
+        -- configuration here
     end,
 }
+```
+
+## Setup
+```lua
+require("find-extender").setup({
+    -- if you want do disable the plugin the set this to false
+    enable = true,
+    -- how many characters to find for
+    chars_length = 2, -- default value is 2 chars
+    -- timeout before the find-extender.nvim goes to find the available
+    -- characters on timeout after the limit of start_timeout_after_chars
+    -- has been reached
+    -- timeout in ms
+    timeout = false, -- false by default
+    -- timeout starting point
+    start_timeout_after_chars = 2, -- 2 by default
+    -- key maps config
+    keymaps = {
+        modes = "nv",
+        till = { "T", "t" },
+        find = { "F", "f" },
+        -- to delete, copy or change using t,f or T,F commands
+        text_manipulation = { yank = true, delete = true, change = true },
+    },
+    highlight_on_yank = {
+        -- whether to highlight the yanked are or not
+        enable = true,
+        -- time for which the area will be highlighted
+        timeout = 40,
+        -- highlight group for the yanked are color
+        hl_group = "IncSearch",
+    }
+})
 ```
 
 ## Commands
