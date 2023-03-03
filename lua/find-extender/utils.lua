@@ -1,7 +1,46 @@
 local M = {}
 local api = vim.api
 local fn = vim.fn
-
+-- get chars from user input
+function M.get_chars(opts)
+	local break_loop = false
+	local chars = ""
+	local i = 0
+	while true do
+		if opts.timeout and #chars > opts.start_timeout_after_chars - 1 then
+			-- this is a trick to solve issue of multiple timers being
+			-- created and once the guard condition becomes true the previous
+			-- timers jeopardised the timeout
+			-- So for now the i and id variable's acts as a id validation
+			i = i + 1
+			local id = i
+			vim.defer_fn(function()
+				if i == id then
+					-- to get rid of the getchar will throw dummy value which won't
+					-- be added to the chars list
+					api.nvim_feedkeys("�", "n", false)
+					break_loop = true
+				end
+			end, opts.timeout)
+		end
+		local c = fn.getchar()
+		if type(c) ~= "number" then
+			return
+		end
+		if break_loop then
+			return chars
+		elseif c < 32 or c > 127 then
+			-- only accept ASCII value for the letters and punctuations including
+			-- space as input
+			return
+		end
+		chars = chars .. fn.nr2char(c)
+		if #chars == opts.chars_length then
+			break
+		end
+	end
+	return chars
+end
 -- highlight the yanked area
 function M.on_yank(highlight_on_yank, start, finish)
 	local yank_timer

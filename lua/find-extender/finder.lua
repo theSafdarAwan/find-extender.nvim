@@ -1,8 +1,10 @@
 local M = {}
-local utils = require("find-extender.utils")
+
+local api = vim.api
+
 function M.finder(config)
-	local api = vim.api
-	local fn = vim.fn
+	local utils = require("find-extender.utils")
+
 	local plugin_enabled = config.enable
 	-- how many characters to find for
 	local chars_length = config.chars_length
@@ -18,6 +20,7 @@ function M.finder(config)
 	local _previous_find_info = { pattern = nil, key = nil }
 
 	local get_node = require("find-extender.get-node").get_node
+	local get_chars = require("find-extender.utils").get_chars
 
 	local function set_cursor(pattern, node_direction, threshold, skip_nodes)
 		local get_cursor = api.nvim_win_get_cursor(0)
@@ -27,46 +30,6 @@ function M.finder(config)
 		end
 		get_cursor[2] = target_position
 		api.nvim_win_set_cursor(0, get_cursor)
-	end
-
-	local function get_chars()
-		local break_loop = false
-		local chars = ""
-		local i = 0
-		while true do
-			if timeout and #chars > start_timeout_after_chars - 1 then
-				-- this is a trick to solve issue of multiple timers being
-				-- created and once the guard condition becomes true the previous
-				-- timers jeopardised the timeout
-				-- So for now the i and id variable's acts as a id validation
-				i = i + 1
-				local id = i
-				vim.defer_fn(function()
-					if i == id then
-						-- to get rid of the getchar will throw dummy value which won't
-						-- be added to the chars list
-						api.nvim_feedkeys("�", "n", false)
-						break_loop = true
-					end
-				end, timeout)
-			end
-			local c = fn.getchar()
-			if type(c) ~= "number" then
-				return
-			end
-			if break_loop then
-				return chars
-			elseif c < 32 or c > 127 then
-				-- only accept ASCII value for the letters and punctuations including
-				-- space as input
-				return
-			end
-			chars = chars .. fn.nr2char(c)
-			if #chars == chars_length then
-				break
-			end
-		end
-		return chars
 	end
 
 	local function finder(key)
@@ -143,14 +106,22 @@ function M.finder(config)
 		if normal_keys then
 			-- if find or till command is executed then add the pattern and the key to the
 			-- _last_search_info table.
-			pattern = get_chars()
+			pattern = get_chars({
+				chars_length = chars_length,
+				timeout = timeout,
+				start_timeout_after_chars = start_timeout_after_chars,
+			})
 			if not pattern then
 				return
 			end
 			_previous_find_info.key = key
 			_previous_find_info.pattern = pattern
 		elseif text_manipulation_keys then
-			pattern = get_chars()
+			pattern = get_chars({
+				chars_length = chars_length,
+				timeout = timeout,
+				start_timeout_after_chars = start_timeout_after_chars,
+			})
 			if not pattern then
 				return
 			end
