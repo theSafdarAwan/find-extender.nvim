@@ -47,7 +47,7 @@ just does the job of finding on a single line.
 ## ✨ Features
 
 - adds capability to add more characters to finding command's.
-- yank/delete/change(y/d/c) text change same as finding.
+- yank/delete/change(y/d/c) text same as finding.
 - Highlight the yanked area with color using `require("vim.highlight").range()`.
 - timeout to find before the `chars_length` variable lenght has completed.
 - provide number like `2` before key to go to second position for the pattern.
