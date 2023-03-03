@@ -1,6 +1,5 @@
 local M = {}
 function M.setup(user_config)
-	print(vim.inspect(user_config))
 	local default_config = {
 		enable = true,
 		chars_length = 2,
@@ -20,7 +19,6 @@ function M.setup(user_config)
 	}
 	-- merge the user config and the default config
 	local config = vim.tbl_extend("force", default_config, user_config or {})
-	print(vim.inspect(config))
 
 	-- merge the user keymaps and default keymaps
 	config.keymaps = vim.tbl_extend("force", default_config.keymaps, config.keymaps)
