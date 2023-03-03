@@ -1,9 +1,10 @@
 ## Description
 
-This Plugin lets you extend the capability of find and till command's in nvim. With the help
-of this Plugin you can find multiple characters rather than one at a time.
+This Plugin extend's the capability of find, till and text manipulation(yank/delete/change)
+command's in nvim. With the help of this Plugin you can find multiple characters rather than
+one at a time.
 
-🔥 This Plugins Effects these maps:
+🔥 This Plugins Effects the following commands:
 
     f|F (find commands)
     t|T (till commands)
@@ -14,29 +15,55 @@ of this Plugin you can find multiple characters rather than one at a time.
 
 By default after pressing any of these commands now you have to type two
 characters(or more you can specify characters length) rather than One to
-go to next Characters position.
+go to next position.
 
-#### Other find Plugins
+#### Why this plugin and not Other find Plugins?
 
-Different Philosophy: When we are trying to navigate to a point in line we already
-have a position and the characters in that position in our mind. So to go exactly
-to that position. I can use more characters in find command to navigate to that
-position more efficiently.
+When we are trying to navigate to a point in line we already have a position and the
+characters in that position in our mind. So to go exactly to that position. If its on
+other line i use relative line number to go to that line number. Then I can use
+find-extender.nvim to navigate to that position more efficiently.
 
 This plugin is just extending the capability of neovim default commands.
 It doesn't try to imitate the functionality of plugins like:
 
+I want a simple plugin that doesn't clutter up the editor screen with colors and
+just does the job of finding on a single line.
+
+##### Related Plugins
+
+👉 Written in vimscript 
+
+- [vim-easymotion](https://github.com/easymotion/vim-easymotion)
+- [vim-sneak](https://github.com/justinmk/vim-sneak)
 - [clever-f.vim](https://github.com/rhysd/clever-f.vim)
+
+👉 Written in lua 
+
 - [leap.nvim](https://github.com/ggandor/leap.nvim),
 - [lightspeed.nvim](https://github.com/ggandor/lightspeed.nvim)
 - [flit.nvim](https://github.com/ggandor/flit.nvim/)
 
-I want a simple plugin that doesn't clutter up the editor screen with colors and
-just does the job of finding on a single line.
+## ✨ Features
 
-### Installation
+- adds capability to add more characters to finding command's.
+- yank/delete/change(y/d/c) text change same as finding.
+- Highlight the yanked area with color using `require("vim.highlight").range()`.
+- timeout to find before the `chars_length` variable lenght has completed.
+- provide number like `2` before key to go to second position for the pattern.
+  This is universal for y/d/c or t/T/f/F commands.
 
-### Using Packer
+## 📦 Installation
+
+Install the theme with your preferred package manager:
+
+[vim-plug](https://github.com/junegunn/vim-plug)
+
+```vim
+Plug 'TheSafdarAwan/find-extender.nvim'
+```
+
+[packer](https://github.com/wbthomason/packer.nvim)
 
 ```lua
 use {
@@ -90,7 +117,7 @@ use {
 }
 ```
 
-### Commands
+## Commands
 
 There are three commands available.
 
@@ -98,7 +125,7 @@ There are three commands available.
 - FindExtenderEnable
 - FindExtenderToggle
 
-### Configuration
+## ⚙️ Configuration
 
 You can change the amount of characters you want to find by specifying the amount in
 this key.
@@ -131,7 +158,7 @@ How many characters after which the timeout should be triggered.
 start_timeout_after_chars = 1, -- 1 by default
 ```
 
-### keymaps
+### ⌨ keymaps
 
 Keymaps are exposed to user if any key you want to remove just remove it from the
 tbl
@@ -174,7 +201,7 @@ highlight_on_yank = {
 }
 ```
 
-### Is this Plugin really useful?
+### Who this Plugin is for?
 
 This Plugin was created so that I can navigate the code more efficiently and edit
 the changes i want. But i can't say that everyone will like this plugin.
