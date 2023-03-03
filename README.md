@@ -107,10 +107,10 @@ There are three commands available.
 
 ## ⚙️ Configuration
 
+### chars_length
+
 You can change the amount of characters you want to find by specifying the amount in
 this key.
-
-### chars_length
 
 ```lua
 -- how many characters to find for
@@ -215,13 +215,13 @@ this would become one day.
 
 ### Related Plugins
 
-👉 Written in vimscript 
+👉 Written in vimscript
 
 - [vim-easymotion](https://github.com/easymotion/vim-easymotion)
 - [vim-sneak](https://github.com/justinmk/vim-sneak)
 - [clever-f.vim](https://github.com/rhysd/clever-f.vim)
 
-👉 Written in lua 
+👉 Written in lua
 
 - [leap.nvim](https://github.com/ggandor/leap.nvim),
 - [lightspeed.nvim](https://github.com/ggandor/lightspeed.nvim)
