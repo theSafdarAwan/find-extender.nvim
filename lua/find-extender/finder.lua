@@ -22,9 +22,9 @@ function M.finder(config)
 	local get_node = require("find-extender.get-node").get_node
 	local get_chars = require("find-extender.utils").get_chars
 
-	local function set_cursor(pattern, node_direction, threshold, skip_nodes)
+	local function set_cursor(opts)
 		local get_cursor = api.nvim_win_get_cursor(0)
-		local target_position = get_node(pattern, node_direction, threshold, skip_nodes)
+		local target_position = get_node(opts)
 		if not target_position then
 			return
 		end
@@ -103,25 +103,23 @@ function M.finder(config)
 			or key == "dF"
 			or key == "yF"
 
+		local get_chars_opts = {
+			chars_length = chars_length,
+			timeout = timeout,
+			start_timeout_after_chars = start_timeout_after_chars,
+		}
+
 		if normal_keys then
 			-- if find or till command is executed then add the pattern and the key to the
 			-- _last_search_info table.
-			pattern = get_chars({
-				chars_length = chars_length,
-				timeout = timeout,
-				start_timeout_after_chars = start_timeout_after_chars,
-			})
+			pattern = get_chars(get_chars_opts)
 			if not pattern then
 				return
 			end
 			_previous_find_info.key = key
 			_previous_find_info.pattern = pattern
 		elseif text_manipulation_keys then
-			pattern = get_chars({
-				chars_length = chars_length,
-				timeout = timeout,
-				start_timeout_after_chars = start_timeout_after_chars,
-			})
+			pattern = get_chars(get_chars_opts)
 			if not pattern then
 				return
 			end
@@ -130,6 +128,14 @@ function M.finder(config)
 			-- for , or ; command
 			pattern = _previous_find_info.pattern
 		end
+
+		local get_node_opts = {
+			pattern = pattern,
+			node_direction = node_direction,
+			threshold = threshold,
+			skip_nodes = skip_nodes,
+		}
+
 		local text_manipulation_types = { change = false, yank = false, delete = false }
 		if #key > 1 then
 			local type = string.sub(key, 1, 1)
@@ -140,14 +146,14 @@ function M.finder(config)
 			elseif type == "y" then
 				text_manipulation_types.yank = true
 			end
-			local node = get_node(pattern, node_direction, threshold, skip_nodes)
+			local node = get_node(get_node_opts)
 			require("find-extender.text-manipulation").manipulate_text(
 				{ node = node, node_direction = node_direction, threshold = threshold },
 				text_manipulation_types,
 				{ highlight_on_yank = highlight_on_yank }
 			)
 		else
-			set_cursor(pattern, node_direction, threshold, skip_nodes)
+			set_cursor(get_node_opts)
 		end
 	end
 

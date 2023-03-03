@@ -3,10 +3,10 @@ local M = {}
 local api = vim.api
 local utils = require("find-extender.utils")
 
-function M.get_node(pattern, node_direction, threshold, skip_nodes)
+function M.get_node(opts)
 	local get_cursor = api.nvim_win_get_cursor(0)
 	local current_line = api.nvim_get_current_line()
-	local string_nodes = utils.map_string_nodes(current_line, pattern)
+	local string_nodes = utils.map_string_nodes(current_line, opts.pattern)
 
 	local cursor_position = get_cursor[2]
 	local node_value = nil
@@ -14,15 +14,19 @@ function M.get_node(pattern, node_direction, threshold, skip_nodes)
 	-- line we need to reset the threshold
 	local reset_threshold = false
 	-- node_direction is to know which direction to search in
-	if node_direction.left then
+	if opts.node_direction.left then
 		for node_position, node in ipairs(string_nodes) do
-			if cursor_position + threshold < node or cursor_position < 1 and node < 3 then
-				if threshold > 1 and utils.node_validation(node, current_line) and not skip_nodes then
+			if cursor_position + opts.threshold < node or cursor_position < 1 and node < 3 then
+				if
+					opts.threshold > 1
+					and utils.node_validation(node, current_line)
+					and not opts.skip_nodes
+				then
 					reset_threshold = true
 				end
 
-				if skip_nodes then
-					node_value = string_nodes[node_position + skip_nodes - 1]
+				if opts.skip_nodes then
+					node_value = string_nodes[node_position + opts.skip_nodes - 1]
 				else
 					node_value = node
 				end
@@ -31,22 +35,24 @@ function M.get_node(pattern, node_direction, threshold, skip_nodes)
 		end
 	end
 
-	if node_direction.right then
-		-- need to reverse the tbl of the string_nodes because now
-		-- we have to start searching from the end of the string rather then from
-		-- the start
+	if opts.node_direction.right then
+		-- need to reverse the tbl of the string_nodes because now we have to
+		-- start searching from the end of the string rather then from the start
 		string_nodes = utils.reverse_tbl(string_nodes)
 		for node_position, node in ipairs(string_nodes) do
-			if cursor_position - threshold == node or cursor_position - threshold > node then
-				if threshold > 1 and utils.node_validation(node, current_line) then
+			if
+				cursor_position - #opts.pattern - opts.threshold == node
+				or cursor_position - #opts.pattern - opts.threshold > node
+			then
+				if opts.threshold > 1 and utils.node_validation(node, current_line) then
 					reset_threshold = true
 				end
 
-				if skip_nodes then
-					local n = string_nodes[node_position + skip_nodes - 1]
+				if opts.skip_nodes then
+					local n = string_nodes[node_position + opts.skip_nodes - 1]
 					-- need to reset the threshold here because previous
 					-- guard wasn't for this x node
-					if threshold > 1 and utils.node_validation(n, current_line) then
+					if opts.threshold > 1 and utils.node_validation(n, current_line) then
 						reset_threshold = true
 					end
 					node_value = n
@@ -61,9 +67,13 @@ function M.get_node(pattern, node_direction, threshold, skip_nodes)
 	local target_node = nil
 	if node_value then
 		if reset_threshold then
-			threshold = 1
+			opts.threshold = 1
 		end
-		target_node = node_value - threshold
+		if opts.node_direction.right then
+			target_node = node_value + #opts.pattern - opts.threshold
+		elseif opts.node_direction.left then
+			target_node = node_value - opts.threshold
+		end
 	end
 	return target_node
 end
