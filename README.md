@@ -17,33 +17,6 @@ By default after pressing any of these commands now you have to type two
 characters(or more you can specify characters length) rather than One to
 go to next position.
 
-#### Why this plugin?
-
-When we are trying to navigate to a point in line we already have a position and the
-characters in that position in our mind. So to go exactly to that position. If its on
-other line i use relative line number to go to that line number. Then I can use
-find-extender.nvim to navigate to that position more efficiently.
-
-This plugin is just extending the capability of neovim default commands.
-It doesn't try to imitate the functionality of plugins like:
-
-I want a simple plugin that doesn't clutter up the editor screen with colors and
-just does the job of finding on a single line.
-
-##### Related Plugins
-
-👉 Written in vimscript 
-
-- [vim-easymotion](https://github.com/easymotion/vim-easymotion)
-- [vim-sneak](https://github.com/justinmk/vim-sneak)
-- [clever-f.vim](https://github.com/rhysd/clever-f.vim)
-
-👉 Written in lua 
-
-- [leap.nvim](https://github.com/ggandor/leap.nvim),
-- [lightspeed.nvim](https://github.com/ggandor/lightspeed.nvim)
-- [flit.nvim](https://github.com/ggandor/flit.nvim/)
-
 ## ✨ Features
 
 - adds capability to add more characters to finding command's.
@@ -90,6 +63,7 @@ use {
 ```
 
 ## Setup
+
 ```lua
 require("find-extender").setup({
     -- if you want do disable the plugin the set this to false
@@ -237,3 +211,17 @@ for that i had to separate this into its own file and from that it grow into a
 Plugin which i shared on reddit people liked it. And from then on i added some
 new functionality to it. And now its a whole plugin. Which i didn't anticipated
 this would become one day.
+
+##### Related Plugins
+
+👉 Written in vimscript 
+
+- [vim-easymotion](https://github.com/easymotion/vim-easymotion)
+- [vim-sneak](https://github.com/justinmk/vim-sneak)
+- [clever-f.vim](https://github.com/rhysd/clever-f.vim)
+
+👉 Written in lua 
+
+- [leap.nvim](https://github.com/ggandor/leap.nvim),
+- [lightspeed.nvim](https://github.com/ggandor/lightspeed.nvim)
+- [flit.nvim](https://github.com/ggandor/flit.nvim/)
