@@ -21,7 +21,8 @@ go to next position.
 
 - adds capability to add more characters to finding command's.
 - yank/delete/change(y/d/c) text same as finding.
-- Highlight the yanked area with color using `require("vim.highlight").range()`.
+- added Highlight the yanked area with color using neovim predefined
+  `require("vim.highlight").range()`.
 - timeout to find before the `chars_length` variable lenght has completed.
 - provide number like `2` before key to go to second position for the pattern.
   This is universal for y/d/c or t/T/f/F commands.
@@ -212,7 +213,7 @@ Plugin which i shared on reddit people liked it. And from then on i added some
 new functionality to it. And now its a whole plugin. Which i didn't anticipated
 this would become one day.
 
-##### Related Plugins
+### Related Plugins
 
 👉 Written in vimscript 
 
