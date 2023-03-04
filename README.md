@@ -29,6 +29,9 @@ go to next position.
 
 ## 🚀 Usage
 
+I have only provided demos for f and d commands y,c,t,y commands take characters
+input same as these.
+
 #### find forward
 
 <img alt="f command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/fir.gif">
