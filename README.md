@@ -181,38 +181,6 @@ highlight_on_yank = {
 }
 ```
 
-### Who this Plugin is for?
-
-This Plugin was created so that I can navigate the code more efficiently and edit
-the changes i want. But i can't say that everyone will like this plugin.
-
-Some People use vim or neovim for Configuration purposes to change configuration
-of servers or maybe you are a member of **Unix Porn** and change configuration
-files or your Linux Desktop🐧. Then this plugin might not be useful to you.
-
-This Plugin is for people like me who spend most of their day or night. Writing code
-or editing code to get rid of "He who must not be named 🐞" lol. Then this Plugin
-is right for you.
-
-I can't convince you if this plugin will improve your workflow or not. You would
-have to test it for Yourself. And i promise after using this plugin you won't regret
-spending your time testing it. This is a huge game changer for me. When moving
-in long lines of code.
-
-You might not get feel for it in just one line of code but if you use it for an
-Hour of your time when you are writing code. Then you will know the capability of
-this plugin.
-
-### 🌃 Story Behind this Plugin:
-
-I wrote a simple function for `f` command that got two characters and then got
-you to the next position for those characters. But after doing that i got used to
-it And thought maybe i can also map the other pattern finding commands like this
-for that i had to separate this into its own file and from that it grow into a
-Plugin which i shared on reddit people liked it. And from then on i added some
-new functionality to it. And now its a whole plugin. Which i didn't anticipated
-this would become one day.
-
 ### Related Plugins
 
 👉 Written in vimscript
