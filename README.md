@@ -21,8 +21,7 @@ go to next position.
 
 - adds capability to add more characters to finding command's.
 - yank/delete/change(y/d/c) text same as finding.
-- added Highlight the yanked area with color using neovim predefined
-  `require("vim.highlight").range()`.
+- Highlight the yanked area(see :h vim.highlight.range()).
 - timeout to find before the `chars_length` variable lenght has completed.
 - provide number like `2` before key to go to second position for the pattern.
   This is universal for y/d/c or t/T/f/F commands.
