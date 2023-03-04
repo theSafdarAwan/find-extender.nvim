@@ -27,20 +27,29 @@ go to next position.
 - provide number like `2` before key to go to second position for the pattern.
   This is universal for y/d/c or t/T/f/F commands.
 
-<!-- ## 🚀 Usage -->
-<!---->
-<!-- #### f command -->
-<!---->
-<!-- <img alt="f command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/fir.gif?raw=true" height = 160px width = 720px style="object-fit: cover"> -->
-<!-- <img alt="f command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/fon.gif?raw=true" height = 160px width = 720px style="object-fit: cover"> -->
-<!---->
-<!-- #### F command -->
-<!---->
-<!-- <img alt="F command" src="https://bit.ly/3KW3i5F" height = 160px width = 720px style="object-fit: cover"> -->
-<!---->
-<!-- #### d command -->
-<!---->
-<!-- <img alt="f command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/dtir.gif?raw=true" height = 160px width = 720px style="object-fit: cover"> -->
+## 🚀 Usage
+
+#### find forward
+
+<details>
+    <summary>Click to Expand</summary>
+    <img alt="f command" src="https://bit.ly/3mmsCaC">
+    <img alt="f command" src="https://bit.ly/3SPmm7h">
+</details>
+
+#### find backwards
+
+<details>
+    <summary>Click to Expand</summary>
+    <img alt="F command" src="https://bit.ly/3KW3i5F">
+</details>
+
+#### delete
+
+<details>
+    <summary>Click to Expand</summary>
+    <img alt="f command" src="https://bit.ly/3SLteTj">
+</details>
 
 ## 📦 Installation
 
