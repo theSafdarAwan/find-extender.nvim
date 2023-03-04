@@ -22,13 +22,13 @@ go to next position.
 - adds capability to add more characters to finding command's.
 - yank/delete/change(y/d/c) text same as finding.
 - Highlight the yanked area(see :h vim.highlight.range()).
-- timeout to find before the `chars_length` variable lenght has completed.
+- timeout to find pattern before the `chars_length` variable lenght has completed.
 - provide number like `2` before key to go to second position for the pattern.
   This is universal for y/d/c or t/T/f/F commands.
 
 ## 🚀 Usage
 
-I have only provided demos for f and d commands y,c,t,y commands take characters
+I have only provided demos for find and delete commands y,c,t,y commands take characters
 input same as these.
 
 #### find forward
