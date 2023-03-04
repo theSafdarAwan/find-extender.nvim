@@ -1,4 +1,5 @@
 local M = {}
+-- BUG: take count after the d/c/y commands have been initiated not before
 
 local api = vim.api
 
