@@ -31,25 +31,16 @@ go to next position.
 
 #### find forward
 
-<details>
-    <summary>Click to Expand</summary>
-    <img alt="f command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/fir.gif"">
-    <img alt="f command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/fon.gif"">
-</details>
+<img alt="f command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/fir.gif">
+<img alt="f command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/fon.gif">
 
 #### find backwards
 
-<details>
-    <summary>Click to Expand</summary>
-    <img alt="F command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/backwards_Fir.gif"">
-</details>
+<img alt="F command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/backwards_Fir.gif">
 
 #### delete
 
-<details>
-    <summary>Click to Expand</summary>
-    <img alt="d command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/dtir.gif"">
-</details>
+<img alt="d command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/dtir.gif">
 
 ## 📦 Installation
 
