@@ -34,7 +34,7 @@ go to next position.
 <details>
     <summary>Click to Expand</summary>
     <img alt="f command" src="https://bit.ly/3mmsCaC">
-    <img alt="f command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/Fir.gif">
+    <img alt="f command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/Fir.gif?raw=true">
 </details>
 
 #### find backwards
