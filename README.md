@@ -41,7 +41,7 @@ go to next position.
 
 <details>
     <summary>Click to Expand</summary>
-    <img alt="F command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/Fir.gif"">
+    <img alt="F command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/backwards_Fir.gif"">
 </details>
 
 #### delete
