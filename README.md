@@ -34,7 +34,7 @@ go to next position.
 <details>
     <summary>Click to Expand</summary>
     <img alt="f command" src="https://bit.ly/3mmsCaC">
-    <img alt="f command" src="https://bit.ly/3SPmm7h">
+    <img alt="f command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/Fir.gif">
 </details>
 
 #### find backwards
@@ -48,7 +48,7 @@ go to next position.
 
 <details>
     <summary>Click to Expand</summary>
-    <img alt="f command" src="https://bit.ly/3SLteTj">
+    <img alt="f command" src="https://bit.ly/3SLteTj" style="object-fit: cover;">
 </details>
 
 ## 📦 Installation
