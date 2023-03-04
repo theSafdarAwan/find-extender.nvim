@@ -34,7 +34,6 @@ input same as these.
 #### find forward
 
 <img alt="f command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/fir.gif">
-<img alt="f command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/fon.gif">
 
 #### find backwards
 
