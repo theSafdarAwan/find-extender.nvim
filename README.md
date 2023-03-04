@@ -46,7 +46,7 @@ input same as these.
 
 ## 📦 Installation
 
-Install the theme with your preferred package manager:
+Install with your preferred package manager:
 
 [vim-plug](https://github.com/junegunn/vim-plug)
 
