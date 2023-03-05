@@ -233,13 +233,13 @@ function M.finder(config)
 	normal_keys_tbl = utils.merge_tables(keymaps.till, normal_keys_tbl)
 	if keymaps.text_manipulation then
 		local type = keymaps.text_manipulation
-		if #type.yank < 1 then
+		if #type["y"] < 1 then
 			text_manipulation_keys_tbl["y"] = nil
 		end
-		if #type.delete < 1 then
+		if #type["d"] < 1 then
 			text_manipulation_keys_tbl["d"] = nil
 		end
-		if #type.change < 1 then
+		if #type["c"] < 1 then
 			text_manipulation_keys_tbl["c"] = nil
 		end
 	end

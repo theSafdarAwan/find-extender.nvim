@@ -10,9 +10,9 @@ function M.setup(user_config)
 			till = { "T", "t" },
 			find = { "F", "f" },
 			text_manipulation = {
-				yank = { "f", "F", "t", "T" },
-				delete = { "f", "F", "t", "T" },
-				change = { "f", "F", "t", "T" },
+				["y"] = { "f", "F", "t", "T" },
+				["d"] = { "f", "F", "t", "T" },
+				["c"] = { "f", "F", "t", "T" },
 			},
 		},
 		highlight_on_yank = { enable = true, timeout = 40, hl_group = "IncSearch" },

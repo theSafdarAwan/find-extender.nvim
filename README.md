@@ -102,11 +102,11 @@ require("find-extender").setup({
         -- to delete, copy or change using t,f or T,F commands
         text_manipulation = {
             -- yank
-            yank = { "f", "F", "t", "T" },
+            ["y"] = { "f", "F", "t", "T" },
             -- delete
-            delete = { "f", "F", "t", "T" },
+            ["d"] = { "f", "F", "t", "T" },
             -- change
-            change = { "f", "F", "t", "T" },
+            ["c"] = { "f", "F", "t", "T" },
         },
     },
     highlight_on_yank = {
@@ -187,11 +187,11 @@ keymaps = {
     -- to delete, copy or change using t,f or T,F commands
     text_manipulation = {
         -- yank
-        yank = { "f", "F", "t", "T" },
+        ["y"] = { "f", "F", "t", "T" },
         -- delete
-        delete = { "f", "F", "t", "T" },
+        ["d"] = { "f", "F", "t", "T" },
         -- change
-        change = { "f", "F", "t", "T" },
+        ["c"] = { "f", "F", "t", "T" },
     },
 }
 ```
