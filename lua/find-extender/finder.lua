@@ -165,10 +165,11 @@ function M.finder(config)
 		local function not_text_manipulation_key(c, skip_nodes)
 			local map_opts = { silent = true, noremap = true }
 			vim.keymap.set("n", key, key, map_opts)
-			if skip_nodes == 0 then
-				skip_nodes = 1
+			local feed_key = key .. c
+			if skip_nodes > 0 then
+				feed_key = skip_nodes .. feed_key
 			end
-			api.nvim_feedkeys(skip_nodes .. key .. c, "n", false)
+			api.nvim_feedkeys(feed_key, "n", false)
 			vim.keymap.set("n", key, function()
 				opts.func(key, keys_tbl, opts)
 			end, map_opts)
