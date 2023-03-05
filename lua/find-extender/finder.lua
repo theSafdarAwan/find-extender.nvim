@@ -125,20 +125,24 @@ function M.finder(config)
 				return
 			end
 			c = vim.fn.nr2char(c)
-			if type(tonumber(c)) then
-				skip_nodes = c
+			if type(tonumber(c)) == "number" then
+				skip_nodes = tonumber(c)
+				pattern = get_chars(get_chars_opts)
 			elseif c == "f" or c == "t" or c == "F" or c == "T" then
 				pattern = get_chars(get_chars_opts)
 				if not pattern then
 					return
 				end
 			else
+				local map_opts = { silent = true, noremap = true }
 				local removable_key = string.sub(key, 1, 1)
-				vim.keymap.set("n", removable_key, removable_key, { silent = true, noremap = true })
-				api.nvim_feedkeys(removable_key .. c, "t", false)
+				vim.keymap.set("n", removable_key, removable_key, map_opts)
+				api.nvim_feedkeys(removable_key .. c, "n", false)
 				vim.keymap.set("n", removable_key, function()
 					opts.func(key, opts)
-				end, { silent = true, noremap = true })
+				end, map_opts)
+				-- return because this key isn't the find-extender.nvim key
+				return
 			end
 		else
 			-- if f or F or t or T command wasn't pressed then search for the _last_search_info.pattern
@@ -153,6 +157,7 @@ function M.finder(config)
 			skip_nodes = skip_nodes,
 		}
 
+		print(skip_nodes, pattern)
 		local text_manipulation_types = { change = false, yank = false, delete = false }
 		if #key > 1 then
 			local type = string.sub(key, 1, 1)
