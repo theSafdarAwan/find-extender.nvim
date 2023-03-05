@@ -209,7 +209,7 @@ function M.finder(config)
 			end
 		elseif keys_tbl[c] then
 			finder(key .. c)
-		else
+		elseif c then
 			not_text_manipulation_key(c, skip_nodes)
 		end
 	end
@@ -233,14 +233,26 @@ function M.finder(config)
 	normal_keys_tbl = utils.merge_tables(keymaps.till, normal_keys_tbl)
 	if keymaps.text_manipulation then
 		local type = keymaps.text_manipulation
-		if #type["y"] < 1 then
+		if #type.yank < 1 then
 			text_manipulation_keys_tbl["y"] = nil
+		else
+			local yank = vim.deepcopy(type.yank)
+			text_manipulation_keys_tbl.yank = nil
+			text_manipulation_keys_tbl["y"] = yank
 		end
-		if #type["d"] < 1 then
+		if #type.delete < 1 then
 			text_manipulation_keys_tbl["d"] = nil
+		else
+			local delete = vim.deepcopy(type.delete)
+			text_manipulation_keys_tbl.delete = nil
+			text_manipulation_keys_tbl["d"] = delete
 		end
-		if #type["c"] < 1 then
+		if #type.change < 1 then
 			text_manipulation_keys_tbl["c"] = nil
+		else
+			local change = vim.deepcopy(type.change)
+			text_manipulation_keys_tbl.change = nil
+			text_manipulation_keys_tbl["c"] = change
 		end
 	end
 
