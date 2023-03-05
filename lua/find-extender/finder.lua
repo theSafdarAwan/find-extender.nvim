@@ -1,5 +1,4 @@
 local M = {}
--- BUG: take count after the d/c/y commands have been initiated not before
 
 local api = vim.api
 
@@ -33,7 +32,7 @@ function M.finder(config)
 		api.nvim_win_set_cursor(0, get_cursor)
 	end
 
-	local function finder(key)
+	local function finder(key, opts)
 		-- to get the count
 		local skip_nodes = vim.v.count
 		if skip_nodes < 2 then
@@ -120,9 +119,26 @@ function M.finder(config)
 			_previous_find_info.key = key
 			_previous_find_info.pattern = pattern
 		elseif text_manipulation_keys then
-			pattern = get_chars(get_chars_opts)
-			if not pattern then
+			-- syntactic sugar to act as vim.v.count
+			local c = vim.fn.getchar()
+			if type(c) ~= "number" then
 				return
+			end
+			c = vim.fn.nr2char(c)
+			if type(tonumber(c)) then
+				skip_nodes = c
+			elseif c == "f" or c == "t" or c == "F" or c == "T" then
+				pattern = get_chars(get_chars_opts)
+				if not pattern then
+					return
+				end
+			else
+				local removable_key = string.sub(key, 1, 1)
+				vim.keymap.set("n", removable_key, removable_key, { silent = true, noremap = true })
+				api.nvim_feedkeys(removable_key .. c, "t", false)
+				vim.keymap.set("n", removable_key, function()
+					opts.func(key, opts)
+				end, { silent = true, noremap = true })
 			end
 		else
 			-- if f or F or t or T command wasn't pressed then search for the _last_search_info.pattern
@@ -203,26 +219,28 @@ function M.finder(config)
 	end
 
 	local set_keymap = vim.keymap.set
+	local set_keymap_opts = { noremap = true, silent = true }
 	local function set_maps()
 		for _, key in ipairs(keys_tbl) do
 			set_keymap(modes_tbl, key, function()
 				finder(key)
-			end)
+			end, set_keymap_opts)
 		end
-		for _, key in ipairs(text_manipulation_keys) do
-			set_keymap("n", key, function()
-				finder(key)
-			end)
+		for _, key_str in ipairs(text_manipulation_keys) do
+			set_keymap("n", string.sub(key_str, 1, 1), function()
+				finder(key_str, { func = finder })
+			end, set_keymap_opts)
 		end
 	end
 
 	local function remove_maps()
 		for _, key in ipairs(keys_tbl) do
-			set_keymap(modes_tbl, key, key)
+			set_keymap(modes_tbl, key, key, set_keymap_opts)
 		end
-		for _, key in ipairs(text_manipulation_keys) do
-			set_keymap("n", key, function()
-				set_keymap(modes_tbl, key, key)
+		for _, key_str in ipairs(text_manipulation_keys) do
+			local main_key = string.sub(key_str, 1, 1)
+			set_keymap("n", main_key, function()
+				set_keymap(modes_tbl, main_key, main_key, set_keymap_opts)
 			end)
 		end
 	end
