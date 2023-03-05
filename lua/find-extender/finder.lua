@@ -232,6 +232,8 @@ function M.finder(config)
 			end, set_keymap_opts)
 		end
 		for _, key_str in ipairs(text_manipulation_keys) do
+			-- FIX: fix this mapping collision between all d[map] or any other
+			-- map like that come up with some new idea to solve this problem
 			set_keymap("n", string.sub(key_str, 1, 1), function()
 				finder(key_str, { func = finder })
 			end, set_keymap_opts)
