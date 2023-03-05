@@ -234,25 +234,13 @@ function M.finder(config)
 	if keymaps.text_manipulation then
 		local type = keymaps.text_manipulation
 		if #type.yank < 1 then
-			text_manipulation_keys_tbl["y"] = nil
-		else
-			local yank = vim.deepcopy(type.yank)
 			text_manipulation_keys_tbl.yank = nil
-			text_manipulation_keys_tbl["y"] = yank
 		end
 		if #type.delete < 1 then
-			text_manipulation_keys_tbl["d"] = nil
-		else
-			local delete = vim.deepcopy(type.delete)
 			text_manipulation_keys_tbl.delete = nil
-			text_manipulation_keys_tbl["d"] = delete
 		end
 		if #type.change < 1 then
-			text_manipulation_keys_tbl["c"] = nil
-		else
-			local change = vim.deepcopy(type.change)
 			text_manipulation_keys_tbl.change = nil
-			text_manipulation_keys_tbl["c"] = change
 		end
 	end
 
@@ -275,7 +263,8 @@ function M.finder(config)
 				finder(key)
 			end, set_keymap_opts)
 		end
-		for key, keys in pairs(text_manipulation_keys_tbl) do
+		for key_name, keys in pairs(text_manipulation_keys_tbl) do
+			local key = string.sub(tostring(key_name), 1, 1)
 			set_keymap("n", key, function()
 				get_text_manipulation_keys(key, keys, { func = get_text_manipulation_keys })
 			end, set_keymap_opts)
@@ -286,7 +275,8 @@ function M.finder(config)
 		for _, key in ipairs(normal_keys_tbl) do
 			set_keymap(modes_tbl, key, key, set_keymap_opts)
 		end
-		for key, _ in pairs(text_manipulation_keys_tbl) do
+		for key_name, _ in pairs(text_manipulation_keys_tbl) do
+			local key = string.sub(tostring(key_name), 1, 1)
 			set_keymap("n", key, function()
 				set_keymap("n", key, key, set_keymap_opts)
 			end)
