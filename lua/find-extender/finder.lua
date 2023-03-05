@@ -1,5 +1,4 @@
 local M = {}
--- BUG: take count after the d/c/y commands have been initiated not before
 
 local api = vim.api
 
@@ -33,11 +32,15 @@ function M.finder(config)
 		api.nvim_win_set_cursor(0, get_cursor)
 	end
 
-	local function finder(key)
+	local function finder(key, opts)
 		-- to get the count
 		local skip_nodes = vim.v.count
 		if skip_nodes < 2 then
 			skip_nodes = nil
+		end
+		-- this opts table is from get_text_manipulation_keys
+		if opts and opts.skip_nodes then
+			skip_nodes = opts.skip_nodes
 		end
 		-- if no find command was executed previously then there's no last pattern for
 		-- , or ; so return
@@ -158,12 +161,65 @@ function M.finder(config)
 		end
 	end
 
-	local keys_tbl = {
+	local function get_text_manipulation_keys(key, keys_tbl, opts)
+		local function not_text_manipulation_key(c, skip_nodes)
+			local map_opts = { silent = true, noremap = true }
+			vim.keymap.set("n", key, key, map_opts)
+			if skip_nodes == 0 then
+				skip_nodes = 1
+			end
+			api.nvim_feedkeys(skip_nodes .. key .. c, "n", false)
+			vim.keymap.set("n", key, function()
+				opts.func(key, keys_tbl, opts)
+			end, map_opts)
+		end
+
+		local function get_char()
+			local c = vim.fn.getchar()
+
+			if type(c) ~= "number" then
+				return
+			end
+
+			-- return if its not an alphabet or punctuation
+			if c < 32 or c > 127 then
+				return nil
+			end
+			return c
+		end
+		for index, key_str in ipairs(keys_tbl) do
+			keys_tbl[key_str] = {}
+			keys_tbl[index] = nil
+		end
+
+		local skip_nodes = vim.v.count
+		local c = get_char()
+		if c then
+			c = vim.fn.nr2char(c)
+		end
+
+		if type(tonumber(c)) == "number" then
+			skip_nodes = tonumber(c)
+			c = get_char()
+			c = vim.fn.nr2char(c)
+			if c and keys_tbl[c] then
+				finder(key .. c, { skip_nodes = skip_nodes })
+			elseif type(c) == "string" then
+				not_text_manipulation_key(c, skip_nodes)
+			end
+		elseif keys_tbl[c] then
+			finder(key .. c)
+		else
+			not_text_manipulation_key(c, skip_nodes)
+		end
+	end
+
+	local normal_keys_tbl = {
 		-- these keys aren't optional
 		";",
 		",",
 	}
-	local text_manipulation_keys = {}
+	local text_manipulation_keys_tbl = config.keymaps.text_manipulation
 
 	local modes_tbl = {}
 
@@ -173,27 +229,24 @@ function M.finder(config)
 	end
 
 	local keymaps = config.keymaps
-	keys_tbl = utils.merge_tables(keymaps.find, keys_tbl)
-	keys_tbl = utils.merge_tables(keymaps.till, keys_tbl)
+	normal_keys_tbl = utils.merge_tables(keymaps.find, normal_keys_tbl)
+	normal_keys_tbl = utils.merge_tables(keymaps.till, normal_keys_tbl)
 	if keymaps.text_manipulation then
 		local type = keymaps.text_manipulation
-		if type.yank then
-			local keys = { "yf", "yF", "yt", "yT" }
-			text_manipulation_keys = utils.merge_tables(keys, text_manipulation_keys)
+		if #type["y"] < 1 then
+			text_manipulation_keys_tbl["y"] = nil
 		end
-		if type.delete then
-			local keys = { "df", "dF", "dt", "dT" }
-			text_manipulation_keys = utils.merge_tables(keys, text_manipulation_keys)
+		if #type["d"] < 1 then
+			text_manipulation_keys_tbl["d"] = nil
 		end
-		if type.change then
-			local keys = { "cf", "cF", "ct", "cT" }
-			text_manipulation_keys = utils.merge_tables(keys, text_manipulation_keys)
+		if #type["c"] < 1 then
+			text_manipulation_keys_tbl["c"] = nil
 		end
 	end
 
 	local modes = keymaps.modes
 	if #modes > 0 then
-		-- adding modes to the list
+		-- adding modes to the modes list
 		for i = 1, #modes, 1 do
 			local mode = string.sub(modes, i, i)
 			table.insert(modes_tbl, mode)
@@ -203,26 +256,27 @@ function M.finder(config)
 	end
 
 	local set_keymap = vim.keymap.set
+	local set_keymap_opts = { noremap = true, silent = true }
 	local function set_maps()
-		for _, key in ipairs(keys_tbl) do
+		for _, key in ipairs(normal_keys_tbl) do
 			set_keymap(modes_tbl, key, function()
 				finder(key)
-			end)
+			end, set_keymap_opts)
 		end
-		for _, key in ipairs(text_manipulation_keys) do
+		for key, keys in pairs(text_manipulation_keys_tbl) do
 			set_keymap("n", key, function()
-				finder(key)
-			end)
+				get_text_manipulation_keys(key, keys, { func = get_text_manipulation_keys })
+			end, set_keymap_opts)
 		end
 	end
 
 	local function remove_maps()
-		for _, key in ipairs(keys_tbl) do
-			set_keymap(modes_tbl, key, key)
+		for _, key in ipairs(normal_keys_tbl) do
+			set_keymap(modes_tbl, key, key, set_keymap_opts)
 		end
-		for _, key in ipairs(text_manipulation_keys) do
+		for key, _ in pairs(text_manipulation_keys_tbl) do
 			set_keymap("n", key, function()
-				set_keymap(modes_tbl, key, key)
+				set_keymap("n", key, key, set_keymap_opts)
 			end)
 		end
 	end

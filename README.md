@@ -100,7 +100,14 @@ require("find-extender").setup({
         till = { "T", "t" },
         find = { "F", "f" },
         -- to delete, copy or change using t,f or T,F commands
-        text_manipulation = { yank = true, delete = true, change = true },
+        text_manipulation = {
+            -- yank
+            ["y"] = { "f", "F", "t", "T" },
+            -- delete
+            ["d"] = { "f", "F", "t", "T" },
+            -- change
+            ["c"] = { "f", "F", "t", "T" },
+        },
     },
     highlight_on_yank = {
         -- whether to highlight the yanked are or not
@@ -178,7 +185,14 @@ If you want to disable any of the macro then set it to false.
 keymaps = {
     ...,
     -- to delete, copy or change using t,f or T,F commands
-    text_manipulation = { yank = true, delete = true, change = true },
+    text_manipulation = {
+        -- yank
+        ["y"] = { "f", "F", "t", "T" },
+        -- delete
+        ["d"] = { "f", "F", "t", "T" },
+        -- change
+        ["c"] = { "f", "F", "t", "T" },
+    },
 }
 ```
 
