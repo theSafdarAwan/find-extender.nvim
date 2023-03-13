@@ -1,4 +1,7 @@
+--- setup module.
 local M = {}
+--- loads plguin
+---@param user_config table|nil user specified configuration for the plugin.
 function M.setup(user_config)
 	local default_config = {
 		enable = true,
