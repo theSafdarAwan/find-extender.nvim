@@ -21,15 +21,7 @@ function M.setup(user_config)
 		highlight_on_yank = { enable = true, timeout = 40, hl_group = "IncSearch" },
 	}
 	-- merge the user config and the default config
-	local config = vim.tbl_extend("force", default_config, user_config or {})
-
-	-- merge the user keymaps and default keymaps
-	config.keymaps = vim.tbl_extend("force", default_config.keymaps, config.keymaps or {})
-
-	local text_manipulation_keys = config.keymaps.text_manipulation
-	-- merge the user text_manipulation_keys and default text_manipulation_keys
-	text_manipulation_keys =
-		vim.tbl_extend("force", default_config.keymaps.text_manipulation, text_manipulation_keys or {})
+	local config = vim.tbl_deep_extend("force", default_config, user_config or {})
 
 	require("find-extender.finder").finder(config)
 end

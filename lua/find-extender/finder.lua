@@ -17,7 +17,7 @@ function M.finder(config)
 	-- to highlight the yanked area
 	local highlight_on_yank = config.highlight_on_yank
 	-- to remember the last pattern and the command when using the ; and , command
-	local _previous_find_info = { pattern = nil, key = nil }
+	local __previous_find_info = { pattern = nil, key = nil }
 
 	local get_node = require("find-extender.get-node").get_node
 	local get_chars = require("find-extender.utils").get_chars
@@ -44,34 +44,37 @@ function M.finder(config)
 		end
 		-- if no find command was executed previously then there's no last pattern for
 		-- , or ; so return
-		if not _previous_find_info.pattern and key == "," or key == ";" and not _previous_find_info.pattern then
+		if
+			not __previous_find_info.pattern and key == ","
+			or key == ";" and not __previous_find_info.pattern
+		then
 			return
 		end
 		-- to determine which node_direction to go
 		-- THIS is the only way i found efficient without heaving overhead
 		-- > find
 		local find_node_direction_left = key == "f"
-			or _previous_find_info.key == "F" and key == ","
-			or _previous_find_info.key == "f" and key == ";"
+			or __previous_find_info.key == "F" and key == ","
+			or __previous_find_info.key == "f" and key == ";"
 			or key == "cf"
 			or key == "df"
 			or key == "yf"
 		local find_node_direction_right = key == "F"
-			or _previous_find_info.key == "f" and key == ","
-			or _previous_find_info.key == "F" and key == ";"
+			or __previous_find_info.key == "f" and key == ","
+			or __previous_find_info.key == "F" and key == ";"
 			or key == "cF"
 			or key == "dF"
 			or key == "yF"
 		-- > till
 		local till_node_direction_left = key == "t"
-			or _previous_find_info.key == "T" and key == ","
-			or _previous_find_info.key == "t" and key == ";"
+			or __previous_find_info.key == "T" and key == ","
+			or __previous_find_info.key == "t" and key == ";"
 			or key == "ct"
 			or key == "dt"
 			or key == "yt"
 		local till_node_direction_right = key == "T"
-			or _previous_find_info.key == "t" and key == ","
-			or _previous_find_info.key == "T" and key == ";"
+			or __previous_find_info.key == "t" and key == ","
+			or __previous_find_info.key == "T" and key == ";"
 			or key == "cT"
 			or key == "dT"
 			or key == "yT"
@@ -120,8 +123,8 @@ function M.finder(config)
 			if not pattern then
 				return
 			end
-			_previous_find_info.key = key
-			_previous_find_info.pattern = pattern
+			__previous_find_info.key = key
+			__previous_find_info.pattern = pattern
 		elseif text_manipulation_keys then
 			pattern = get_chars(get_chars_opts)
 			if not pattern then
@@ -130,7 +133,7 @@ function M.finder(config)
 		else
 			-- if f or F or t or T command wasn't pressed then search for the _last_search_info.pattern
 			-- for , or ; command
-			pattern = _previous_find_info.pattern
+			pattern = __previous_find_info.pattern
 		end
 
 		local get_node_opts = {
@@ -177,11 +180,9 @@ function M.finder(config)
 
 		local function get_char()
 			local c = vim.fn.getchar()
-
 			if type(c) ~= "number" then
 				return
 			end
-
 			-- return if its not an alphabet or punctuation
 			if c < 32 or c > 127 then
 				return nil
