@@ -1,0 +1,5 @@
+{
+    "diagnostics.disable": [
+        "doc-field-no-class"
+    ]
+}
