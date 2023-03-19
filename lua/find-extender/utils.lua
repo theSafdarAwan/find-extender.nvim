@@ -1,7 +1,12 @@
 local M = {}
 local api = vim.api
 local fn = vim.fn
--- get chars from user input
+
+--- gets user input
+---@param opts table includes information about chars and timeout.
+---@return nil|string|nil|string nil if nil character, if loop broke either because of
+--- timeout or chars limit, next target input chars, if nil(out of eng alphabets, numbers,
+--- or punctuations) character was provided.
 function M.get_chars(opts)
 	local break_loop = false
 	local chars = ""
@@ -41,8 +46,13 @@ function M.get_chars(opts)
 	end
 	return chars
 end
--- highlight the yanked area
-function M.on_yank(highlight_on_yank, start, finish)
+
+--- highlights the yanked area
+---@param highlight_on_yank_opts table options related to highlight on yank includes,
+--- highlight group and timeout.
+---@param start number starting mark for the yanked area.
+---@param finish number finishing mark for the yanked area.
+function M.on_yank(highlight_on_yank_opts, start, finish)
 	local yank_timer
 	local buf_id = api.nvim_get_current_buf()
 	local line_nr = fn.getpos(".")[2] - 1
@@ -54,10 +64,11 @@ function M.on_yank(highlight_on_yank, start, finish)
 		yank_timer.close()
 	end
 
+	--- neovim function
 	require("vim.highlight").range(
 		buf_id,
 		buf_ns,
-		highlight_on_yank.hl_group,
+		highlight_on_yank_opts.hl_group,
 		{ line_nr, start },
 		{ line_nr, finish },
 		{ regtype = event.regtype, inclusive = event.inclusive, priority = 200 }
@@ -67,10 +78,14 @@ function M.on_yank(highlight_on_yank, start, finish)
 		if api.nvim_buf_is_valid(buf_id) then
 			api.nvim_buf_clear_namespace(buf_id, buf_ns, 0, -1)
 		end
-	end, highlight_on_yank.timeout)
+	end, highlight_on_yank_opts.timeout)
 end
 
--- validates if any character or punctuation is present
+--- validates if any character or punctuation is present
+---@param string_end_position number string ending position based on direction
+--- from left to right.
+---@param str string need to validate this string.
+---@return boolean return true if contains any English alphabet or punctuation.
 function M.node_validation(string_end_position, str)
 	local string = string.sub(str, 1, string_end_position)
 	local i = 0
@@ -83,14 +98,21 @@ function M.node_validation(string_end_position, str)
 	return true
 end
 
--- gets you the remaining string before and after the pattern
+--- gets you the remaining string before and after the pattern this gets called
+--- on c/d text manipulation actions
+---@param str string current line target area.
+---@param before_end number mark before the string ends
+---@param after_start number mark after the string started.
+---@return string returns the remaining string before and after the target area.
 function M.get_remaining_str(str, before_end, after_start)
 	local a = string.sub(str, 1, before_end)
 	local b = string.sub(str, after_start, #str)
 	return a .. b
 end
 
--- revers a table from {1, 2, 3} -> {3, 2, 1}
+--- revers a table from {1, 2, 3} -> {3, 2, 1}
+---@param tbl table to reverse.
+---@return table transformed table.
 function M.reverse_tbl(tbl)
 	local transformed_tbl = {}
 	local idx = #tbl
@@ -104,7 +126,10 @@ function M.reverse_tbl(tbl)
 	return transformed_tbl
 end
 
--- merges two tables
+--- merges two tables
+---@param tbl_a table a
+---@param tbl_b table b
+---@return table derived from both `a` and `b` tables combine.d
 function M.merge_tables(tbl_a, tbl_b)
 	for _, val in pairs(tbl_a) do
 		table.insert(tbl_b, val)
@@ -112,12 +137,15 @@ function M.merge_tables(tbl_a, tbl_b)
 	return tbl_b
 end
 
--- maps the occurrences of the pattern in a string
-function M.map_string_nodes(string, pattern)
+--- maps the occurrences of the pattern in a string
+---@param str string current line.
+---@param pattern string pattern which we need to map in the `str`.
+---@return table mapped pattern occurrences mapped.
+function M.map_string_nodes(str, pattern)
 	local mapped_tbl = {}
 	local pattern_last_idx = mapped_tbl[#mapped_tbl] or 1
 	while true do
-		local pattern_idx = string.find(string, pattern, pattern_last_idx, true)
+		local pattern_idx = str.find(str, pattern, pattern_last_idx, true)
 		if not pattern_idx then
 			break
 		end

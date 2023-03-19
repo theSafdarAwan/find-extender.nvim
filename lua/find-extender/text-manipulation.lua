@@ -5,6 +5,10 @@ local fn = vim.fn
 
 local utils = require("find-extender.utils")
 
+--- manipulates text and puts information to the register
+---@param node_info table target node information to which the text manipulation should be done.
+---@param type table type of the text manipulation action change/delete/yank.
+---@param opts table options
 function M.manipulate_text(node_info, type, opts)
 	local current_line = api.nvim_get_current_line()
 	local register = vim.v.register

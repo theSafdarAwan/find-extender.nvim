@@ -3,6 +3,9 @@ local M = {}
 local api = vim.api
 local utils = require("find-extender.utils")
 
+--- gets node position based on opts
+---@param opts table options which affect the position determination for the next node.
+---@return number target node position
 function M.get_node(opts)
 	local get_cursor = api.nvim_win_get_cursor(0)
 	local current_line = api.nvim_get_current_line()
