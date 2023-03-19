@@ -1,7 +1,10 @@
+--- Finds characters and sets the cursor position to the target.
 local M = {}
 
 local api = vim.api
 
+--- main finder function
+---@param config table config
 function M.finder(config)
 	local utils = require("find-extender.utils")
 
@@ -22,9 +25,11 @@ function M.finder(config)
 	local get_node = require("find-extender.get-node").get_node
 	local get_chars = require("find-extender.utils").get_chars
 
-	local function set_cursor(opts)
+	--- sets the cursor to given position
+	---@param cursor_pos table cursor position table
+	local function set_cursor(cursor_pos)
 		local get_cursor = api.nvim_win_get_cursor(0)
-		local target_position = get_node(opts)
+		local target_position = get_node(cursor_pos)
 		if not target_position then
 			return
 		end
@@ -32,6 +37,9 @@ function M.finder(config)
 		api.nvim_win_set_cursor(0, get_cursor)
 	end
 
+	--- determiens the direction and gets the next pattern position
+	---@param key string key to determine direction, etc.
+	---@param opts table options
 	local function finder(key, opts)
 		-- to get the count
 		local skip_nodes = vim.v.count
@@ -164,6 +172,10 @@ function M.finder(config)
 		end
 	end
 
+	--- gets the keys and count when manipulating keys.
+	---@param key string key
+	---@param keys_tbl table previous keys get deleted from the maps so we have to set them again.
+	---@param opts table options.
 	local function get_text_manipulation_keys(key, keys_tbl, opts)
 		local function not_text_manipulation_key(c, skip_nodes)
 			local map_opts = { silent = true, noremap = true }
@@ -210,7 +222,7 @@ function M.finder(config)
 				not_text_manipulation_key(c, skip_nodes)
 			end
 		elseif keys_tbl[c] then
-			finder(key .. c)
+			finder(key .. c, {})
 		elseif c then
 			not_text_manipulation_key(c, skip_nodes)
 		end
@@ -225,6 +237,8 @@ function M.finder(config)
 
 	local modes_tbl = {}
 
+	--- notify helper function
+	---@param msg string notification message
 	local function notify(msg)
 		local level = vim.log.levels.WARN
 		vim.api.nvim_notify(msg, level, {})
@@ -259,10 +273,12 @@ function M.finder(config)
 
 	local set_keymap = vim.keymap.set
 	local set_keymap_opts = { noremap = true, silent = true }
+	--- sets maps for the available keys on startup or when enabling plugin after
+	--- disabling it using commands.
 	local function set_maps()
 		for _, key in ipairs(normal_keys_tbl) do
 			set_keymap(modes_tbl, key, function()
-				finder(key)
+				finder(key, {})
 			end, set_keymap_opts)
 		end
 		for key_name, keys in pairs(text_manipulation_keys_tbl) do
@@ -273,6 +289,7 @@ function M.finder(config)
 		end
 	end
 
+	--- removes maps when disabling plugin.
 	local function remove_maps()
 		for _, key in ipairs(normal_keys_tbl) do
 			set_keymap(modes_tbl, key, key, set_keymap_opts)
