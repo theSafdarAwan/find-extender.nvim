@@ -13,10 +13,10 @@ function M.get_chars(opts)
 	local i = 0
 	while true do
 		if opts.timeout and #chars > opts.start_timeout_after_chars - 1 then
-			-- this is a trick to solve issue of multiple timers being
-			-- created and once the guard condition becomes true the previous
-			-- timers jeopardised the timeout
-			-- So for now the i and id variable's acts as a id validation
+			-- this is a trick to solve issue of multiple timers being created in every
+			-- loop iteration and once the guard condition becomes true the previous timers
+			-- jeopardised the timeout So for now the i and id variable's acts as a id
+			-- validation
 			i = i + 1
 			local id = i
 			vim.defer_fn(function()
