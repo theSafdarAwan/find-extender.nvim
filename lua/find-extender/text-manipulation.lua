@@ -15,7 +15,7 @@ function M.manipulate_text(node_info, type, opts)
 	local get_cursor = api.nvim_win_get_cursor(0)
 
 	local node = node_info.node
-	local node_direction = node_info.node_direction
+	local node_pos_direction = node_info.node_direction
 
 	if not node then
 		return
@@ -23,10 +23,10 @@ function M.manipulate_text(node_info, type, opts)
 
 	local start
 	local finish
-	if node_direction.right then
+	if node_pos_direction.right then
 		start = node + 1
 		finish = get_cursor[2] + 1
-	elseif node_direction.left then
+	elseif node_pos_direction.left then
 		start = get_cursor[2]
 		finish = node + 2
 	end
@@ -43,7 +43,7 @@ function M.manipulate_text(node_info, type, opts)
 		-- if we substitute from right to left the cursor resets to the end
 		-- of the line after line gets swapped so we have to get the cursor
 		-- position and then set it to the appropriate position
-		if node_direction.right then
+		if node_pos_direction.right then
 			get_cursor[2] = get_cursor[2] - #in_range_str + 1
 			api.nvim_win_set_cursor(0, get_cursor)
 		end
@@ -59,7 +59,7 @@ function M.manipulate_text(node_info, type, opts)
 		require("find-extender.utils").on_yank(highlight_on_yank, start, finish - 1)
 	end
 
-	-- NOTE-> we are doing this text substitution using lua string.sub which
+	-- NOTE: we are doing this text substitution using lua string.sub which
 	-- isn't same as the nvim's delete or change so we have to adjust how
 	-- much characters we got into our register in some case we have to sometimes
 	-- discard one character.

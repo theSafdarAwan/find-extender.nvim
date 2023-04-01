@@ -43,10 +43,7 @@ function M.get_node(opts)
 		-- start searching from the end of the string rather then from the start
 		string_nodes = utils.reverse_tbl(string_nodes)
 		for node_position, node in ipairs(string_nodes) do
-			if
-				cursor_position - opts.threshold == node
-				or cursor_position - opts.threshold > node
-			then
+			if cursor_position - opts.threshold == node or cursor_position - opts.threshold > node then
 				if opts.threshold > 1 and utils.node_validation(node, current_line) then
 					reset_threshold = true
 				end
