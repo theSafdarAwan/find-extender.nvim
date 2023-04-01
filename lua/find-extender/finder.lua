@@ -6,9 +6,7 @@ local api = vim.api
 --- main finder function
 ---@param config table config
 function M.finder(config)
-	local utils = require("find-extender.utils")
-
-	local plugin_enabled = config.enable
+	local plugin_enabled = true
 	-- how many characters to find for
 	local chars_length = config.chars_length
 	-- timeout before the find-extender.nvim goes to the default behavior to find 1 char
@@ -20,10 +18,11 @@ function M.finder(config)
 	-- to highlight the yanked area
 	local highlight_on_yank = config.highlight_on_yank
 	-- to remember the last pattern and the command when using the ; and , command
-	local __previous_find_info = { pattern = nil, key = nil }
+	local __info = { pattern = nil, key = nil }
 
 	local get_node = require("find-extender.get-node").get_node
 	local get_chars = require("find-extender.utils").get_chars
+	local text_manipulation = require("find-extender.text-manipulation")
 
 	--- sets the cursor to given position
 	---@param cursor_pos table cursor position table
@@ -42,19 +41,19 @@ function M.finder(config)
 	---@param opts table options
 	local function finder(key, opts)
 		-- to get the count
-		local skip_nodes = vim.v.count
-		if skip_nodes < 2 then
-			skip_nodes = nil
+		local count = vim.v.count
+		if count < 2 then
+			count = nil
 		end
 		-- this opts table is from get_text_manipulation_keys
-		if opts and opts.skip_nodes then
-			skip_nodes = opts.skip_nodes
+		if opts and opts.count then
+			count = opts.count
 		end
 		-- if no find command was executed previously then there's no last pattern for
 		-- , or ; so return
 		if
-			not __previous_find_info.pattern and key == ","
-			or key == ";" and not __previous_find_info.pattern
+			not __info.pattern and key == ","
+			or key == ";" and not __info.pattern
 		then
 			return
 		end
@@ -62,31 +61,32 @@ function M.finder(config)
 		-- THIS is the only way i found efficient without heaving overhead
 		-- > find
 		local find_node_direction_left = key == "f"
-			or __previous_find_info.key == "F" and key == ","
-			or __previous_find_info.key == "f" and key == ";"
+			or __info.key == "F" and key == ","
+			or __info.key == "f" and key == ";"
 			or key == "cf"
 			or key == "df"
 			or key == "yf"
 		local find_node_direction_right = key == "F"
-			or __previous_find_info.key == "f" and key == ","
-			or __previous_find_info.key == "F" and key == ";"
+			or __info.key == "f" and key == ","
+			or __info.key == "F" and key == ";"
 			or key == "cF"
 			or key == "dF"
 			or key == "yF"
 		-- > till
 		local till_node_direction_left = key == "t"
-			or __previous_find_info.key == "T" and key == ","
-			or __previous_find_info.key == "t" and key == ";"
+			or __info.key == "T" and key == ","
+			or __info.key == "t" and key == ";"
 			or key == "ct"
 			or key == "dt"
 			or key == "yt"
 		local till_node_direction_right = key == "T"
-			or __previous_find_info.key == "t" and key == ","
-			or __previous_find_info.key == "T" and key == ";"
+			or __info.key == "t" and key == ","
+			or __info.key == "T" and key == ";"
 			or key == "cT"
 			or key == "dT"
 			or key == "yT"
 
+		-- node position direction determined by the key
 		local node_direction = { left = false, right = false }
 		if find_node_direction_right or till_node_direction_right then
 			node_direction.right = true
@@ -131,8 +131,8 @@ function M.finder(config)
 			if not pattern then
 				return
 			end
-			__previous_find_info.key = key
-			__previous_find_info.pattern = pattern
+			__info.key = key
+			__info.pattern = pattern
 		elseif text_manipulation_keys then
 			pattern = get_chars(get_chars_opts)
 			if not pattern then
@@ -141,52 +141,52 @@ function M.finder(config)
 		else
 			-- if f or F or t or T command wasn't pressed then search for the _last_search_info.pattern
 			-- for , or ; command
-			pattern = __previous_find_info.pattern
+			pattern = __info.pattern
 		end
 
-		local get_node_opts = {
+		local next_node_info = {
 			pattern = pattern,
 			node_direction = node_direction,
 			threshold = threshold,
-			skip_nodes = skip_nodes,
+			count = count,
 		}
 
-		local text_manipulation_types = { change = false, yank = false, delete = false }
 		if #key > 1 then
-			local type = string.sub(key, 1, 1)
-			if type == "c" then
-				text_manipulation_types.change = true
-			elseif type == "d" then
-				text_manipulation_types.delete = true
-			elseif type == "y" then
-				text_manipulation_types.yank = true
+			local type = {}
+			local first_key = string.sub(key, 1, 1)
+			if first_key == "c" then
+				type.change = true
+			elseif first_key == "d" then
+				type.delete = true
+			elseif first_key == "y" then
+				type.yank = true
 			end
-			local node = get_node(get_node_opts)
-			require("find-extender.text-manipulation").manipulate_text(
+			local node = get_node(next_node_info)
+			text_manipulation.manipulate_text(
 				{ node = node, node_direction = node_direction, threshold = threshold },
-				text_manipulation_types,
+				type,
 				{ highlight_on_yank = highlight_on_yank }
 			)
 		else
-			set_cursor(get_node_opts)
+			set_cursor(next_node_info)
 		end
 	end
 
 	--- gets the keys and count when manipulating keys.
-	---@param key string key
+	---@param pressed_key string key
 	---@param keys_tbl table previous keys get deleted from the maps so we have to set them again.
 	---@param opts table options.
-	local function get_text_manipulation_keys(key, keys_tbl, opts)
-		local function not_text_manipulation_key(c, skip_nodes)
+	local function get_text_manipulation_keys(pressed_key, keys_tbl, opts)
+		local function not_text_manipulation_key(c, count)
 			local map_opts = { silent = true, noremap = true }
-			vim.keymap.set("n", key, key, map_opts)
-			local feed_key = key .. c
-			if skip_nodes > 0 then
-				feed_key = skip_nodes .. feed_key
+			vim.keymap.set("n", pressed_key, pressed_key, map_opts)
+			local feed_key = pressed_key .. c
+			if count > 0 then
+				feed_key = count .. feed_key
 			end
 			api.nvim_feedkeys(feed_key, "n", false)
-			vim.keymap.set("n", key, function()
-				opts.func(key, keys_tbl, opts)
+			vim.keymap.set("n", pressed_key, function()
+				opts.callback(pressed_key, keys_tbl, opts)
 			end, map_opts)
 		end
 
@@ -206,34 +206,34 @@ function M.finder(config)
 			keys_tbl[index] = nil
 		end
 
-		local skip_nodes = vim.v.count
+		local count = vim.v.count
 		local c = get_char()
 		if c then
 			c = vim.fn.nr2char(c)
 		end
 
 		if type(tonumber(c)) == "number" then
-			skip_nodes = tonumber(c)
+			count = tonumber(c)
 			c = get_char()
 			c = vim.fn.nr2char(c)
 			if c and keys_tbl[c] then
-				finder(key .. c, { skip_nodes = skip_nodes })
+				finder(pressed_key .. c, { count = count })
 			elseif type(c) == "string" then
-				not_text_manipulation_key(c, skip_nodes)
+				not_text_manipulation_key(c, count)
 			end
 		elseif keys_tbl[c] then
-			finder(key .. c, {})
+			finder(pressed_key .. c, {})
 		elseif c then
-			not_text_manipulation_key(c, skip_nodes)
+			not_text_manipulation_key(c, count)
 		end
 	end
 
-	local normal_keys_tbl = {
+	local normal_keys = {
 		-- these keys aren't optional
 		";",
 		",",
 	}
-	local text_manipulation_keys_tbl = config.keymaps.text_manipulation
+	local text_manipulation_keys = config.keymaps.text_manipulation
 
 	local modes_tbl = {}
 
@@ -244,19 +244,20 @@ function M.finder(config)
 		vim.api.nvim_notify(msg, level, {})
 	end
 
+	local utils = require("find-extender.utils")
 	local keymaps = config.keymaps
-	normal_keys_tbl = utils.merge_tables(keymaps.find, normal_keys_tbl)
-	normal_keys_tbl = utils.merge_tables(keymaps.till, normal_keys_tbl)
+	normal_keys = utils.merge_tables(keymaps.find, normal_keys)
+	normal_keys = utils.merge_tables(keymaps.till, normal_keys)
 	if keymaps.text_manipulation then
 		local type = keymaps.text_manipulation
 		if #type.yank < 1 then
-			text_manipulation_keys_tbl.yank = nil
+			text_manipulation_keys.yank = nil
 		end
 		if #type.delete < 1 then
-			text_manipulation_keys_tbl.delete = nil
+			text_manipulation_keys.delete = nil
 		end
 		if #type.change < 1 then
-			text_manipulation_keys_tbl.change = nil
+			text_manipulation_keys.change = nil
 		end
 	end
 
@@ -272,32 +273,32 @@ function M.finder(config)
 	end
 
 	local set_keymap = vim.keymap.set
-	local set_keymap_opts = { noremap = true, silent = true }
+	local keymap_opts = { noremap = true, silent = true }
 	--- sets maps for the available keys on startup or when enabling plugin after
 	--- disabling it using commands.
 	local function set_maps()
-		for _, key in ipairs(normal_keys_tbl) do
+		for _, key in ipairs(normal_keys) do
 			set_keymap(modes_tbl, key, function()
 				finder(key, {})
-			end, set_keymap_opts)
+			end, keymap_opts)
 		end
-		for key_name, keys in pairs(text_manipulation_keys_tbl) do
+		for key_name, keys in pairs(text_manipulation_keys) do
 			local key = string.sub(tostring(key_name), 1, 1)
 			set_keymap("n", key, function()
-				get_text_manipulation_keys(key, keys, { func = get_text_manipulation_keys })
-			end, set_keymap_opts)
+				get_text_manipulation_keys(key, keys, { callback = get_text_manipulation_keys })
+			end, keymap_opts)
 		end
 	end
 
 	--- removes maps when disabling plugin.
 	local function remove_maps()
-		for _, key in ipairs(normal_keys_tbl) do
-			set_keymap(modes_tbl, key, key, set_keymap_opts)
+		for _, key in ipairs(normal_keys) do
+			set_keymap(modes_tbl, key, key, keymap_opts)
 		end
-		for key_name, _ in pairs(text_manipulation_keys_tbl) do
+		for key_name, _ in pairs(text_manipulation_keys) do
 			local key = string.sub(tostring(key_name), 1, 1)
 			set_keymap("n", key, function()
-				set_keymap("n", key, key, set_keymap_opts)
+				set_keymap("n", key, key, keymap_opts)
 			end)
 		end
 	end
@@ -312,7 +313,7 @@ function M.finder(config)
 	end
 
 	-- create the commands for the plugin
-	local cmds = {
+	local user_commands = {
 		["FindExtenderDisable"] = function()
 			disable_plugin()
 		end,
@@ -327,16 +328,14 @@ function M.finder(config)
 			end
 		end,
 	}
-	for cmd_name, cmd_func in pairs(cmds) do
+	for cmd_name, cmd_func in pairs(user_commands) do
 		api.nvim_create_user_command(cmd_name, function()
 			cmd_func()
 		end, {})
 	end
 
-	-- enable plugin on startup if it was enabled
-	if plugin_enabled then
-		enable_plugin()
-	end
+	-- add the maps on setup function execution
+	set_maps()
 end
 
 return M

@@ -3,7 +3,6 @@ local M = {}
 
 --- Default Config
 ---@table Default_Config
----@field enable boolean to enable the plugin.
 ---@field chars_length number how much characters to get input for finding.
 ---@field timeout number|boolean timeout before we find the characters input
 --- at our disposal before the `chars_length` completes.
@@ -18,7 +17,6 @@ local M = {}
 ---@field keymaps.text_manipulation.delete table includes keys related to finding deleting area of text in a line.
 ---@field keymaps.text_manipulation.change table includes keys related to finding changing area of text in a line.
 local default_config = {
-	enable = true,
 	chars_length = 2,
 	timeout = false,
 	start_timeout_after_chars = 1,

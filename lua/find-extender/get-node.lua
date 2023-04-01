@@ -23,13 +23,13 @@ function M.get_node(opts)
 				if
 					opts.threshold > 1
 					and utils.node_validation(node, current_line)
-					and not opts.skip_nodes
+					and not opts.count
 				then
 					reset_threshold = true
 				end
 
-				if opts.skip_nodes then
-					node_value = string_nodes[node_position + opts.skip_nodes - 1]
+				if opts.count then
+					node_value = string_nodes[node_position + opts.count - 1]
 				else
 					node_value = node
 				end
@@ -51,8 +51,8 @@ function M.get_node(opts)
 					reset_threshold = true
 				end
 
-				if opts.skip_nodes then
-					local n = string_nodes[node_position + opts.skip_nodes - 1]
+				if opts.count then
+					local n = string_nodes[node_position + opts.count - 1]
 					-- need to reset the threshold here because previous
 					-- guard wasn't for this x node
 					if opts.threshold > 1 and utils.node_validation(n, current_line) then
