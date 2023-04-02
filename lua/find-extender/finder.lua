@@ -177,10 +177,10 @@ function M.finder(config)
 	---@param keys_tbl table previous keys get deleted from the maps so we have to set them again.
 	---@param opts table options.
 	local function get_text_manipulation_keys(pressed_key, keys_tbl, opts)
-		local function not_text_manipulation_key(c, count)
+		local function not_text_manipulation_key(char, count)
 			local map_opts = { silent = true, noremap = true }
 			vim.keymap.set("n", pressed_key, pressed_key, map_opts)
-			local feed_key = pressed_key .. c
+			local feed_key = pressed_key .. char
 			if count > 0 then
 				feed_key = count .. feed_key
 			end
@@ -207,24 +207,24 @@ function M.finder(config)
 		end
 
 		local count = vim.v.count
-		local c = get_char()
-		if c then
-			c = vim.fn.nr2char(c)
+		local char = get_char()
+		if char then
+			char = vim.fn.nr2char(char)
 		end
 
-		if type(tonumber(c)) == "number" then
-			count = tonumber(c)
-			c = get_char()
-			c = vim.fn.nr2char(c)
-			if c and keys_tbl[c] then
-				finder(pressed_key .. c, { count = count })
-			elseif type(c) == "string" then
-				not_text_manipulation_key(c, count)
+		if type(tonumber(char)) == "number" then
+			count = tonumber(char)
+			char = get_char()
+			char = vim.fn.nr2char(char)
+			if char and keys_tbl[char] then
+				finder(pressed_key .. char, { count = count })
+			elseif type(char) == "string" then
+				not_text_manipulation_key(char, count)
 			end
-		elseif keys_tbl[c] then
-			finder(pressed_key .. c, {})
-		elseif c then
-			not_text_manipulation_key(c, count)
+		elseif keys_tbl[char] then
+			finder(pressed_key .. char, {})
+		elseif char then
+			not_text_manipulation_key(char, count)
 		end
 	end
 
