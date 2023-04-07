@@ -19,6 +19,8 @@ function M.finder(config)
 	-- to remember the last pattern and the command when using the ; and , command
 	local _info = { pattern = nil, key = nil }
 
+	local utils = require("find-extender.utils")
+
 	local get_node = require("find-extender.get-node").get_node
 	local get_chars = require("find-extender.utils").get_chars
 	local text_manipulation = require("find-extender.text-manipulation")
@@ -92,7 +94,7 @@ function M.finder(config)
 		-- this variable is threshold between the pattern under the cursor position
 		-- it it exists the pattern exists within this threshold then move to the
 		-- next one or previous one depending on the key
-		local threshold = nil
+		local threshold
 		if till_node_direction_left or till_node_direction_right then
 			threshold = 2
 		elseif find_node_direction_left or find_node_direction_right then
@@ -147,6 +149,40 @@ function M.finder(config)
 			count = count,
 		}
 
+		local cur_line = api.nvim_get_current_line()
+		---@diagnostic disable-next-line: param-type-mismatch
+		local string_nodes = utils.map_string_nodes(cur_line, pattern)
+		-- if count is available then highlight only the nodes after the count - 1
+		if count then
+			local tbl = {}
+			local i = count - 1
+			while true do
+				if i == #string_nodes then
+					break
+				end
+				i = i + 1
+				table.insert(tbl, string_nodes[i])
+			end
+			string_nodes = tbl
+		end
+
+		local node = nil
+		if #string_nodes > 1000 then
+			utils.highlight_nodes(string_nodes, threshold)
+			local picked_node = vim.fn.getchar()
+			picked_node = tonumber(vim.fn.nr2char(picked_node))
+			if type(picked_node) ~= "number" then
+				vim.notify("find-extender: pick a number", vim.log.levels.WARN, {})
+				-- to remove the highlighted nodes
+				vim.cmd("silent! do CursorMoved")
+				return
+			end
+			---@diagnostic disable-next-line: param-type-mismatch
+			string_nodes = utils.map_string_nodes(cur_line, pattern)
+			next_node_info.count = tonumber(picked_node)
+			node = get_node(next_node_info)
+		end
+
 		if #key > 1 then
 			local type = {}
 			local first_key = string.sub(key, 1, 1)
@@ -157,7 +193,9 @@ function M.finder(config)
 			elseif first_key == "y" then
 				type.yank = true
 			end
-			local node = get_node(next_node_info)
+			if not node then
+				node = get_node(next_node_info)
+			end
 			text_manipulation.manipulate_text(
 				{ node = node, node_direction = node_direction, threshold = threshold },
 				type,
@@ -240,7 +278,6 @@ function M.finder(config)
 		vim.api.nvim_notify(msg, level, {})
 	end
 
-	local utils = require("find-extender.utils")
 	local keymaps = config.keymaps
 	normal_keys = utils.merge_tables(keymaps.find, normal_keys)
 	normal_keys = utils.merge_tables(keymaps.till, normal_keys)

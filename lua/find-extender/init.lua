@@ -1,6 +1,9 @@
 --- setup module.
 local M = {}
 
+-- TODO: add strategy when first input char is a character and expose an option
+-- for user to decide what to do
+
 --- default config
 local DEFAULT_CONFIG = {
 	---@field chars_length number how much characters to get input for finding.

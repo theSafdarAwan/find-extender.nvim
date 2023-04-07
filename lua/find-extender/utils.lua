@@ -81,6 +81,24 @@ function M.on_yank(highlight_on_yank_opts, start, finish)
 	end, highlight_on_yank_opts.timeout)
 end
 
+--- highlights the table nodes, clears highlights when CursorMoved event happens.
+---@param nodes_tbl table nodes position to highlight
+---@param threshold number information about
+M.highlight_nodes = function(nodes_tbl, threshold)
+	local buf = api.nvim_get_current_buf()
+	local line_nr = fn.line(".")
+	local ns_id = api.nvim_create_namespace("find-extender highlight nodes " .. tostring(nodes_tbl))
+	for _, node in ipairs(nodes_tbl) do
+		api.nvim_buf_add_highlight(buf, ns_id, "CustomColorColumn", line_nr - 1, node - 1, node + threshold)
+	end
+	api.nvim_create_autocmd({ "CursorMoved" }, {
+		once = true,
+		callback = function()
+			api.nvim_buf_clear_namespace(buf, ns_id, 1, -1)
+		end,
+	})
+end
+
 --- validates if any character or punctuation is present
 ---@param string_end_position number string ending position based on direction
 --- from left to right.
