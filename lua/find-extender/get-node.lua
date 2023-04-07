@@ -2,6 +2,7 @@ local M = {}
 
 local api = vim.api
 local utils = require("find-extender.utils")
+local valid_node = utils.node_validation
 
 --- gets node position based on opts
 ---@param opts table options which affect the position determination for the next node.
@@ -20,11 +21,7 @@ function M.get_node(opts)
 	if opts.node_direction.left then
 		for node_position, node in ipairs(string_nodes) do
 			if cursor_position + opts.threshold < node or cursor_position < 1 and node < 3 then
-				if
-					opts.threshold > 1
-					and utils.node_validation(node, current_line)
-					and not opts.count
-				then
+				if opts.threshold > 1 and valid_node(node, current_line) and not opts.count then
 					reset_threshold = true
 				end
 
@@ -44,7 +41,7 @@ function M.get_node(opts)
 		string_nodes = utils.reverse_tbl(string_nodes)
 		for node_position, node in ipairs(string_nodes) do
 			if cursor_position - opts.threshold == node or cursor_position - opts.threshold > node then
-				if opts.threshold > 1 and utils.node_validation(node, current_line) then
+				if opts.threshold > 1 and valid_node(node, current_line) then
 					reset_threshold = true
 				end
 
@@ -52,7 +49,7 @@ function M.get_node(opts)
 					local n = string_nodes[node_position + opts.count - 1]
 					-- need to reset the threshold here because previous
 					-- guard wasn't for this x node
-					if opts.threshold > 1 and utils.node_validation(n, current_line) then
+					if opts.threshold > 1 and valid_node(n, current_line) then
 						reset_threshold = true
 					end
 					node_value = n

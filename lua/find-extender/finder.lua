@@ -6,7 +6,6 @@ local api = vim.api
 --- main finder function
 ---@param config table config
 function M.finder(config)
-	local plugin_enabled = true
 	-- how many characters to find for
 	local chars_length = config.chars_length
 	-- timeout before the find-extender.nvim goes to the default behavior to find 1 char
@@ -18,7 +17,7 @@ function M.finder(config)
 	-- to highlight the yanked area
 	local highlight_on_yank = config.highlight_on_yank
 	-- to remember the last pattern and the command when using the ; and , command
-	local __info = { pattern = nil, key = nil }
+	local _info = { pattern = nil, key = nil }
 
 	local get_node = require("find-extender.get-node").get_node
 	local get_chars = require("find-extender.utils").get_chars
@@ -51,37 +50,34 @@ function M.finder(config)
 		end
 		-- if no find command was executed previously then there's no last pattern for
 		-- , or ; so return
-		if
-			not __info.pattern and key == ","
-			or key == ";" and not __info.pattern
-		then
+		if not _info.pattern and key == "," or key == ";" and not _info.pattern then
 			return
 		end
 		-- to determine which node_direction to go
 		-- THIS is the only way i found efficient without heaving overhead
 		-- > find
 		local find_node_direction_left = key == "f"
-			or __info.key == "F" and key == ","
-			or __info.key == "f" and key == ";"
+			or _info.key == "F" and key == ","
+			or _info.key == "f" and key == ";"
 			or key == "cf"
 			or key == "df"
 			or key == "yf"
 		local find_node_direction_right = key == "F"
-			or __info.key == "f" and key == ","
-			or __info.key == "F" and key == ";"
+			or _info.key == "f" and key == ","
+			or _info.key == "F" and key == ";"
 			or key == "cF"
 			or key == "dF"
 			or key == "yF"
 		-- > till
 		local till_node_direction_left = key == "t"
-			or __info.key == "T" and key == ","
-			or __info.key == "t" and key == ";"
+			or _info.key == "T" and key == ","
+			or _info.key == "t" and key == ";"
 			or key == "ct"
 			or key == "dt"
 			or key == "yt"
 		local till_node_direction_right = key == "T"
-			or __info.key == "t" and key == ","
-			or __info.key == "T" and key == ";"
+			or _info.key == "t" and key == ","
+			or _info.key == "T" and key == ";"
 			or key == "cT"
 			or key == "dT"
 			or key == "yT"
@@ -131,8 +127,8 @@ function M.finder(config)
 			if not pattern then
 				return
 			end
-			__info.key = key
-			__info.pattern = pattern
+			_info.key = key
+			_info.pattern = pattern
 		elseif text_manipulation_keys then
 			pattern = get_chars(get_chars_opts)
 			if not pattern then
@@ -141,7 +137,7 @@ function M.finder(config)
 		else
 			-- if f or F or t or T command wasn't pressed then search for the _last_search_info.pattern
 			-- for , or ; command
-			pattern = __info.pattern
+			pattern = _info.pattern
 		end
 
 		local next_node_info = {
@@ -181,7 +177,7 @@ function M.finder(config)
 			local map_opts = { silent = true, noremap = true }
 			vim.keymap.set("n", pressed_key, pressed_key, map_opts)
 			local feed_key = pressed_key .. char
-			if count > 0 then
+			if count and count > 0 then
 				feed_key = count .. feed_key
 			end
 			api.nvim_feedkeys(feed_key, "n", false)
@@ -224,7 +220,7 @@ function M.finder(config)
 		elseif keys_tbl[char] then
 			finder(pressed_key .. char, {})
 		elseif char then
-			not_text_manipulation_key(char, count)
+			not_text_manipulation_key(char)
 		end
 	end
 
@@ -303,6 +299,7 @@ function M.finder(config)
 		end
 	end
 
+	local plugin_enabled = true
 	local function enable_plugin()
 		plugin_enabled = true
 		set_maps()

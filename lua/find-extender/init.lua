@@ -1,43 +1,50 @@
 --- setup module.
 local M = {}
 
---- Default Config
----@table Default_Config
----@field chars_length number how much characters to get input for finding.
----@field timeout number|boolean timeout before we find the characters input
---- at our disposal before the `chars_length` completes.
----@field start_timeout_after_chars number how much characters should be
---- available before timeout triggers the character finder.
----@field keymaps table information for keymaps.
----@field keymaps.modes string modes in which the find-extender should be eanbled.
----@field keymaps.till table table of till keys includes backward and forward both by default.
----@field keymaps.find table table of find keys includes backward and forward both by default.
----@field keymaps.text_manipulation table information about text manipulation keys including yank/delete/change.
----@field keymaps.text_manipulation.yank table includes keys related to finding yanking area of text in a line.
----@field keymaps.text_manipulation.delete table includes keys related to finding deleting area of text in a line.
----@field keymaps.text_manipulation.change table includes keys related to finding changing area of text in a line.
-local default_config = {
+--- default config
+local DEFAULT_CONFIG = {
+	---@field chars_length number how much characters to get input for finding.
 	chars_length = 2,
+	---@field timeout number|boolean timeout before we find the characters input
+	--- at our disposal before the `chars_length` completes.
 	timeout = false,
+	---@field start_timeout_after_chars number how much characters should be
+	--- available before timeout triggers the character finder.
 	start_timeout_after_chars = 1,
+	---@field keymaps table information for keymaps.
 	keymaps = {
+		---@field modes string modes in which the find-extender should be eanbled.
 		modes = "nv",
+		---@field till table table of till keys includes backward and forward both by default.
 		till = { "T", "t" },
+		---@field find table table of find keys includes backward and forward both by default.
 		find = { "F", "f" },
+		---@field text_manipulation table information about text manipulation keys including yank/delete/change.
 		text_manipulation = {
+			---@field yank table includes keys related to finding yanking area of text in a line.
 			yank = { "f", "F", "t", "T" },
+			---@field delete table includes keys related to finding deleting area of text in a line.
 			delete = { "f", "F", "t", "T" },
+			---@field change table includes keys related to finding changing area of text in a line.
 			change = { "f", "F", "t", "T" },
 		},
 	},
-	highlight_on_yank = { enable = true, timeout = 40, hl_group = "IncSearch" },
+	---@field highlight_on_yank table highlight the yanked area
+	highlight_on_yank = {
+		---@field enable boolean to enable the highlight_on_yank
+		enable = true,
+		---@field timeout number timeout for the yank highlight
+		timeout = 40,
+		---@field hl_group string highlight groups for highlighting the yanked area
+		hl_group = "IncSearch",
+	},
 }
 
 --- setup function to load plugin.
 ---@param user_config table|nil user specified configuration for the plugin.
 function M.setup(user_config)
 	---@table config merged config from user and default
-	local config = vim.tbl_deep_extend("force", default_config, user_config or {})
+	local config = vim.tbl_deep_extend("force", DEFAULT_CONFIG, user_config or {})
 	require("find-extender.finder").finder(config)
 end
 
