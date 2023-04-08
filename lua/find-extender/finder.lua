@@ -126,6 +126,8 @@ function M.finder(config)
 			start_timeout_after_chars = start_timeout_after_chars,
 		}
 
+		utils.add_dummy_cursor()
+
 		if normal_keys then
 			-- if find or till command is executed then add the pattern and the key to the
 			-- _last_search_info table.
@@ -173,8 +175,7 @@ function M.finder(config)
 		end
 
 		local node = nil
-		if #string_nodes > 1000 then
-			utils.highlight_nodes(string_nodes, threshold)
+		if #string_nodes > 2 then
 			local picked_node = fn.getchar()
 			picked_node = tonumber(fn.nr2char(picked_node))
 			if type(picked_node) ~= "number" then
@@ -318,14 +319,12 @@ function M.finder(config)
 	local function set_maps()
 		for _, key in ipairs(normal_keys) do
 			set_keymap(modes_tbl, key, function()
-				utils.add_dummy_cursor()
 				finder(key, {})
 			end, keymap_opts)
 		end
 		for key_name, keys in pairs(text_manipulation_keys) do
 			local key = string.sub(tostring(key_name), 1, 1)
 			set_keymap("n", key, function()
-				utils.add_dummy_cursor()
 				get_text_manipulation_keys(key, keys, { callback = get_text_manipulation_keys })
 			end, keymap_opts)
 		end
