@@ -1,7 +1,11 @@
 --- Finds characters and sets the cursor position to the target.
 local M = {}
 
+-- TODO: The cursor is down on the command line during `getchar`,
+-- so we set a temporary highlight on it to see where we are.
+
 local api = vim.api
+local fn = vim.fn
 
 --- main finder function
 ---@param config table config
@@ -17,7 +21,7 @@ function M.finder(config)
 	-- to highlight the yanked area
 	local highlight_on_yank = config.highlight_on_yank
 	-- to remember the last pattern and the command when using the ; and , command
-	local _info = { pattern = nil, key = nil }
+	local _previous_op_info = { pattern = nil, key = nil }
 
 	local utils = require("find-extender.utils")
 
@@ -52,34 +56,34 @@ function M.finder(config)
 		end
 		-- if no find command was executed previously then there's no last pattern for
 		-- , or ; so return
-		if not _info.pattern and key == "," or key == ";" and not _info.pattern then
+		if not _previous_op_info.pattern and key == "," or key == ";" and not _previous_op_info.pattern then
 			return
 		end
 		-- to determine which node_direction to go
 		-- THIS is the only way i found efficient without heaving overhead
 		-- > find
 		local find_node_direction_left = key == "f"
-			or _info.key == "F" and key == ","
-			or _info.key == "f" and key == ";"
+			or _previous_op_info.key == "F" and key == ","
+			or _previous_op_info.key == "f" and key == ";"
 			or key == "cf"
 			or key == "df"
 			or key == "yf"
 		local find_node_direction_right = key == "F"
-			or _info.key == "f" and key == ","
-			or _info.key == "F" and key == ";"
+			or _previous_op_info.key == "f" and key == ","
+			or _previous_op_info.key == "F" and key == ";"
 			or key == "cF"
 			or key == "dF"
 			or key == "yF"
 		-- > till
 		local till_node_direction_left = key == "t"
-			or _info.key == "T" and key == ","
-			or _info.key == "t" and key == ";"
+			or _previous_op_info.key == "T" and key == ","
+			or _previous_op_info.key == "t" and key == ";"
 			or key == "ct"
 			or key == "dt"
 			or key == "yt"
 		local till_node_direction_right = key == "T"
-			or _info.key == "t" and key == ","
-			or _info.key == "T" and key == ";"
+			or _previous_op_info.key == "t" and key == ","
+			or _previous_op_info.key == "T" and key == ";"
 			or key == "cT"
 			or key == "dT"
 			or key == "yT"
@@ -116,7 +120,7 @@ function M.finder(config)
 			or key == "dF"
 			or key == "yF"
 
-		local get_chars_opts = {
+		local get_chars_args = {
 			chars_length = chars_length,
 			timeout = timeout,
 			start_timeout_after_chars = start_timeout_after_chars,
@@ -125,21 +129,23 @@ function M.finder(config)
 		if normal_keys then
 			-- if find or till command is executed then add the pattern and the key to the
 			-- _last_search_info table.
-			pattern = get_chars(get_chars_opts)
+			pattern = get_chars(get_chars_args)
 			if not pattern then
 				return
 			end
-			_info.key = key
-			_info.pattern = pattern
-		elseif text_manipulation_keys then
-			pattern = get_chars(get_chars_opts)
+			_previous_op_info.key = key
+			_previous_op_info.pattern = pattern
+		end
+		if text_manipulation_keys then
+			pattern = get_chars(get_chars_args)
 			if not pattern then
 				return
 			end
-		else
+		end
+		if not text_manipulation_keys and not normal_keys then
 			-- if f or F or t or T command wasn't pressed then search for the _last_search_info.pattern
 			-- for , or ; command
-			pattern = _info.pattern
+			pattern = _previous_op_info.pattern
 		end
 
 		local next_node_info = {
@@ -169,8 +175,8 @@ function M.finder(config)
 		local node = nil
 		if #string_nodes > 1000 then
 			utils.highlight_nodes(string_nodes, threshold)
-			local picked_node = vim.fn.getchar()
-			picked_node = tonumber(vim.fn.nr2char(picked_node))
+			local picked_node = fn.getchar()
+			picked_node = tonumber(fn.nr2char(picked_node))
 			if type(picked_node) ~= "number" then
 				vim.notify("find-extender: pick a number", vim.log.levels.WARN, {})
 				-- to remove the highlighted nodes
@@ -225,7 +231,7 @@ function M.finder(config)
 		end
 
 		local function get_char()
-			local c = vim.fn.getchar()
+			local c = fn.getchar()
 			if type(c) ~= "number" then
 				return
 			end
@@ -243,13 +249,13 @@ function M.finder(config)
 		local count = vim.v.count
 		local char = get_char()
 		if char then
-			char = vim.fn.nr2char(char)
+			char = fn.nr2char(char)
 		end
 
 		if type(tonumber(char)) == "number" then
 			count = tonumber(char)
 			char = get_char()
-			char = vim.fn.nr2char(char)
+			char = fn.nr2char(char)
 			if char and keys_tbl[char] then
 				finder(pressed_key .. char, { count = count })
 			elseif type(char) == "string" then
@@ -312,12 +318,14 @@ function M.finder(config)
 	local function set_maps()
 		for _, key in ipairs(normal_keys) do
 			set_keymap(modes_tbl, key, function()
+				utils.add_dummy_cursor()
 				finder(key, {})
 			end, keymap_opts)
 		end
 		for key_name, keys in pairs(text_manipulation_keys) do
 			local key = string.sub(tostring(key_name), 1, 1)
 			set_keymap("n", key, function()
+				utils.add_dummy_cursor()
 				get_text_manipulation_keys(key, keys, { callback = get_text_manipulation_keys })
 			end, keymap_opts)
 		end

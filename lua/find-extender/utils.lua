@@ -57,7 +57,7 @@ function M.on_yank(highlight_on_yank_opts, start, finish)
 	local buf_id = api.nvim_get_current_buf()
 	local line_nr = fn.getpos(".")[2] - 1
 
-	local buf_ns = api.nvim_create_namespace("my namespace")
+	local ns_id = api.nvim_create_namespace("")
 	local event = vim.v.event
 
 	if yank_timer then
@@ -67,7 +67,7 @@ function M.on_yank(highlight_on_yank_opts, start, finish)
 	--- neovim function
 	require("vim.highlight").range(
 		buf_id,
-		buf_ns,
+		ns_id,
 		highlight_on_yank_opts.hl_group,
 		{ line_nr, start },
 		{ line_nr, finish },
@@ -76,7 +76,7 @@ function M.on_yank(highlight_on_yank_opts, start, finish)
 	yank_timer = vim.defer_fn(function()
 		yank_timer = nil
 		if api.nvim_buf_is_valid(buf_id) then
-			api.nvim_buf_clear_namespace(buf_id, buf_ns, 0, -1)
+			api.nvim_buf_clear_namespace(buf_id, ns_id, 0, -1)
 		end
 	end, highlight_on_yank_opts.timeout)
 end
@@ -87,14 +87,37 @@ end
 M.highlight_nodes = function(nodes_tbl, threshold)
 	local buf = api.nvim_get_current_buf()
 	local line_nr = fn.line(".")
-	local ns_id = api.nvim_create_namespace("find-extender highlight nodes " .. tostring(nodes_tbl))
+	local ns_id = api.nvim_create_namespace("")
 	for _, node in ipairs(nodes_tbl) do
-		api.nvim_buf_add_highlight(buf, ns_id, "CustomColorColumn", line_nr - 1, node - 1, node + threshold)
+		api.nvim_buf_add_highlight(buf, ns_id, "CursorColumn", line_nr - 1, node - 1, node + threshold)
 	end
 	api.nvim_create_autocmd({ "CursorMoved" }, {
 		once = true,
 		callback = function()
-			api.nvim_buf_clear_namespace(buf, ns_id, 1, -1)
+			api.nvim_buf_clear_namespace(buf, ns_id, 0, -1)
+		end,
+	})
+end
+
+--- adds a dummy cursor at the cursor position when the cursor is in the command
+--- line when getting cursor input
+M.add_dummy_cursor = function()
+	local buf_nr = api.nvim_get_current_buf()
+	local ns_id = api.nvim_create_namespace("")
+	local pos = vim.fn.getpos(".")
+	local line_num = pos[2] - 1
+	local col_num = pos[3] - 1
+	local opts = {
+		end_col = col_num + 1,
+		hl_group = "Cursor",
+		hl_mode = "blend",
+		priority = 106,
+	}
+	local extmark_id = api.nvim_buf_set_extmark(buf_nr, ns_id, line_num, col_num, opts)
+	api.nvim_create_autocmd({ "CursorMoved" }, {
+		once = true,
+		callback = function()
+			api.nvim_buf_del_extmark(buf_nr, ns_id, extmark_id)
 		end,
 	})
 end
