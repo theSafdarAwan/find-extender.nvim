@@ -182,14 +182,17 @@ function M.reverse_tbl(tbl)
 end
 
 --- merges two tables
----@param tbl_a table a
----@param tbl_b table b
----@return table derived from both `a` and `b` tables combine.d
-function M.merge_tables(tbl_a, tbl_b)
-	for _, val in pairs(tbl_a) do
-		table.insert(tbl_b, val)
+---@param tbl table a
+---@param ... table's
+---@return table merged table
+function M.merge_tables(tbl, ...)
+	local __ = { ... }
+	for _, t in pairs(__) do
+		for _, key in pairs(t) do
+			table.insert(tbl, key)
+		end
 	end
-	return tbl_b
+	return tbl
 end
 
 --- maps the occurrences of the pattern in a string

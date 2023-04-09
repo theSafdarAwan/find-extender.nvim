@@ -16,19 +16,24 @@ local DEFAULT_CONFIG = {
 	start_timeout_after_chars = 1,
 	---@field keymaps table information for keymaps.
 	keymaps = {
-		---@field modes string modes in which the find-extender should be eanbled.
-		modes = "nv",
-		---@field till table table of till keys includes backward and forward both by default.
-		till = { "T", "t" },
-		---@field find table table of find keys includes backward and forward both by default.
-		find = { "F", "f" },
+		---@field finding table finding keys config
+		finding = {
+			---@field modes string modes in which the finding keys should be added.
+			modes = "nv",
+			---@field till table table of till keys backward and forward both by default.
+			till = { "T", "t" },
+			---@field find table table of find keys backward and forward both by default.
+			find = { "F", "f" },
+		},
 		---@field text_manipulation table information about text manipulation keys including yank/delete/change.
 		text_manipulation = {
-			---@field yank table includes keys related to finding yanking area of text in a line.
+			---@field modes string modes in which the text_manipulation keys should be added. By default only in normal mode.
+			modes = "n",
+			---@field yank table keys related to finding yanking area of text in a line.
 			yank = { "f", "F", "t", "T" },
-			---@field delete table includes keys related to finding deleting area of text in a line.
+			---@field delete table keys related to finding deleting area of text in a line.
 			delete = { "f", "F", "t", "T" },
-			---@field change table includes keys related to finding changing area of text in a line.
+			---@field change table keys related to finding changing area of text in a line.
 			change = { "f", "F", "t", "T" },
 		},
 	},
@@ -48,6 +53,8 @@ local DEFAULT_CONFIG = {
 function M.setup(user_config)
 	---@table config merged config from user and default
 	local config = vim.tbl_deep_extend("force", DEFAULT_CONFIG, user_config or {})
+	config.keymaps = vim.tbl_extend("force", DEFAULT_CONFIG.keymaps, user_config and user_config.keymaps or {})
+
 	require("find-extender.finder").finder(config)
 end
 

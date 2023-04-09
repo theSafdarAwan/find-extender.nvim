@@ -7,6 +7,12 @@ local M = {}
 local api = vim.api
 local fn = vim.fn
 
+local keymap = {
+	set = vim.keymap.set,
+	del = vim.keymap.del,
+	opts = { silent = true, noremap = true },
+}
+
 --- main finder function
 ---@param config table config
 function M.finder(config)
@@ -26,10 +32,10 @@ function M.finder(config)
 	local utils = require("find-extender.utils")
 
 	local get_node = require("find-extender.get-node").get_node
-	local get_chars = require("find-extender.utils").get_chars
 	local text_manipulation = require("find-extender.text-manipulation")
+	local get_chars = utils.get_chars
 
-	--- determiens the direction and gets the next pattern position
+	--- determines the direction and gets the next node position
 	---@param key string key to determine direction, etc.
 	---@param opts table options
 	local function finder(key, opts)
@@ -205,18 +211,18 @@ function M.finder(config)
 	---@param pressed_key string key
 	---@param keys_tbl table previous keys get deleted from the maps so we have to set them again.
 	---@param opts table options.
+	--- TODO: convert arguments into a table
 	local function get_text_manipulation_keys(pressed_key, keys_tbl, opts)
 		local function not_text_manipulation_key(char, count)
-			local map_opts = { silent = true, noremap = true }
-			vim.keymap.set("n", pressed_key, pressed_key, map_opts)
+			keymap.set("n", pressed_key, pressed_key, keymap.opts)
 			local feed_key = pressed_key .. char
 			if count and count > 0 then
 				feed_key = count .. feed_key
 			end
 			api.nvim_feedkeys(feed_key, "n", false)
-			vim.keymap.set("n", pressed_key, function()
+			keymap.set("n", pressed_key, function()
 				opts.callback(pressed_key, keys_tbl, opts)
-			end, map_opts)
+			end, keymap.opts)
 		end
 
 		local function get_char()
@@ -256,81 +262,84 @@ function M.finder(config)
 			not_text_manipulation_key(char)
 		end
 	end
+	----------------------------------------------------------------------
+	--                             Keymaps                              --
+	----------------------------------------------------------------------
 
-	local normal_keys = {
+	local keymaps = config.keymaps
+	---------------------------------------------------------
+	--          Convert modes string's to table            --
+	---------------------------------------------------------
+	local keymap_finding_modes = keymaps.finding and keymaps.finding.modes or "nv"
+	local keymap_tm_modes = keymap.text_manipulation and keymaps.text_manipulation.modes or "n"
+	-- adding modes to the modes list
+	local modes = {
+		finding = {},
+		text_manipulation = {},
+	}
+	-- adding mode list for finding
+	for i = 1, #keymap_finding_modes, 1 do
+		local mode = string.sub(keymap_finding_modes, i, i)
+		table.insert(modes.finding, mode)
+	end
+	-- adding mode list for text_manipulation
+	for i = 1, #keymap_tm_modes, 1 do
+		local mode = string.sub(keymap_tm_modes, i, i)
+		table.insert(modes.text_manipulation, mode)
+	end
+
+	---------------------------------------------------------
+	--                         keys                        --
+	---------------------------------------------------------
+	local finding_keys = {
 		-- these keys aren't optional
 		";",
 		",",
 	}
-	local text_manipulation_keys = config.keymaps.text_manipulation
+	finding_keys = utils.merge_tables(finding_keys, keymaps.finding.find, keymaps.finding.till)
+	local tm_keys = config.keymaps.text_manipulation
 
-	local modes_tbl = {}
-
-	--- notify helper function
-	---@param msg string notification message
-	local function notify(msg)
-		local level = vim.log.levels.WARN
-		vim.api.nvim_notify(msg, level, {})
-	end
-
-	local keymaps = config.keymaps
-	normal_keys = utils.merge_tables(keymaps.find, normal_keys)
-	normal_keys = utils.merge_tables(keymaps.till, normal_keys)
-	if keymaps.text_manipulation then
-		local type = keymaps.text_manipulation
-		if #type.yank < 1 then
-			text_manipulation_keys.yank = nil
-		end
-		if #type.delete < 1 then
-			text_manipulation_keys.delete = nil
-		end
-		if #type.change < 1 then
-			text_manipulation_keys.change = nil
-		end
-	end
-
-	local modes = keymaps.modes
-	if #modes > 0 then
-		-- adding modes to the modes list
-		for i = 1, #modes, 1 do
-			local mode = string.sub(modes, i, i)
-			table.insert(modes_tbl, mode)
-		end
-	else
-		notify("find-extender.nvim: no modes provided in keymaps table.")
-	end
-
-	local set_keymap = vim.keymap.set
-	local keymap_opts = { noremap = true, silent = true }
-	--- sets maps for the available keys on startup or when enabling plugin after
-	--- disabling it using commands.
+	----------------------------------------------------------------------
+	--                       set user added keys                        --
+	----------------------------------------------------------------------
 	local function set_maps()
-		for _, key in ipairs(normal_keys) do
-			set_keymap(modes_tbl, key, function()
-				finder(key, {})
-			end, keymap_opts)
+		for _, key in ipairs(finding_keys) do
+			keymap.set(modes.finding, key, "", {
+				unpack(keymap.opts),
+				callback = function()
+					finder(key, {})
+				end,
+			})
 		end
-		for key_name, keys in pairs(text_manipulation_keys) do
+		for key_name, keys in pairs(tm_keys) do
 			local key = string.sub(tostring(key_name), 1, 1)
-			set_keymap("n", key, function()
-				get_text_manipulation_keys(key, keys, { callback = get_text_manipulation_keys })
-			end, keymap_opts)
+			keymap.set(modes.text_manipulation, key, "", {
+				unpack(keymap.opts),
+				callback = function()
+					get_text_manipulation_keys(key, keys, { callback = get_text_manipulation_keys })
+				end,
+			})
 		end
 	end
 
-	--- removes maps when disabling plugin.
+	----------------------------------------------------------------------
+	--                          remove keymaps                          --
+	----------------------------------------------------------------------
 	local function remove_maps()
-		for _, key in ipairs(normal_keys) do
-			set_keymap(modes_tbl, key, key, keymap_opts)
+		for _, key in ipairs(finding_keys) do
+			keymap.set(modes.finding, key, "", keymap.opts)
 		end
-		for key_name, _ in pairs(text_manipulation_keys) do
+		for key_name, _ in pairs(tm_keys) do
 			local key = string.sub(tostring(key_name), 1, 1)
-			set_keymap("n", key, function()
-				set_keymap("n", key, key, keymap_opts)
+			keymap.set(modes.text_manipulation, key, function()
+				keymap.set(keymaps.text_manipulation, key, "", keymap.opts)
 			end)
 		end
 	end
 
+	----------------------------------------------------------------------
+	--                          User commands                           --
+	----------------------------------------------------------------------
 	local plugin_enabled = true
 	local function enable_plugin()
 		plugin_enabled = true
