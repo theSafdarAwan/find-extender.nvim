@@ -32,7 +32,7 @@ function M.finder(config)
 	local utils = require("find-extender.utils")
 
 	local get_node = require("find-extender.get-node").get_node
-	local text_manipulation = require("find-extender.text-manipulation")
+	local tm = require("find-extender.text-manipulation")
 	local get_chars = utils.get_chars
 
 	--- determines the direction and gets the next node position
@@ -196,7 +196,7 @@ function M.finder(config)
 			if not node then
 				node = get_node(node_info)
 			end
-			text_manipulation.manipulate_text(
+			tm.manipulate_text(
 				{ node = node, node_direction = node_direction, threshold = threshold },
 				type,
 				{ highlight_on_yank = highlight_on_yank }
@@ -207,59 +207,33 @@ function M.finder(config)
 		end
 	end
 
+	-- TODO: support using text_manipulation keys in visual mode
+
+	-- TODO: re-write text_manipulation
+	--
 	--- gets the keys and count when manipulating keys.
-	---@param pressed_key string key
-	---@param keys_tbl table previous keys get deleted from the maps so we have to set them again.
-	---@param opts table options.
-	--- TODO: convert arguments into a table
-	local function get_text_manipulation_keys(pressed_key, keys_tbl, opts)
-		local function not_text_manipulation_key(char, count)
-			keymap.set("n", pressed_key, pressed_key, keymap.opts)
-			local feed_key = pressed_key .. char
+	--- This is an easy way of dealing with y/d/c keys operations.
+	---@param args table
+	local function text_manipulation(args)
+		local chars = get_chars({ chars_length = 2 })
+
+		if chars then
+			local count = vim.v.count
+			-- need to normalize the key by removing the callback function from its opts
+			keymap.set(args.modes, args.key, "", keymap.opts)
+			local feed_key = args.key .. chars
 			if count and count > 0 then
 				feed_key = count .. feed_key
 			end
 			api.nvim_feedkeys(feed_key, "n", false)
-			keymap.set("n", pressed_key, function()
-				opts.callback(pressed_key, keys_tbl, opts)
-			end, keymap.opts)
-		end
-
-		local function get_char()
-			local c = fn.getchar()
-			if type(c) ~= "number" then
-				return
-			end
-			-- return if its not an alphabet or punctuation
-			if c < 32 or c > 127 then
-				return nil
-			end
-			return c
-		end
-		for index, key_str in ipairs(keys_tbl) do
-			keys_tbl[key_str] = {}
-			keys_tbl[index] = nil
-		end
-
-		local count = vim.v.count
-		local char = get_char()
-		if char then
-			char = fn.nr2char(char)
-		end
-
-		if type(tonumber(char)) == "number" then
-			count = tonumber(char)
-			char = get_char()
-			char = fn.nr2char(char)
-			if char and keys_tbl[char] then
-				finder(pressed_key .. char, { count = count })
-			elseif type(char) == "string" then
-				not_text_manipulation_key(char, count)
-			end
-		elseif keys_tbl[char] then
-			finder(pressed_key .. char, {})
-		elseif char then
-			not_text_manipulation_key(char)
+			-- this key would be the key that triggered this text_manipulation_keys function
+			-- and we need to set it back so that we can use it again
+			keymap.set(args.modes, args.key, "", {
+				unpack(keymap.opts),
+				callback = function()
+					text_manipulation(args)
+				end,
+			})
 		end
 	end
 	----------------------------------------------------------------------
@@ -270,8 +244,25 @@ function M.finder(config)
 	---------------------------------------------------------
 	--          Convert modes string's to table            --
 	---------------------------------------------------------
-	local keymap_finding_modes = keymaps.finding and keymaps.finding.modes or "nv"
-	local keymap_tm_modes = keymap.text_manipulation and keymaps.text_manipulation.modes or "n"
+	local keymap_finding_modes = nil
+	if keymaps.finding and keymaps.finding.modes and #keymaps.finding.modes > 0 then
+		keymap_finding_modes = keymaps.finding.modes
+	else
+		keymap_finding_modes = "nv"
+	end
+	if keymaps.finding and keymaps.finding.modes then
+		config.keymaps.finding.modes = nil
+	end
+
+	local keymap_tm_modes = nil
+	if keymap.text_manipulation and keymaps.text_manipulation.modes and #keymaps.text_manipulation.modes > 0 then
+		keymap_tm_modes = keymap.text_manipulation.modes
+	else
+		keymap_tm_modes = "n"
+	end
+	if keymaps.text_manipulation and keymaps.text_manipulation.modes then
+		config.keymaps.text_manipulation.modes = nil
+	end
 	-- adding modes to the modes list
 	local modes = {
 		finding = {},
@@ -311,15 +302,24 @@ function M.finder(config)
 				end,
 			})
 		end
-		for key_name, keys in pairs(tm_keys) do
-			local key = string.sub(tostring(key_name), 1, 1)
-			keymap.set(modes.text_manipulation, key, "", {
-				unpack(keymap.opts),
-				callback = function()
-					get_text_manipulation_keys(key, keys, { callback = get_text_manipulation_keys })
-				end,
-			})
-		end
+		-- BUG: currently i have to re-write the text_manipulation function
+		-- for key_name, keys in pairs(tm_keys) do
+		-- 	-- to get the first character of delete/change/yank
+		-- 	local tm_key_initial = string.sub(tostring(key_name), 1, 1)
+		-- 	for _, key in ipairs(keys) do
+		-- 		key = tm_key_initial .. key
+		-- 		keymap.set(modes.text_manipulation, key, "", {
+		-- 			unpack(keymap.opts),
+		-- 			callback = function()
+		-- 				text_manipulation({
+		-- 					modes = modes.text_manipulation,
+		-- 					key = key,
+		-- 					keys = keys,
+		-- 				})
+		-- 			end,
+		-- 		})
+		-- 	end
+		-- end
 	end
 
 	----------------------------------------------------------------------
