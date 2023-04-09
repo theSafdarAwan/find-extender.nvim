@@ -52,6 +52,8 @@ function M.finder(config)
 		if not _previous_op_info.pattern and key == "," or key == ";" and not _previous_op_info.pattern then
 			return
 		end
+		-- TODO: pass direction and the type of the key in the opts table when
+		-- calling this function
 		-- determine which direction to go
 		-- > find
 		local find_node_direction_left = key == "f"
