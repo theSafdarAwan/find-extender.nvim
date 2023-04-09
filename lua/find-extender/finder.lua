@@ -29,18 +29,6 @@ function M.finder(config)
 	local get_chars = require("find-extender.utils").get_chars
 	local text_manipulation = require("find-extender.text-manipulation")
 
-	--- sets the cursor to given position
-	---@param cursor_pos table cursor position table
-	local function set_cursor(cursor_pos)
-		local get_cursor = api.nvim_win_get_cursor(0)
-		local target_position = get_node(cursor_pos)
-		if not target_position then
-			return
-		end
-		get_cursor[2] = target_position
-		api.nvim_win_set_cursor(0, get_cursor)
-	end
-
 	--- determiens the direction and gets the next pattern position
 	---@param key string key to determine direction, etc.
 	---@param opts table options
@@ -54,13 +42,11 @@ function M.finder(config)
 		if opts and opts.count then
 			count = opts.count
 		end
-		-- if no find command was executed previously then there's no last pattern for
-		-- , or ; so return
+		-- don't allow , and ; command to be used before any find command gets executed
 		if not _previous_op_info.pattern and key == "," or key == ";" and not _previous_op_info.pattern then
 			return
 		end
-		-- to determine which node_direction to go
-		-- THIS is the only way i found efficient without heaving overhead
+		-- determine which direction to go
 		-- > find
 		local find_node_direction_left = key == "f"
 			or _previous_op_info.key == "F" and key == ","
@@ -150,7 +136,7 @@ function M.finder(config)
 			pattern = _previous_op_info.pattern
 		end
 
-		local next_node_info = {
+		local node_info = {
 			pattern = pattern,
 			node_direction = node_direction,
 			threshold = threshold,
@@ -179,6 +165,7 @@ function M.finder(config)
 			local picked_node = fn.getchar()
 			picked_node = tonumber(fn.nr2char(picked_node))
 			if type(picked_node) ~= "number" then
+				-- TODO: add virtual text with numbers displayed on them
 				vim.notify("find-extender: pick a number", vim.log.levels.WARN, {})
 				-- to remove the highlighted nodes
 				vim.cmd("silent! do CursorMoved")
@@ -186,8 +173,8 @@ function M.finder(config)
 			end
 			---@diagnostic disable-next-line: param-type-mismatch
 			string_nodes = utils.map_string_nodes(cur_line, pattern)
-			next_node_info.count = tonumber(picked_node)
-			node = get_node(next_node_info)
+			node_info.count = tonumber(picked_node)
+			node = get_node(node_info)
 		end
 
 		if #key > 1 then
@@ -201,7 +188,7 @@ function M.finder(config)
 				type.yank = true
 			end
 			if not node then
-				node = get_node(next_node_info)
+				node = get_node(node_info)
 			end
 			text_manipulation.manipulate_text(
 				{ node = node, node_direction = node_direction, threshold = threshold },
@@ -209,7 +196,8 @@ function M.finder(config)
 				{ highlight_on_yank = highlight_on_yank }
 			)
 		else
-			set_cursor(next_node_info)
+			local cursor_pos = get_node(node_info)
+			utils.set_cursor(cursor_pos)
 		end
 	end
 

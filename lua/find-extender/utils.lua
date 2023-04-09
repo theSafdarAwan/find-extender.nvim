@@ -47,6 +47,18 @@ function M.get_chars(opts)
 	return chars
 end
 
+--- sets the cursor to given position
+---@param pos number cursor position
+function M.set_cursor(pos)
+	local get_cursor = api.nvim_win_get_cursor(0)
+	local win_nr = api.nvim_get_current_win()
+	if not pos then
+		return
+	end
+	get_cursor[2] = pos
+	api.nvim_win_set_cursor(win_nr, get_cursor)
+end
+
 --- highlights the yanked area
 ---@param highlight_on_yank_opts table options related to highlight on yank includes,
 --- highlight group and timeout.
@@ -102,7 +114,6 @@ end
 --- adds a dummy cursor at the cursor position when the cursor is in the command
 --- line when getting cursor input
 M.add_dummy_cursor = function()
-	vim.notify("HACK", vim.log.levels.ERROR, {})
 	local buf_nr = api.nvim_get_current_buf()
 	local ns_id = api.nvim_create_namespace("")
 	local pos = vim.fn.getpos(".")
@@ -114,13 +125,15 @@ M.add_dummy_cursor = function()
 		hl_mode = "blend",
 		priority = 106,
 	}
-	local extmark_id = api.nvim_buf_set_extmark(buf_nr, ns_id, line_num, col_num, opts)
-	api.nvim_create_autocmd({ "CursorMoved" }, {
-		once = true,
-		callback = function()
-			api.nvim_buf_del_extmark(buf_nr, ns_id, extmark_id)
-		end,
-	})
+	vim.schedule_wrap(function()
+		local extmark_id = api.nvim_buf_set_extmark(buf_nr, ns_id, line_num, col_num, opts)
+		api.nvim_create_autocmd({ "CursorMoved" }, {
+			once = true,
+			callback = function()
+				api.nvim_buf_del_extmark(buf_nr, ns_id, extmark_id)
+			end,
+		})
+	end)
 end
 
 --- validates if any character or punctuation is present
