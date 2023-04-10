@@ -11,7 +11,7 @@ function M.get_node(args)
 	vim.validate({
 		node_direction = { args.node_direction, "table" },
 		threshold = { args.threshold, "number" },
-		count = { args.count, "number" },
+		count = { args.count, { "number", "nil" } },
 		pattern = { args.pattern, "string" },
 	})
 	if not args.node_direction.left and not args.node_direction.right then
@@ -21,17 +21,14 @@ function M.get_node(args)
 
 	local current_line = api.nvim_get_current_line() -- current line string
 	local string_nodes = utils.map_string_pattern_positions(current_line, args.pattern)
-	local cursor_position = api.nvim_win_get_cursor(0)[2] -- 0 indexed
+	local cursor_position = api.nvim_win_get_cursor(0)[2] + 1 -- this api was 0 indexed
 	local node_value = nil
-	-- in cases of node in the start of the line and node in the end of the
-	-- line we need to reset the threshold
-	local reset_threshold = false
 	-- node_direction is to know which direction to search in
 	if args.node_direction.left then
 		for node_idx, node_pos in ipairs(string_nodes) do
 			if node_pos > cursor_position + args.threshold or cursor_position < 1 and node_pos < 3 then
 				if args.threshold > 1 and valid_pos(node_pos, current_line) and not args.count then
-					reset_threshold = true
+					args.threshold = 1
 				end
 
 				if args.count then
@@ -51,7 +48,7 @@ function M.get_node(args)
 		for node_position, node in ipairs(string_nodes) do
 			if cursor_position - args.threshold == node or cursor_position - args.threshold > node then
 				if args.threshold > 1 and valid_pos(node, current_line) then
-					reset_threshold = true
+					args.threshold = 1
 				end
 
 				if args.count then
@@ -59,7 +56,7 @@ function M.get_node(args)
 					-- need to reset the threshold here because previous
 					-- guard wasn't for this x node
 					if args.threshold > 1 and valid_pos(n, current_line) then
-						reset_threshold = true
+						args.threshold = 1
 					end
 					node_value = n
 				else
@@ -72,9 +69,6 @@ function M.get_node(args)
 
 	local target_node = nil
 	if node_value then
-		if reset_threshold then
-			args.threshold = 1
-		end
 		target_node = node_value - args.threshold
 	end
 	return target_node
