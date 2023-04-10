@@ -27,7 +27,7 @@ function M.finder(config)
 	-- to highlight the yanked area
 	local highlight_on_yank = config.highlight_on_yank
 	-- to remember the last pattern and the command when using the ; and , command
-	local _previous_op_info = { pattern = nil, key = nil }
+	local __data = { pattern = nil, key = nil }
 
 	local utils = require("find-extender.utils")
 
@@ -39,59 +39,49 @@ function M.finder(config)
 	---@param key string key to determine direction, etc.
 	---@param opts table options
 	local function finder(key, opts)
-		-- to get the count
-		local count = vim.v.count
-		if count < 2 then
-			count = nil
-		end
-		-- this opts table is from get_text_manipulation_keys
-		if opts and opts.count then
-			count = opts.count
-		end
-		-- don't allow , and ; command to be used before any find command gets executed
-		if not _previous_op_info.pattern and key == "," or key == ";" and not _previous_op_info.pattern then
+		-- don't allow , and ; command to be used before any other command's got
+		-- executed and data has been collected for last pattern repetition.
+		if not __data.pattern and key == "," or key == ";" and not __data.pattern then
 			return
 		end
-		-- TODO: pass direction and the type of the key in the opts table when
-		-- calling this function
-		-- determine which direction to go
 		-- > find
 		local find_node_direction_left = key == "f"
-			or _previous_op_info.key == "F" and key == ","
-			or _previous_op_info.key == "f" and key == ";"
+			or __data.key == "F" and key == ","
+			or __data.key == "f" and key == ";"
 			or key == "cf"
 			or key == "df"
 			or key == "yf"
 		local find_node_direction_right = key == "F"
-			or _previous_op_info.key == "f" and key == ","
-			or _previous_op_info.key == "F" and key == ";"
+			or __data.key == "f" and key == ","
+			or __data.key == "F" and key == ";"
 			or key == "cF"
 			or key == "dF"
 			or key == "yF"
 		-- > till
 		local till_node_direction_left = key == "t"
-			or _previous_op_info.key == "T" and key == ","
-			or _previous_op_info.key == "t" and key == ";"
+			or __data.key == "T" and key == ","
+			or __data.key == "t" and key == ";"
 			or key == "ct"
 			or key == "dt"
 			or key == "yt"
 		local till_node_direction_right = key == "T"
-			or _previous_op_info.key == "t" and key == ","
-			or _previous_op_info.key == "T" and key == ";"
+			or __data.key == "t" and key == ","
+			or __data.key == "T" and key == ";"
 			or key == "cT"
 			or key == "dT"
 			or key == "yT"
 
-		-- node position direction determined by the key
+		-- node position direction determined by the input key
 		local node_direction = { left = false, right = false }
 		if find_node_direction_right or till_node_direction_right then
 			node_direction.right = true
 		elseif find_node_direction_left or till_node_direction_left then
 			node_direction.left = true
 		end
-		-- this variable is threshold between the pattern under the cursor position
-		-- it it exists the pattern exists within this threshold then move to the
-		-- next one or previous one depending on the key
+		-- variable to determine the threshold till command goes before the pattern
+		-- and find command goes on a character pattern. So to deal with the position
+		-- of the node we have to give a threshold which determines the offset for
+		-- cursor before the next node.
 		local threshold
 		if till_node_direction_left or till_node_direction_right then
 			threshold = 2
@@ -129,8 +119,8 @@ function M.finder(config)
 			if not pattern then
 				return
 			end
-			_previous_op_info.key = key
-			_previous_op_info.pattern = pattern
+			__data.key = key
+			__data.pattern = pattern
 		end
 		if text_manipulation_keys then
 			pattern = get_chars(get_chars_args)
@@ -141,9 +131,18 @@ function M.finder(config)
 		if not text_manipulation_keys and not normal_keys then
 			-- if f or F or t or T command wasn't pressed then search for the _last_search_info.pattern
 			-- for , or ; command
-			pattern = _previous_op_info.pattern
+			pattern = __data.pattern
 		end
 
+		-- to get the count
+		local count = vim.v.count
+		if count < 2 then
+			count = nil
+		end
+		-- this opts table is from get_text_manipulation_keys
+		if opts and opts.count then
+			count = opts.count
+		end
 		local node_info = {
 			pattern = pattern,
 			node_direction = node_direction,
@@ -153,7 +152,7 @@ function M.finder(config)
 
 		local cur_line = api.nvim_get_current_line()
 		---@diagnostic disable-next-line: param-type-mismatch
-		local string_nodes = utils.map_string_nodes(cur_line, pattern)
+		local string_nodes = utils.map_string_pattern_positions(cur_line, pattern)
 		-- if count is available then highlight only the nodes after the count - 1
 		if count then
 			local tbl = {}
@@ -169,7 +168,7 @@ function M.finder(config)
 		end
 
 		local node = nil
-		if #string_nodes > 2 then
+		if #string_nodes > 1000 then
 			local picked_node = fn.getchar()
 			picked_node = tonumber(fn.nr2char(picked_node))
 			if type(picked_node) ~= "number" then
@@ -180,7 +179,7 @@ function M.finder(config)
 				return
 			end
 			---@diagnostic disable-next-line: param-type-mismatch
-			string_nodes = utils.map_string_nodes(cur_line, pattern)
+			string_nodes = utils.map_string_pattern_positions(cur_line, pattern)
 			node_info.count = tonumber(picked_node)
 			node = get_node(node_info)
 		end

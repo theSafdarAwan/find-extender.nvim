@@ -137,20 +137,18 @@ M.add_dummy_cursor = function()
 end
 
 --- validates if any character or punctuation is present
----@param string_end_position number string ending position based on direction
---- from left to right.
+---@param split number string ending position 
 ---@param str string need to validate this string.
----@return boolean return true if contains any English alphabet or punctuation.
-function M.node_validation(string_end_position, str)
-	local string = string.sub(str, 1, string_end_position)
+---@return boolean|nil return true if contains any English alphabet or punctuation.
+function M.valid_pos(split, str)
+	local string = string.sub(str, 1, split)
 	local i = 0
 	for _ in string.gmatch(string, "[%a%p]") do
 		i = i + 1
 	end
-	if i > 1 then
-		return false
+	if i < 1 then
+		return true
 	end
-	return true
 end
 
 --- gets you the remaining string before and after the pattern this gets called
@@ -199,7 +197,7 @@ end
 ---@param str string current line.
 ---@param pattern string pattern which we need to map in the `str`.
 ---@return table mapped pattern occurrences mapped.
-function M.map_string_nodes(str, pattern)
+function M.map_string_pattern_positions(str, pattern)
 	local mapped_tbl = {}
 	local pattern_last_idx = mapped_tbl[#mapped_tbl] or 1
 	while true do
