@@ -2,7 +2,15 @@ local M = {}
 
 local api = vim.api
 local utils = require("find-extender.utils")
-local valid_pos = utils.valid_pos
+
+--- check if string till the node has has characters or not
+---@param end_pos number string end position till which we have to sub string
+---@param current_line string current line
+---@return boolean|nil
+local string_sanity = function(end_pos, current_line)
+	local s = string.sub(current_line, 1, end_pos)
+	return utils.string_has_chars(s)
+end
 
 --- gets node position based on opts
 ---@param args table options which affect the position determination for the next node.
@@ -23,18 +31,17 @@ function M.get_node(args)
 	local string_nodes = utils.map_string_pattern_positions(current_line, args.pattern)
 	local cursor_position = api.nvim_win_get_cursor(0)[2] + 1 -- this api was 0 indexed
 	local node_value = nil
-	-- node_direction is to know which direction to search in
 	if args.node_direction.left then
-		for node_idx, node_pos in ipairs(string_nodes) do
-			if node_pos > cursor_position + args.threshold or cursor_position < 1 and node_pos < 3 then
-				if args.threshold > 1 and valid_pos(node_pos, current_line) and not args.count then
-					args.threshold = 1
-				end
-
+		for node_idx, node_position in ipairs(string_nodes) do
+			if cursor_position < node_position then
 				if args.count then
 					node_value = string_nodes[node_idx + args.count - 1]
 				else
-					node_value = node_pos
+					node_value = node_position
+				end
+				-- need to deal with till command if the node is in the start of the line
+				if args.threshold > 1 and not string_sanity(node_value - 1, current_line) then
+					args.threshold = 1
 				end
 				break
 			end
@@ -45,33 +52,26 @@ function M.get_node(args)
 		-- need to reverse the tbl of the string_nodes because now we have to
 		-- start searching from the end of the string rather then from the start
 		string_nodes = utils.reverse_tbl(string_nodes)
-		for node_position, node in ipairs(string_nodes) do
-			if cursor_position - args.threshold == node or cursor_position - args.threshold > node then
-				if args.threshold > 1 and valid_pos(node, current_line) then
-					args.threshold = 1
-				end
-
+		for node_idx, node_position in ipairs(string_nodes) do
+			if cursor_position > node_position then
 				if args.count then
-					local n = string_nodes[node_position + args.count - 1]
-					-- need to reset the threshold here because previous
-					-- guard wasn't for this x node
-					if args.threshold > 1 and valid_pos(n, current_line) then
-						args.threshold = 1
-					end
-					node_value = n
-				else
+					local node = string_nodes[node_idx + args.count - 1]
 					node_value = node
+				else
+					node_value = node_position
+				end
+				if not string_sanity(node_value - 1, current_line) then
+					args.threshold = 1
 				end
 				break
 			end
 		end
 	end
 
-	local target_node = nil
 	if node_value then
-		target_node = node_value - args.threshold
+		node_value = node_value - args.threshold
 	end
-	return target_node
+	return node_value
 end
 
 return M

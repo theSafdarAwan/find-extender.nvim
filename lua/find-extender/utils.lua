@@ -136,17 +136,15 @@ M.add_dummy_cursor = function()
 	end)
 end
 
---- validates if any character or punctuation is present
----@param split number string ending position
----@param cur_line string need to validate this string.
+--- validates if any character or punctuation is present in string
+---@param str string validate this string.
 ---@return boolean|nil return true if contains any English alphabet or punctuation.
-function M.valid_pos(split, cur_line)
-	local str = string.sub(cur_line, 1, split)
+function M.string_has_chars(str)
 	local i = 0
 	for _ in string.gmatch(str, "[%a%p]") do
 		i = i + 1
 	end
-	if i < 1 then
+	if i > 0 then
 		return true
 	end
 end

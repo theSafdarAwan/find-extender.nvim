@@ -3,6 +3,7 @@ local M = {}
 
 -- TODO: add strategy when first input char is a character and expose an option
 -- for user to decide what to do
+-- TODO: add strategy for cursor movement when searching backwards
 
 --- default config
 local DEFAULT_CONFIG = {
