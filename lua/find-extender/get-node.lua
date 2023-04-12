@@ -23,7 +23,7 @@ function M.get_node(args)
 		pattern = { args.pattern, "string" },
 	})
 	if not args.node_direction.left and not args.node_direction.right then
-		vim.notify("find-extender: get_node> no direction value provided")
+		vim.notify("find-extender: get_node::~ no direction value provided")
 		return
 	end
 

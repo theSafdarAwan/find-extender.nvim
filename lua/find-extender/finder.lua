@@ -45,26 +45,26 @@ function M.finder(config)
 			return
 		end
 		-- > find
-		local find_node_direction_left = key == "f"
+		local find_direction_left = key == "f"
 			or __data.key == "F" and key == ","
 			or __data.key == "f" and key == ";"
 			or key == "cf"
 			or key == "df"
 			or key == "yf"
-		local find_node_direction_right = key == "F"
+		local find_direction_right = key == "F"
 			or __data.key == "f" and key == ","
 			or __data.key == "F" and key == ";"
 			or key == "cF"
 			or key == "dF"
 			or key == "yF"
 		-- > till
-		local till_node_direction_left = key == "t"
+		local till_direction_left = key == "t"
 			or __data.key == "T" and key == ","
 			or __data.key == "t" and key == ";"
 			or key == "ct"
 			or key == "dt"
 			or key == "yt"
-		local till_node_direction_right = key == "T"
+		local till_direction_right = key == "T"
 			or __data.key == "t" and key == ","
 			or __data.key == "T" and key == ";"
 			or key == "cT"
@@ -73,19 +73,17 @@ function M.finder(config)
 
 		-- node position direction determined by the input key
 		local node_direction = { left = false, right = false }
-		if find_node_direction_right or till_node_direction_right then
+		if find_direction_right or till_direction_right then
 			node_direction.right = true
-		elseif find_node_direction_left or till_node_direction_left then
+		elseif find_direction_left or till_direction_left then
 			node_direction.left = true
 		end
-		-- variable to determine the threshold till command goes before the pattern
-		-- and find command goes on a character pattern. So to deal with the position
-		-- of the node we have to give a threshold which determines the offset for
-		-- cursor before the next node.
+		-- threshold for till and find command's till command's set cursor before
+		-- text and find command's set cursor on the text pattern.
 		local threshold
-		if till_node_direction_left or till_node_direction_right then
+		if till_direction_left or till_direction_right then
 			threshold = 2
-		elseif find_node_direction_left or find_node_direction_right then
+		elseif find_direction_left or find_direction_right then
 			threshold = 1
 		end
 
@@ -151,24 +149,25 @@ function M.finder(config)
 		}
 
 		local cur_line = api.nvim_get_current_line()
-		---@diagnostic disable-next-line: param-type-mismatch
-		local string_nodes = utils.map_string_pattern_positions(cur_line, pattern)
-		-- if count is available then highlight only the nodes after the count - 1
-		if count then
-			local tbl = {}
+		local string_nodes
+		if pattern then
+			string_nodes = utils.map_string_pattern_positions(cur_line, pattern)
+		else
+			return
+		end
+
+		local node = nil
+		if #string_nodes > count - 1000 then
+			-- if count is available then highlight only the nodes after the count - 1
+			local nodes_tbl = {}
 			local i = count - 1
 			while true do
 				if i == #string_nodes then
 					break
 				end
 				i = i + 1
-				table.insert(tbl, string_nodes[i])
+				table.insert(nodes_tbl, string_nodes[i])
 			end
-			string_nodes = tbl
-		end
-
-		local node = nil
-		if #string_nodes > 1000 then
 			local picked_node = fn.getchar()
 			picked_node = tonumber(fn.nr2char(picked_node))
 			if type(picked_node) ~= "number" then
@@ -178,12 +177,14 @@ function M.finder(config)
 				vim.cmd("silent! do CursorMoved")
 				return
 			end
-			---@diagnostic disable-next-line: param-type-mismatch
-			string_nodes = utils.map_string_pattern_positions(cur_line, pattern)
+			nodes_tbl = utils.map_string_pattern_positions(cur_line, pattern)
 			node_info.count = tonumber(picked_node)
 			node = get_node(node_info)
 		end
 
+		if not node then
+			node = get_node(node_info)
+		end
 		if #key > 1 then
 			local type = {}
 			local first_key = string.sub(key, 1, 1)
@@ -194,17 +195,15 @@ function M.finder(config)
 			elseif first_key == "y" then
 				type.yank = true
 			end
-			if not node then
-				node = get_node(node_info)
-			end
 			tm.manipulate_text(
 				{ node = node, node_direction = node_direction, threshold = threshold },
 				type,
 				{ highlight_on_yank = highlight_on_yank }
 			)
 		else
-			local cursor_pos = get_node(node_info)
-			utils.set_cursor(cursor_pos)
+			if node then
+				utils.set_cursor(node)
+			end
 		end
 	end
 
