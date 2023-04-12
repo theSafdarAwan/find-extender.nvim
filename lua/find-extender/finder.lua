@@ -56,7 +56,7 @@ function M.finder(config)
 	--- then other methods. It's cleaner way of dealing with keys.
 	---@param args table of keys with current key and the previous key.
 	---@return table
-	local function get_key_type(args)
+	local function get_key_types(args)
 		local tbl = {}
 		-- > find
 		tbl.find_direction_left = args.key == "f"
@@ -111,7 +111,8 @@ function M.finder(config)
 			return
 		end
 
-		local key_types = get_key_type({ key = args.key, prev_key = __data.key })
+		local get_key_types_args = { key = args.key, prev_key = __data.key }
+		local key_types = get_key_types(get_key_types_args)
 
 		-- match position direction determined by the input key
 		local match_direction = { left = false, right = false }
@@ -134,7 +135,6 @@ function M.finder(config)
 			timeout = timeout,
 			start_timeout_after_chars = start_timeout_after_chars,
 		}
-
 		local pattern = nil
 		if key_types.normal_keys then
 			-- if find or till command is executed then add the pattern and the key to the
@@ -221,6 +221,7 @@ function M.finder(config)
 			elseif first_key == "y" then
 				type.yank = true
 			end
+			-- TODO: refactoring this to args a single table
 			tm.manipulate_text(
 				{ match = match, match_direction = match_direction, threshold = threshold },
 				type,
@@ -324,7 +325,7 @@ function M.finder(config)
 			keymap.set(modes.finding, key, "", {
 				unpack(keymap.opts),
 				callback = function()
-					finder(key, {})
+					finder({ key = key })
 				end,
 			})
 		end

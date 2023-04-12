@@ -10,8 +10,8 @@ local fn = vim.fn
 function M.get_chars(opts)
 	-- add dummy cursor because now cursor is in the command line
 	M.add_dummy_cursor()
-	local break_loop = false
 	local chars = ""
+	local break_loop = false
 	local i = 0
 	while true do
 		if opts.timeout and #chars > opts.start_timeout_after_chars - 1 then
@@ -127,15 +127,15 @@ M.add_dummy_cursor = function()
 		hl_mode = "blend",
 		priority = 106,
 	}
-	vim.schedule_wrap(function()
-		local extmark_id = api.nvim_buf_set_extmark(buf_nr, ns_id, line_num, col_num, opts)
-		api.nvim_create_autocmd({ "CursorMoved" }, {
-			once = true,
-			callback = function()
+	local extmark_id = api.nvim_buf_set_extmark(buf_nr, ns_id, line_num, col_num, opts)
+	api.nvim_create_autocmd({ "CursorMoved" }, {
+		once = true,
+		callback = function()
+			if extmark_id then
 				api.nvim_buf_del_extmark(buf_nr, ns_id, extmark_id)
-			end,
-		})
-	end)
+			end
+		end,
+	})
 end
 
 --- validates if any character or punctuation is present in string
