@@ -8,6 +8,8 @@ local fn = vim.fn
 --- timeout or chars limit, next target input chars, if nil(out of eng alphabets, numbers,
 --- or punctuations) character was provided.
 function M.get_chars(opts)
+	-- add dummy cursor because now cursor is in the command line
+	M.add_dummy_cursor()
 	local break_loop = false
 	local chars = ""
 	local i = 0
@@ -93,15 +95,15 @@ function M.on_yank(highlight_on_yank_opts, start, finish)
 	end, highlight_on_yank_opts.timeout)
 end
 
---- highlights the table nodes, clears highlights when CursorMoved event happens.
----@param nodes_tbl table nodes position to highlight
+--- highlights the table matches, clears highlights when CursorMoved event happens.
+---@param matches_tbl table matches position to highlight
 ---@param threshold number information about
-M.highlight_nodes = function(nodes_tbl, threshold)
+M.highlight_matches = function(matches_tbl, threshold)
 	local buf = api.nvim_get_current_buf()
 	local line_nr = fn.line(".")
 	local ns_id = api.nvim_create_namespace("")
-	for _, node in ipairs(nodes_tbl) do
-		api.nvim_buf_add_highlight(buf, ns_id, "CursorColumn", line_nr - 1, node - 1, node + threshold)
+	for _, match in ipairs(matches_tbl) do
+		api.nvim_buf_add_highlight(buf, ns_id, "CursorColumn", line_nr - 1, match - 1, match + threshold)
 	end
 	api.nvim_create_autocmd({ "CursorMoved" }, {
 		once = true,

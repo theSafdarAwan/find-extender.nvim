@@ -9,6 +9,13 @@ local M = {}
 local DEFAULT_CONFIG = {
 	---@field chars_length number how much characters to get input for finding.
 	chars_length = 2,
+	---@field highlight_matches table controls the highlighting of the pattern matches
+	highlight_matches = {
+		---@field min_matches number minimum matches after which the matches should
+		-- be highlighted.
+		min_matches = 2,
+		-- TODO: add highlights
+	},
 	---@field timeout number|boolean timeout before we find the characters input
 	--- at our disposal before the `chars_length` completes.
 	timeout = false,

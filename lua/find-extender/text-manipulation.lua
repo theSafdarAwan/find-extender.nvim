@@ -6,31 +6,31 @@ local fn = vim.fn
 local utils = require("find-extender.utils")
 
 --- manipulates text and puts information to the register
----@param node_info table target node information to which the text manipulation should be done.
+---@param match_info table target match information to which the text manipulation should be done.
 ---@param type table type of the text manipulation action change/delete/yank.
 ---@param opts table options
-function M.manipulate_text(node_info, type, opts)
+function M.manipulate_text(match_info, type, opts)
 	local current_line = api.nvim_get_current_line()
 	local register = vim.v.register
 	local get_cursor = api.nvim_win_get_cursor(0)
 
-	local node = node_info.node
-	local node_pos_direction = node_info.node_direction
+	local match = match_info.match
+	local match_pos_direction = match_info.match_direction
 
-	if not node then
+	if not match then
 		return
 	end
 
 	local start
 	local finish
-	if node_pos_direction.right then
-		start = node + 1
+	if match_pos_direction.right then
+		start = match + 1
 		finish = get_cursor[2] + 1
-	elseif node_pos_direction.left then
+	elseif match_pos_direction.left then
 		start = get_cursor[2]
-		finish = node + 2
+		finish = match + 2
 	end
-	if get_cursor[2] == 0 and node == 1 and node_info.threshold == 2 then
+	if get_cursor[2] == 0 and match == 1 and match_info.threshold == 2 then
 		return
 	end
 	local in_range_str = string.sub(current_line, start, finish - 1)
@@ -43,7 +43,7 @@ function M.manipulate_text(node_info, type, opts)
 		-- if we substitute from right to left the cursor resets to the end
 		-- of the line after line gets swapped so we have to get the cursor
 		-- position and then set it to the appropriate position
-		if node_pos_direction.right then
+		if match_pos_direction.right then
 			get_cursor[2] = get_cursor[2] - #in_range_str + 1
 			api.nvim_win_set_cursor(0, get_cursor)
 		end

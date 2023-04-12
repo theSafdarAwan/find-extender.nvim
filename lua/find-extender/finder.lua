@@ -18,6 +18,8 @@ local keymap = {
 function M.finder(config)
 	-- how many characters to find for
 	local chars_length = config.chars_length
+	-- highlight matches
+	local highlight_matches = config.highlight_matches
 	-- timeout before the find-extender.nvim goes to the default behavior to find 1 char
 	-- * timeout in ms
 	local timeout = config.timeout
@@ -31,76 +33,101 @@ function M.finder(config)
 
 	local utils = require("find-extender.utils")
 
-	local get_node = require("find-extender.get-node").get_node
+	local get_match = require("find-extender.get-match").get_match
 	local tm = require("find-extender.text-manipulation")
 	local get_chars = utils.get_chars
 
-	--- determines the direction and gets the next node position
-	---@param key string key to determine direction, etc.
-	---@param opts table options
-	local function finder(key, opts)
-		-- don't allow , and ; command to be used before any other command's got
-		-- executed and data has been collected for last pattern repetition.
-		if not __data.pattern and key == "," or key == ";" and not __data.pattern then
+	--- pick next highlighted match
+	---@return nil|number picked count
+	local function pick_match()
+		local picked_match = fn.getchar()
+		picked_match = tonumber(fn.nr2char(picked_match))
+		if type(picked_match) ~= "number" then
+			-- TODO: add virtual text with numbers displayed on them
+			--
+			-- to remove the highlighted matches
+			vim.cmd("silent! do CursorMoved")
 			return
 		end
-		-- > find
-		local find_direction_left = key == "f"
-			or __data.key == "F" and key == ","
-			or __data.key == "f" and key == ";"
-			or key == "cf"
-			or key == "df"
-			or key == "yf"
-		local find_direction_right = key == "F"
-			or __data.key == "f" and key == ","
-			or __data.key == "F" and key == ";"
-			or key == "cF"
-			or key == "dF"
-			or key == "yF"
-		-- > till
-		local till_direction_left = key == "t"
-			or __data.key == "T" and key == ","
-			or __data.key == "t" and key == ";"
-			or key == "ct"
-			or key == "dt"
-			or key == "yt"
-		local till_direction_right = key == "T"
-			or __data.key == "t" and key == ","
-			or __data.key == "T" and key == ";"
-			or key == "cT"
-			or key == "dT"
-			or key == "yT"
+		return tonumber(picked_match)
+	end
 
-		-- node position direction determined by the input key
-		local node_direction = { left = false, right = false }
-		if find_direction_right or till_direction_right then
-			node_direction.right = true
-		elseif find_direction_left or till_direction_left then
-			node_direction.left = true
+	--- get direction and the type of the keys it a lot easier to do this like this
+	--- then other methods. It's cleaner way of dealing with keys.
+	---@param args table of keys with current key and the previous key.
+	---@return table
+	local function get_key_type(args)
+		local tbl = {}
+		-- > find
+		tbl.find_direction_left = args.key == "f"
+			or args.prev_key == "F" and args.key == ","
+			or args.prev_key == "f" and args.key == ";"
+			or args.key == "cf"
+			or args.key == "df"
+			or args.key == "yf"
+		tbl.find_direction_right = args.key == "F"
+			or args.prev_key == "f" and args.key == ","
+			or args.prev_key == "F" and args.key == ";"
+			or args.key == "cF"
+			or args.key == "dF"
+			or args.key == "yF"
+		-- > till
+		tbl.till_direction_left = args.key == "t"
+			or args.prev_key == "T" and args.key == ","
+			or args.prev_key == "t" and args.key == ";"
+			or args.key == "ct"
+			or args.key == "dt"
+			or args.key == "yt"
+		tbl.till_direction_right = args.key == "T"
+			or __data.key == "t" and args.key == ","
+			or __data.key == "T" and args.key == ";"
+			or args.key == "cT"
+			or args.key == "dT"
+			or args.key == "yT"
+		tbl.normal_keys = args.key == "f" or args.key == "F" or args.key == "t" or args.key == "T"
+		tbl.text_manipulation_keys = args.key == "cT"
+			or args.key == "dT"
+			or args.key == "yT"
+			or args.key == "ct"
+			or args.key == "dt"
+			or args.key == "yt"
+			or args.key == "cf"
+			or args.key == "df"
+			or args.key == "yf"
+			or args.key == "cF"
+			or args.key == "dF"
+			or args.key == "yF"
+		return tbl
+	end
+
+	--- determines the direction and gets the next match position
+	---@param args table
+	---@field args.key string to determine direction, etc.
+	---@field args.count number count
+	local function finder(args)
+		-- don't allow , and ; command to be used before any other command's got
+		-- executed and data has been collected for last pattern repetition.
+		if not __data.pattern and args.key == "," or args.key == ";" and not __data.pattern then
+			return
+		end
+
+		local key_types = get_key_type({ key = args.key, prev_key = __data.key })
+
+		-- match position direction determined by the input key
+		local match_direction = { left = false, right = false }
+		if key_types.find_direction_right or key_types.till_direction_right then
+			match_direction.right = true
+		elseif key_types.find_direction_left or key_types.till_direction_left then
+			match_direction.left = true
 		end
 		-- threshold for till and find command's till command's set cursor before
 		-- text and find command's set cursor on the text pattern.
 		local threshold
-		if till_direction_left or till_direction_right then
+		if key_types.till_direction_left or key_types.till_direction_right then
 			threshold = 2
-		elseif find_direction_left or find_direction_right then
+		elseif key_types.find_direction_left or key_types.find_direction_right then
 			threshold = 1
 		end
-
-		local pattern
-		local normal_keys = key == "f" or key == "F" or key == "t" or key == "T"
-		local text_manipulation_keys = key == "cT"
-			or key == "dT"
-			or key == "yT"
-			or key == "ct"
-			or key == "dt"
-			or key == "yt"
-			or key == "cf"
-			or key == "df"
-			or key == "yf"
-			or key == "cF"
-			or key == "dF"
-			or key == "yF"
 
 		local get_chars_args = {
 			chars_length = chars_length,
@@ -108,86 +135,85 @@ function M.finder(config)
 			start_timeout_after_chars = start_timeout_after_chars,
 		}
 
-		utils.add_dummy_cursor()
-
-		if normal_keys then
+		local pattern = nil
+		if key_types.normal_keys then
 			-- if find or till command is executed then add the pattern and the key to the
 			-- _last_search_info table.
 			pattern = get_chars(get_chars_args)
 			if not pattern then
 				return
 			end
-			__data.key = key
+			__data.key = args.key
 			__data.pattern = pattern
 		end
-		if text_manipulation_keys then
+		if key_types.text_manipulation_keys then
 			pattern = get_chars(get_chars_args)
 			if not pattern then
 				return
 			end
 		end
-		if not text_manipulation_keys and not normal_keys then
+		if not key_types.text_manipulation_keys and not key_types.normal_keys then
 			-- if f or F or t or T command wasn't pressed then search for the _last_search_info.pattern
 			-- for , or ; command
 			pattern = __data.pattern
 		end
 
-		-- to get the count
-		local count = vim.v.count
-		if count < 2 then
-			count = nil
+		local count = nil
+		-- args.count has higher precedence
+		if args and args.count then
+			count = args.count
+		else
+			if vim.v.count > 1 then
+				count = vim.v.count
+			end
 		end
-		-- this opts table is from get_text_manipulation_keys
-		if opts and opts.count then
-			count = opts.count
-		end
-		local node_info = {
-			pattern = pattern,
-			node_direction = node_direction,
-			threshold = threshold,
-			count = count,
-		}
 
-		local cur_line = api.nvim_get_current_line()
-		local string_nodes
+		local str = api.nvim_get_current_line()
+		local matches = nil
 		if pattern then
-			string_nodes = utils.map_string_pattern_positions(cur_line, pattern)
+			matches = utils.map_string_pattern_positions(str, pattern)
 		else
 			return
 		end
 
-		local node = nil
-		if #string_nodes > count - 1000 then
-			-- if count is available then highlight only the nodes after the count - 1
-			local nodes_tbl = {}
+		-- need to reverse the tbl of the matches because now we have to start
+		-- searching from the end of the string rather then from the start
+		if match_direction.right then
+			matches = utils.reverse_tbl(matches)
+		end
+		if count then
+			-- if count is available then highlight only the matches after the `count - 1`
+			local matches_tbl = {}
 			local i = count - 1
 			while true do
-				if i == #string_nodes then
+				if i == #matches then
 					break
 				end
 				i = i + 1
-				table.insert(nodes_tbl, string_nodes[i])
+				table.insert(matches_tbl, matches[i])
 			end
-			local picked_node = fn.getchar()
-			picked_node = tonumber(fn.nr2char(picked_node))
-			if type(picked_node) ~= "number" then
-				-- TODO: add virtual text with numbers displayed on them
-				vim.notify("find-extender: pick a number", vim.log.levels.WARN, {})
-				-- to remove the highlighted nodes
-				vim.cmd("silent! do CursorMoved")
-				return
-			end
-			nodes_tbl = utils.map_string_pattern_positions(cur_line, pattern)
-			node_info.count = tonumber(picked_node)
-			node = get_node(node_info)
+			matches = matches_tbl
 		end
 
-		if not node then
-			node = get_node(node_info)
+		local get_match_args = {
+			str = str,
+			str_matches = matches,
+			pattern = pattern,
+			match_direction = match_direction,
+			threshold = threshold,
+			count = count,
+		}
+		local match = nil
+		-- match match if pattern matches exceed the highlight_matches.max_matches
+		if #matches > highlight_matches.min_matches * 100 then
+			count = pick_match()
+			get_match_args.count = count
 		end
-		if #key > 1 then
+		match = get_match(get_match_args)
+
+		if #args.key > 1 then
 			local type = {}
-			local first_key = string.sub(key, 1, 1)
+			local first_key = string.sub(args.key, 1, 1)
 			if first_key == "c" then
 				type.change = true
 			elseif first_key == "d" then
@@ -196,13 +222,13 @@ function M.finder(config)
 				type.yank = true
 			end
 			tm.manipulate_text(
-				{ node = node, node_direction = node_direction, threshold = threshold },
+				{ match = match, match_direction = match_direction, threshold = threshold },
 				type,
 				{ highlight_on_yank = highlight_on_yank }
 			)
 		else
-			if node then
-				utils.set_cursor(node)
+			if match then
+				utils.set_cursor(match)
 			end
 		end
 	end
