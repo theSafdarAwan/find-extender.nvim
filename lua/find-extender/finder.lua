@@ -182,17 +182,7 @@ function M.finder(config)
 			matches = utils.reverse_tbl(matches)
 		end
 		if count then
-			-- if count is available then highlight only the matches after the `count - 1`
-			local matches_tbl = {}
-			local i = count - 1
-			while true do
-				if i == #matches then
-					break
-				end
-				i = i + 1
-				table.insert(matches_tbl, matches[i])
-			end
-			matches = matches_tbl
+			matches = utils.trim_table({ index = count - 1, tbl = matches })
 		end
 
 		local get_match_args = {
@@ -201,13 +191,14 @@ function M.finder(config)
 			pattern = pattern,
 			match_direction = match_direction,
 			threshold = threshold,
-			count = count,
 		}
 		local match = nil
 		-- match match if pattern matches exceed the highlight_matches.max_matches
 		if #matches > highlight_matches.min_matches * 100 then
 			count = pick_match()
-			get_match_args.count = count
+			if count then
+				matches = utils.trim_table({ index = count - 1, tbl = matches })
+			end
 		end
 		match = get_match(get_match_args)
 

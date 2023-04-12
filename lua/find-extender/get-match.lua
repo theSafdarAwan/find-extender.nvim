@@ -19,7 +19,6 @@ function M.get_match(args)
 	vim.validate({
 		match_direction = { args.match_direction, "table" },
 		threshold = { args.threshold, "number" },
-		count = { args.count, { "number", "nil" } },
 		pattern = { args.pattern, "string" },
 	})
 	if not args.match_direction.left and not args.match_direction.right then

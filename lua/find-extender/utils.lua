@@ -8,8 +8,8 @@ local fn = vim.fn
 --- timeout or chars limit, next target input chars, if nil(out of eng alphabets, numbers,
 --- or punctuations) character was provided.
 function M.get_chars(opts)
-	-- add dummy cursor because now cursor is in the command line
 	M.add_dummy_cursor()
+	-- add dummy cursor because now cursor is in the command line
 	local chars = ""
 	local break_loop = false
 	local i = 0
@@ -96,14 +96,13 @@ function M.on_yank(highlight_on_yank_opts, start, finish)
 end
 
 --- highlights the table matches, clears highlights when CursorMoved event happens.
----@param matches_tbl table matches position to highlight
----@param threshold number information about
-M.highlight_matches = function(matches_tbl, threshold)
+---@param args table
+M.highlight_matches = function(args)
 	local buf = api.nvim_get_current_buf()
 	local line_nr = fn.line(".")
 	local ns_id = api.nvim_create_namespace("")
-	for _, match in ipairs(matches_tbl) do
-		api.nvim_buf_add_highlight(buf, ns_id, "CursorColumn", line_nr - 1, match - 1, match + threshold)
+	for _, match in ipairs(args.matches_tbl) do
+		api.nvim_buf_add_highlight(buf, ns_id, "CursorColumn", line_nr - 1, match - 1, match + args.threshold)
 	end
 	api.nvim_create_autocmd({ "CursorMoved" }, {
 		once = true,
@@ -131,9 +130,7 @@ M.add_dummy_cursor = function()
 	api.nvim_create_autocmd({ "CursorMoved" }, {
 		once = true,
 		callback = function()
-			if extmark_id then
-				api.nvim_buf_del_extmark(buf_nr, ns_id, extmark_id)
-			end
+			api.nvim_buf_del_extmark(buf_nr, ns_id, extmark_id)
 		end,
 	})
 end
@@ -161,6 +158,23 @@ function M.get_remaining_str(str, before_end, after_start)
 	local a = string.sub(str, 1, before_end)
 	local b = string.sub(str, after_start, #str)
 	return a .. b
+end
+
+--- trim a table till the index
+---@param args table
+---@return table
+function M.trim_table(args)
+	-- if count is available then highlight only the matches after the `count - 1`
+	local matches_tbl = {}
+	local i = args.index
+	while true do
+		if i == #args.tbl then
+			break
+		end
+		i = i + 1
+		table.insert(matches_tbl, args.tbl[i])
+	end
+	return matches_tbl
 end
 
 --- revers a table from {1, 2, 3} -> {3, 2, 1}
