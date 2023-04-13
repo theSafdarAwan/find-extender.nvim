@@ -66,8 +66,8 @@ function M.finder(config)
 		tbl.till_direction_right = args.key == "T"
 			or __previous_data.key == "t" and args.key == ","
 			or __previous_data.key == "T" and args.key == ";"
-		-- is args.key normal key normal keys
-		tbl.normal_keys = args.key == "f" or args.key == "F" or args.key == "t" or args.key == "T"
+		-- is args.key is pattern repeat key
+		tbl.pattern_repeat_key = args.key == ";" or args.key == ","
 		return tbl
 	end
 
@@ -130,7 +130,10 @@ function M.finder(config)
 		end
 
 		local pattern = nil
-		if key_types.normal_keys then
+		if key_types.pattern_repeat_key then
+			-- if args.key is , or ; then use the previous pattern
+			pattern = __previous_data.pattern
+		else
 			pattern = get_chars({ chars_length = 2, timeout = timeout })
 			if not pattern then
 				return
@@ -139,10 +142,6 @@ function M.finder(config)
 			-- __previous_data table.
 			__previous_data.key = args.key
 			__previous_data.pattern = pattern
-		else
-			-- if any of fF and tT command's weren't pressed then search use __previous_data.pattern
-			-- for , or ; command
-			pattern = __previous_data.pattern
 		end
 
 		local matches = get_matches_and_count({ pattern = pattern, match_direction = match_direction })
