@@ -29,7 +29,7 @@ function M.finder(config)
 	-- to highlight the yanked area
 	local highlight_on_yank = config.highlight_on_yank
 	-- to remember the last pattern and the command when using the ; and , command
-	local __data = { pattern = nil, key = nil }
+	local __previous_data = { pattern = nil, key = nil }
 
 	local utils = require("find-extender.utils")
 
@@ -52,8 +52,8 @@ function M.finder(config)
 		return tonumber(picked_match)
 	end
 
-	--- get direction and the type of the keys it a lot easier to do this like this
-	--- then other methods. It's cleaner way of dealing with keys.
+	-- TODO: refactor this to only get key type for the `finding_keys_helper`
+	--
 	---@param args table of keys with current key and the previous key.
 	---@return table
 	local function get_key_types(args)
@@ -79,8 +79,8 @@ function M.finder(config)
 			or args.key == "dt"
 			or args.key == "yt"
 		tbl.till_direction_right = args.key == "T"
-			or __data.key == "t" and args.key == ","
-			or __data.key == "T" and args.key == ";"
+			or __previous_data.key == "t" and args.key == ","
+			or __previous_data.key == "T" and args.key == ";"
 			or args.key == "cT"
 			or args.key == "dT"
 			or args.key == "yT"
@@ -100,19 +100,19 @@ function M.finder(config)
 		return tbl
 	end
 
-	--- determines the direction and gets the next match position
-	---@param args table
+	----------------------------------------------------------------------
+	--                           Finding Keys                           --
+	----------------------------------------------------------------------
+	--- helper for finding keys, gets the match and then sets the cursor.
+	---@param args table contains arguments needed for finding the next/prev match
 	---@field args.key string to determine direction, etc.
-	---@field args.count number count
-	local function finder(args)
-		-- don't allow , and ; command to be used before any other command's got
-		-- executed and data has been collected for last pattern repetition.
-		if not __data.pattern and args.key == "," or args.key == ";" and not __data.pattern then
+	local function finding_keys_helper(args)
+		-- if not __previous_data was saved before `,` and `;` then return
+		if not __previous_data.pattern and args.key == "," or args.key == ";" and not __previous_data.pattern then
 			return
 		end
-		local get_key_types_args = { key = args.key, prev_key = __data.key }
-		local key_types = get_key_types(get_key_types_args)
 
+		local key_types = get_key_types({ key = args.key, prev_key = __previous_data.key })
 		-- match position direction determined by the input key
 		local match_direction = { left = false, right = false }
 		if key_types.find_direction_right or key_types.till_direction_right then
@@ -120,51 +120,40 @@ function M.finder(config)
 		elseif key_types.find_direction_left or key_types.till_direction_left then
 			match_direction.left = true
 		end
-		-- threshold for till and find command's till command's set cursor before
-		-- text and find command's set cursor on the text pattern.
-		local threshold
-		if key_types.till_direction_left or key_types.till_direction_right then
-			threshold = 2
-		elseif key_types.find_direction_left or key_types.find_direction_right then
+
+		-- string.find returns the exact position for the match so we have to adjust
+		-- the cursor position base on the type of the command
+		-- tT/fF commands have different behaviour for settings cursor and threshold value
+		-- justifies that example for the cursor position settings:
+		-- till command      match | find command       match
+		--                  ^      |                    ^
+		local threshold = nil
+		if key_types.find_direction_left or key_types.find_direction_right then
 			threshold = 1
+		elseif key_types.till_direction_left or key_types.till_direction_right then
+			threshold = 2
 		end
 
-		local get_chars_args = {
-			chars_length = chars_length,
-			timeout = timeout,
-			start_timeout_after_chars = start_timeout_after_chars,
-		}
 		local pattern = nil
 		if key_types.normal_keys then
-			-- if find or till command is executed then add the pattern and the key to the
-			-- _last_search_info table.
-			pattern = get_chars(get_chars_args)
+			pattern = get_chars({ chars_length = 2, timeout = timeout })
 			if not pattern then
 				return
 			end
-			__data.key = args.key
-			__data.pattern = pattern
-		end
-		if key_types.text_manipulation_keys then
-			pattern = get_chars(get_chars_args)
-			if not pattern then
-				return
-			end
-		end
-		if not key_types.text_manipulation_keys and not key_types.normal_keys then
-			-- if f or F or t or T command wasn't pressed then search for the _last_search_info.pattern
+			-- if one of fF or tT command's is executed then add the pattern and the key to the
+			-- __previous_data table.
+			__previous_data.key = args.key
+			__previous_data.pattern = pattern
+		else
+			-- if any of fF and tT command's weren't pressed then search use __previous_data.pattern
 			-- for , or ; command
-			pattern = __data.pattern
+			pattern = __previous_data.pattern
 		end
 
+		-- count sanity
 		local count = nil
-		-- args.count has higher precedence
-		if args and args.count then
-			count = args.count
-		else
-			if vim.v.count > 1 then
-				count = vim.v.count
-			end
+		if vim.v.count > 1 then
+			count = vim.v.count
 		end
 
 		local str = api.nvim_get_current_line()
@@ -175,8 +164,92 @@ function M.finder(config)
 			return
 		end
 
-		-- need to reverse the tbl of the matches because now we have to start
-		-- searching from the end of the string rather then from the start
+		-- in case of F/T commands we need to reverse the tbl of the matches because now we have
+		-- to start searching from the end of the string rather then from the start
+		if match_direction.right then
+			matches = utils.reverse_tbl(matches)
+		end
+		-- trim table if count is available
+		if count then
+			matches = utils.trim_table({ index = count - 1, tbl = matches })
+		end
+
+		local match = nil
+		-- highlight match if pattern matches exceed the highlight_matches.max_matches
+		if #matches > highlight_matches.min_matches * 100 then
+			count = pick_match()
+			if count then
+				matches = utils.trim_table({ index = count - 1, tbl = matches })
+			end
+		end
+		match = get_match({
+			str = str,
+			str_matches = matches,
+			pattern = pattern,
+			match_direction = match_direction,
+			threshold = threshold,
+		})
+
+		if match then
+			utils.set_cursor(match)
+		end
+	end
+
+	----------------------------------------------------------------------
+	--                      Text Manipulation Keys                      --
+	----------------------------------------------------------------------
+	--- helper for the text_manipulation keys
+	--- This is an easy way of dealing with y/d/c keys operations.
+	---@param args table
+	local function tm_keys_helper(args)
+		local type = { change = false, delete = false, yank = false }
+		local init_key = string.sub(args.key, 1, 1)
+		if init_key == "c" then
+			type.change = true
+		elseif init_key == "d" then
+			type.delete = true
+		elseif init_key == "y" then
+			type.yank = true
+		end
+
+		local second_key = string.sub(args.key, 2, 2)
+		local threshold = nil
+		if second_key == "F" or second_key == "f" then
+			threshold = 1
+		elseif second_key == "T" or second_key == "t" then
+			threshold = 2
+		end
+
+		local match_direction = { left = false, right = false }
+		if second_key == "f" or second_key == "t" then
+			match_direction.left = true
+		else
+			match_direction.right = true
+		end
+		---------------------
+
+		local pattern = get_chars({ chars_length = 2 })
+
+		if not pattern then
+			return
+		end
+
+		-- count sanity check
+		local count = nil
+		if vim.v.count > 1 then
+			count = vim.v.count
+		end
+
+		local str = api.nvim_get_current_line()
+		-- TODO: combine the finding_keys_helper chunk and this chunk
+		local matches = nil
+		if pattern then
+			matches = utils.map_string_pattern_positions(str, pattern)
+		else
+			return
+		end
+		-- in case of F/T commands we need to reverse the tbl of the matches because now we have
+		-- to start searching from the end of the string rather then from the start
 		if match_direction.right then
 			matches = utils.reverse_tbl(matches)
 		end
@@ -184,72 +257,30 @@ function M.finder(config)
 			matches = utils.trim_table({ index = count - 1, tbl = matches })
 		end
 
-		local get_match_args = {
-			str = str,
-			str_matches = matches,
-			pattern = pattern,
-			match_direction = match_direction,
-			threshold = threshold,
-		}
 		local match = nil
-		-- match match if pattern matches exceed the highlight_matches.max_matches
+		-- highlight match if pattern matches exceed the highlight_matches.max_matches
+		-- and trim the matches table according to the user picked match
 		if #matches > highlight_matches.min_matches * 100 then
 			count = pick_match()
 			if count then
 				matches = utils.trim_table({ index = count - 1, tbl = matches })
 			end
 		end
-		match = get_match(get_match_args)
+		match = get_match({
+			str = str,
+			str_matches = matches,
+			pattern = pattern,
+			match_direction = match_direction,
+			threshold = threshold,
+		})
 
-		if #args.key > 1 then
-			local type = {}
-			local first_key = string.sub(args.key, 1, 1)
-			if first_key == "c" then
-				type.change = true
-			elseif first_key == "d" then
-				type.delete = true
-			elseif first_key == "y" then
-				type.yank = true
-			end
-			-- TODO: refactoring this to args a single table
-			tm.manipulate_text(
-				{ match = match, match_direction = match_direction, threshold = threshold },
-				type,
-				{ highlight_on_yank = highlight_on_yank }
-			)
-		else
-			if match then
-				utils.set_cursor(match)
-			end
-		end
-	end
-
-	-- TODO: support using text_manipulation keys in visual mode
-
-	-- TODO: re-write text_manipulation
-	--
-	--- gets the keys and count when manipulating keys.
-	--- This is an easy way of dealing with y/d/c keys operations.
-	---@param args table
-	local function text_manipulation(args)
-		local chars = get_chars({ chars_length = 2 })
-
-		if chars then
-			local count = vim.v.count
-			-- need to normalize the key by removing the callback function from its opts
-			keymap.set(args.modes, args.key, "", keymap.opts)
-			local feed_key = args.key .. chars
-			if count and count > 0 then
-				feed_key = count .. feed_key
-			end
-			api.nvim_feedkeys(feed_key, "n", false)
-			-- this key would be the key that triggered this text_manipulation_keys function
-			-- and we need to set it back so that we can use it again
-			keymap.set(args.modes, args.key, "", {
-				unpack(keymap.opts),
-				callback = function()
-					text_manipulation(args)
-				end,
+		if match then
+			tm.manipulate_text({
+				threshold = threshold,
+				match = match,
+				match_direction = match_direction,
+				type = type,
+				highlight_on_yank = highlight_on_yank,
 			})
 		end
 	end
@@ -315,28 +346,23 @@ function M.finder(config)
 			keymap.set(modes.finding, key, "", {
 				unpack(keymap.opts),
 				callback = function()
-					finder({ key = key })
+					finding_keys_helper({ key = key })
 				end,
 			})
 		end
-		-- BUG: currently i have to re-write the text_manipulation function
-		-- for key_name, keys in pairs(tm_keys) do
-		-- 	-- to get the first character of delete/change/yank
-		-- 	local tm_key_initial = string.sub(tostring(key_name), 1, 1)
-		-- 	for _, key in ipairs(keys) do
-		-- 		key = tm_key_initial .. key
-		-- 		keymap.set(modes.text_manipulation, key, "", {
-		-- 			unpack(keymap.opts),
-		-- 			callback = function()
-		-- 				text_manipulation({
-		-- 					modes = modes.text_manipulation,
-		-- 					key = key,
-		-- 					keys = keys,
-		-- 				})
-		-- 			end,
-		-- 		})
-		-- 	end
-		-- end
+		for key_name, keys in pairs(tm_keys) do
+			-- to get the first character of delete/change/yank
+			local tm_key_init_char = string.sub(tostring(key_name), 1, 1)
+			for _, key in ipairs(keys) do
+				key = tm_key_init_char .. key
+				keymap.set("n", key, "", {
+					unpack(keymap.opts),
+					callback = function()
+						tm_keys_helper({ key = key })
+					end,
+				})
+			end
+		end
 	end
 
 	----------------------------------------------------------------------

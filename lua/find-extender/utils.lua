@@ -14,7 +14,7 @@ function M.get_chars(opts)
 	local break_loop = false
 	local i = 0
 	while true do
-		if opts.timeout and #chars > opts.start_timeout_after_chars - 1 then
+		if opts.timeout and #chars > 0 then
 			-- this is a trick to solve issue of multiple timers being created in every
 			-- loop iteration and once the guard condition becomes true the previous timers
 			-- jeopardised the timeout So for now the i and id variable's acts as a id
