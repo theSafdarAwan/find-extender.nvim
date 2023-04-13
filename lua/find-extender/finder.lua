@@ -295,7 +295,7 @@ function M.finder(config)
 	----------------------------------------------------------------------
 	local function set_maps()
 		for _, key in ipairs(finding_keys) do
-			keymap.set(modes.finding, key, "", {
+			keymap.set(modes.finding, key, key, {
 				---@diagnostic disable-next-line: deprecated
 				unpack(keymap.opts),
 				callback = function()
@@ -308,7 +308,7 @@ function M.finder(config)
 			local tm_key_init_char = string.sub(tostring(key_name), 1, 1)
 			for _, key in ipairs(keys) do
 				key = tm_key_init_char .. key
-				keymap.set("n", key, "", {
+				keymap.set("n", key, key, {
 					---@diagnostic disable-next-line: deprecated
 					unpack(keymap.opts),
 					callback = function()
@@ -324,12 +324,12 @@ function M.finder(config)
 	----------------------------------------------------------------------
 	local function remove_maps()
 		for _, key in ipairs(finding_keys) do
-			keymap.set(modes.finding, key, "", keymap.opts)
+			keymap.set(modes.finding, key, key, keymap.opts)
 		end
 		for key_name, _ in pairs(tm_keys) do
 			local key = string.sub(tostring(key_name), 1, 1)
 			keymap.set(modes.text_manipulation, key, function()
-				keymap.set(keymaps.text_manipulation, key, "", keymap.opts)
+				keymap.set(keymaps.text_manipulation, key, key, keymap.opts)
 			end)
 		end
 	end
