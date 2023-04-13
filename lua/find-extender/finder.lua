@@ -38,7 +38,7 @@ function M.finder(config)
 	local get_chars = utils.get_chars
 
 	--- pick next highlighted match
-	---@return nil|number picked count
+	---@return number|nil picked count
 	local function pick_match()
 		local picked_match = fn.getchar()
 		picked_match = tonumber(fn.nr2char(picked_match))
@@ -74,6 +74,30 @@ function M.finder(config)
 		-- is args.key normal key normal keys
 		tbl.normal_keys = args.key == "f" or args.key == "F" or args.key == "t" or args.key == "T"
 		return tbl
+	end
+
+	--- gets the matches of the pattern
+	---@param args table
+	---@return table,number matches and count
+	local function get_matches_and_count(args)
+		local str = api.nvim_get_current_line()
+		-- count sanity check
+		local count = nil
+		if vim.v.count > 1 then
+			count = vim.v.count
+		end
+
+		local matches = nil
+		matches = utils.map_string_pattern_positions(str, args.pattern)
+		-- in case of F/T commands we need to reverse the tbl of the matches because now we have
+		-- to start searching from the end of the string rather then from the start
+		if args.match_direction.right then
+			matches = utils.reverse_tbl(matches)
+		end
+		if count then
+			matches = utils.trim_table({ index = count - 1, tbl = matches })
+		end
+		return matches, count
 	end
 
 	----------------------------------------------------------------------
@@ -126,19 +150,7 @@ function M.finder(config)
 			pattern = __previous_data.pattern
 		end
 
-		-- count sanity
-		local count = nil
-		if vim.v.count > 1 then
-			count = vim.v.count
-		end
-
-		local str = api.nvim_get_current_line()
-		local matches = nil
-		if pattern then
-			matches = utils.map_string_pattern_positions(str, pattern)
-		else
-			return
-		end
+		local matches, count = get_matches_and_count({ pattern = pattern, match_direction = match_direction })
 
 		-- in case of F/T commands we need to reverse the tbl of the matches because now we have
 		-- to start searching from the end of the string rather then from the start
@@ -159,7 +171,6 @@ function M.finder(config)
 			end
 		end
 		match = get_match({
-			str = str,
 			str_matches = matches,
 			pattern = pattern,
 			match_direction = match_direction,
@@ -204,34 +215,12 @@ function M.finder(config)
 		end
 		---------------------
 
-		local pattern = get_chars({ chars_length = 2 })
-
+		local pattern = get_chars({ chars_length = 2, chars_type = "number" })
 		if not pattern then
 			return
 		end
 
-		-- count sanity check
-		local count = nil
-		if vim.v.count > 1 then
-			count = vim.v.count
-		end
-
-		local str = api.nvim_get_current_line()
-		-- TODO: combine the finding_keys_helper chunk and this chunk
-		local matches = nil
-		if pattern then
-			matches = utils.map_string_pattern_positions(str, pattern)
-		else
-			return
-		end
-		-- in case of F/T commands we need to reverse the tbl of the matches because now we have
-		-- to start searching from the end of the string rather then from the start
-		if match_direction.right then
-			matches = utils.reverse_tbl(matches)
-		end
-		if count then
-			matches = utils.trim_table({ index = count - 1, tbl = matches })
-		end
+		local matches, count = get_matches_and_count({ pattern = pattern, match_direction = match_direction })
 
 		local match = nil
 		-- highlight match if pattern matches exceed the highlight_matches.max_matches
@@ -243,7 +232,6 @@ function M.finder(config)
 			end
 		end
 		match = get_match({
-			str = str,
 			str_matches = matches,
 			pattern = pattern,
 			match_direction = match_direction,

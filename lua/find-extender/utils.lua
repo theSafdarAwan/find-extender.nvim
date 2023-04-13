@@ -3,18 +3,18 @@ local api = vim.api
 local fn = vim.fn
 
 --- gets user input
----@param opts table includes information about chars and timeout.
+---@param args table includes information about chars and timeout.
 ---@return nil|string|nil|string nil if nil character, if loop broke either because of
 --- timeout or chars limit, next target input chars, if nil(out of eng alphabets, numbers,
 --- or punctuations) character was provided.
-function M.get_chars(opts)
+function M.get_chars(args)
 	M.add_dummy_cursor()
 	-- add dummy cursor because now cursor is in the command line
 	local chars = ""
 	local break_loop = false
 	local i = 0
 	while true do
-		if opts.timeout and #chars > 0 then
+		if args.timeout and #chars > 0 then
 			-- this is a trick to solve issue of multiple timers being created in every
 			-- loop iteration and once the guard condition becomes true the previous timers
 			-- jeopardised the timeout So for now the i and id variable's acts as a id
@@ -28,10 +28,14 @@ function M.get_chars(opts)
 					api.nvim_feedkeys("�", "n", false)
 					break_loop = true
 				end
-			end, opts.timeout)
+			end, args.timeout)
 		end
 		local c = fn.getchar()
 		if type(c) ~= "number" then
+			return
+		end
+		-- if args.chars_type is present then check it as well
+		if args.chars_type and tonumber(fn.nr2char(c)) == args.chars_type then
 			return
 		end
 		if break_loop then
@@ -42,7 +46,7 @@ function M.get_chars(opts)
 			return
 		end
 		chars = chars .. fn.nr2char(c)
-		if #chars == opts.chars_length then
+		if #chars == args.chars_length then
 			break
 		end
 	end

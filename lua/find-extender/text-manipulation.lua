@@ -8,7 +8,7 @@ local utils = require("find-extender.utils")
 --- manipulates text and puts manipulated text in the register
 ---@param args table
 function M.manipulate_text(args)
-	local current_line = api.nvim_get_current_line()
+	local str = api.nvim_get_current_line()
 	local register = vim.v.register
 	local get_cursor = api.nvim_win_get_cursor(0)
 
@@ -31,11 +31,11 @@ function M.manipulate_text(args)
 	if get_cursor[2] == 0 and match == 1 and args.threshold == 2 then
 		return
 	end
-	local in_range_str = string.sub(current_line, start, finish - 1)
+	local in_range_str = string.sub(str, start, finish - 1)
 	if args.type.delete or args.type.change then
 		-- substitute the remaining line from the cursor position till the
 		-- next target position
-		local remaining_line = utils.get_remaining_str(current_line, start, finish)
+		local remaining_line = utils.get_remaining_str(str, start, finish)
 		-- replace the current line with the remaining line
 		api.nvim_buf_set_lines(0, get_cursor[1] - 1, get_cursor[1], false, { remaining_line })
 		-- if we substitute from right to left the cursor resets to the end
