@@ -16,16 +16,11 @@ local keymap = {
 --- main finder function
 ---@param config table config
 function M.finder(config)
-	-- how many characters to find for
-	local chars_length = config.chars_length
 	-- highlight matches
 	local highlight_matches = config.highlight_matches
 	-- timeout before the find-extender.nvim goes to the default behavior to find 1 char
 	-- * timeout in ms
 	local timeout = config.timeout
-	-- How many characters after which the timeout should be triggered. Important when
-	-- we have more set more then _2_ chars lenght in _chars_lenght_.
-	local start_timeout_after_chars = config.start_timeout_after_chars -- 2 by default
 	-- to highlight the yanked area
 	local highlight_on_yank = config.highlight_on_yank
 	-- to remember the last pattern and the command when using the ; and , command
@@ -78,7 +73,7 @@ function M.finder(config)
 
 	--- gets the matches of the pattern
 	---@param args table
-	---@return table,number matches and count
+	---@return table matches
 	local function get_matches_and_count(args)
 		local str = api.nvim_get_current_line()
 		-- count sanity check
@@ -97,7 +92,7 @@ function M.finder(config)
 		if count then
 			matches = utils.trim_table({ index = count - 1, tbl = matches })
 		end
-		return matches, count
+		return matches
 	end
 
 	----------------------------------------------------------------------
@@ -150,25 +145,16 @@ function M.finder(config)
 			pattern = __previous_data.pattern
 		end
 
-		local matches, count = get_matches_and_count({ pattern = pattern, match_direction = match_direction })
-
-		-- in case of F/T commands we need to reverse the tbl of the matches because now we have
-		-- to start searching from the end of the string rather then from the start
-		if match_direction.right then
-			matches = utils.reverse_tbl(matches)
-		end
-		-- trim table if count is available
-		if count then
-			matches = utils.trim_table({ index = count - 1, tbl = matches })
-		end
+		local matches = get_matches_and_count({ pattern = pattern, match_direction = match_direction })
 
 		local match = nil
 		-- highlight match if pattern matches exceed the highlight_matches.max_matches
-		if #matches > highlight_matches.min_matches * 100 then
-			count = pick_match()
-			if count then
-				matches = utils.trim_table({ index = count - 1, tbl = matches })
+		if #matches > highlight_matches.min_matches then
+			local picked_match = pick_match()
+			if not picked_match then
+				return
 			end
+			matches = utils.trim_table({ index = picked_match - 1, tbl = matches })
 		end
 		match = get_match({
 			str_matches = matches,
@@ -220,16 +206,17 @@ function M.finder(config)
 			return
 		end
 
-		local matches, count = get_matches_and_count({ pattern = pattern, match_direction = match_direction })
+		local matches = get_matches_and_count({ pattern = pattern, match_direction = match_direction })
 
 		local match = nil
 		-- highlight match if pattern matches exceed the highlight_matches.max_matches
 		-- and trim the matches table according to the user picked match
-		if #matches > highlight_matches.min_matches * 100 then
-			count = pick_match()
-			if count then
-				matches = utils.trim_table({ index = count - 1, tbl = matches })
+		if #matches > highlight_matches.min_matches then
+			local picked_match = pick_match()
+			if not picked_match then
+				return
 			end
+			matches = utils.trim_table({ index = picked_match - 1, tbl = matches })
 		end
 		match = get_match({
 			str_matches = matches,
@@ -308,6 +295,7 @@ function M.finder(config)
 	local function set_maps()
 		for _, key in ipairs(finding_keys) do
 			keymap.set(modes.finding, key, "", {
+				---@diagnostic disable-next-line: deprecated
 				unpack(keymap.opts),
 				callback = function()
 					finding_keys_helper({ key = key })
@@ -320,6 +308,7 @@ function M.finder(config)
 			for _, key in ipairs(keys) do
 				key = tm_key_init_char .. key
 				keymap.set("n", key, "", {
+					---@diagnostic disable-next-line: deprecated
 					unpack(keymap.opts),
 					callback = function()
 						tm_keys_helper({ key = key })
