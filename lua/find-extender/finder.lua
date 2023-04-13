@@ -52,51 +52,27 @@ function M.finder(config)
 		return tonumber(picked_match)
 	end
 
-	-- TODO: refactor this to only get key type for the `finding_keys_helper`
-	--
+	--- helper function for determing the direction and type of the finding key
 	---@param args table of keys with current key and the previous key.
 	---@return table
-	local function get_key_types(args)
+	local function get_finding_key_info(args)
 		local tbl = {}
-		-- > find
+		-- find
 		tbl.find_direction_left = args.key == "f"
 			or args.prev_key == "F" and args.key == ","
 			or args.prev_key == "f" and args.key == ";"
-			or args.key == "cf"
-			or args.key == "df"
-			or args.key == "yf"
 		tbl.find_direction_right = args.key == "F"
 			or args.prev_key == "f" and args.key == ","
 			or args.prev_key == "F" and args.key == ";"
-			or args.key == "cF"
-			or args.key == "dF"
-			or args.key == "yF"
-		-- > till
+		-- till
 		tbl.till_direction_left = args.key == "t"
 			or args.prev_key == "T" and args.key == ","
 			or args.prev_key == "t" and args.key == ";"
-			or args.key == "ct"
-			or args.key == "dt"
-			or args.key == "yt"
 		tbl.till_direction_right = args.key == "T"
 			or __previous_data.key == "t" and args.key == ","
 			or __previous_data.key == "T" and args.key == ";"
-			or args.key == "cT"
-			or args.key == "dT"
-			or args.key == "yT"
+		-- is args.key normal key normal keys
 		tbl.normal_keys = args.key == "f" or args.key == "F" or args.key == "t" or args.key == "T"
-		tbl.text_manipulation_keys = args.key == "cT"
-			or args.key == "dT"
-			or args.key == "yT"
-			or args.key == "ct"
-			or args.key == "dt"
-			or args.key == "yt"
-			or args.key == "cf"
-			or args.key == "df"
-			or args.key == "yf"
-			or args.key == "cF"
-			or args.key == "dF"
-			or args.key == "yF"
 		return tbl
 	end
 
@@ -112,7 +88,7 @@ function M.finder(config)
 			return
 		end
 
-		local key_types = get_key_types({ key = args.key, prev_key = __previous_data.key })
+		local key_types = get_finding_key_info({ key = args.key, prev_key = __previous_data.key })
 		-- match position direction determined by the input key
 		local match_direction = { left = false, right = false }
 		if key_types.find_direction_right or key_types.till_direction_right then
