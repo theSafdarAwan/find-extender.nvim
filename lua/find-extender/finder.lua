@@ -110,7 +110,6 @@ function M.finder(config)
 		if not __data.pattern and args.key == "," or args.key == ";" and not __data.pattern then
 			return
 		end
-
 		local get_key_types_args = { key = args.key, prev_key = __data.key }
 		local key_types = get_key_types(get_key_types_args)
 
