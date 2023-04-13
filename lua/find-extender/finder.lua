@@ -225,15 +225,17 @@ function M.finder(config)
 			threshold = threshold,
 		})
 
-		if match then
-			tm.manipulate_text({
-				threshold = threshold,
-				match = match,
-				match_direction = match_direction,
-				type = type,
-				highlight_on_yank = highlight_on_yank,
-			})
+		if not match then
+			return
 		end
+
+		tm.manipulate_text({
+			threshold = threshold,
+			match = match,
+			match_direction = match_direction,
+			type = type,
+			highlight_on_yank = highlight_on_yank,
+		})
 	end
 	----------------------------------------------------------------------
 	--                             Keymaps                              --

@@ -154,13 +154,13 @@ end
 
 --- gets you the remaining string before and after the pattern this gets called
 --- on c/d text manipulation actions
----@param str string current line target area.
----@param before_end number mark before the string ends
----@param after_start number mark after the string started.
+---@param str string main string
+---@param sub_str_start number sub string starting index
+---@param sub_str_end number sub string end index
 ---@return string returns the remaining string before and after the target area.
-function M.get_remaining_str(str, before_end, after_start)
-	local a = string.sub(str, 1, before_end)
-	local b = string.sub(str, after_start, #str)
+function M.get_remaining_str(str, sub_str_start, sub_str_end)
+	local a = string.sub(str, 1, sub_str_start)
+	local b = string.sub(str, sub_str_end, #str)
 	return a .. b
 end
 

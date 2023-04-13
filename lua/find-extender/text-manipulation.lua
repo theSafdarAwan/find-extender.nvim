@@ -1,3 +1,7 @@
+-- WARNING: Don't mess with this file, i have no idea how i made this work. Now i
+-- don't have the capacity to refactor it, as long as it work or if i suddenly
+-- become superman and refactor it, there is not need to mess with this file.
+-- I will re-write it bug for now i don't wanna break this plugin.
 local M = {}
 
 local api = vim.api
@@ -8,16 +12,18 @@ local utils = require("find-extender.utils")
 --- manipulates text and puts manipulated text in the register
 ---@param args table
 function M.manipulate_text(args)
+	vim.validate({
+		match = { args.match, "number" },
+		threshold = { args.threshold, "number" },
+		match_direction = { args.match_direction, "table" },
+		type = { args.type, "table" },
+	})
 	local str = api.nvim_get_current_line()
 	local register = vim.v.register
 	local get_cursor = api.nvim_win_get_cursor(0)
 
 	local match = args.match
 	local match_pos_direction = args.match_direction
-
-	if not match then
-		return
-	end
 
 	local start
 	local finish
@@ -57,10 +63,6 @@ function M.manipulate_text(args)
 		require("find-extender.utils").on_yank(highlight_on_yank, start, finish - 1)
 	end
 
-	-- NOTE: we are doing this text substitution using lua string.sub which
-	-- isn't same as the nvim's delete or change so we have to adjust how
-	-- much characters we got into our register in some case we have to sometimes
-	-- discard one character.
 	if get_cursor[2] == 0 then
 		in_range_str = string.sub(in_range_str, 1, #in_range_str)
 	else
