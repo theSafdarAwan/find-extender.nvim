@@ -79,14 +79,20 @@ function M.finder(config)
 				vim.cmd("redraw")
 				local key = get_chars({ chars_length = 1 })
 				if key == "l" then
-					for _, match in ipairs(args.matches) do
+					local __matches = nil
+					if args.direction.left then
+						__matches = args.matches
+					else
+						__matches = args_matches_reversed
+					end
+					for _, match in ipairs(__matches) do
 						if match > picked_match then
 							picked_match = match
 							api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
 							api.nvim_buf_add_highlight(
 								buf_nr,
 								lh_cursor_ns,
-								"FECurrentMatch",
+								"FECurrentMatchCursor",
 								line_nr - 1,
 								picked_match - 1,
 								picked_match
@@ -96,11 +102,17 @@ function M.finder(config)
 					end
 				end
 				if key == "h" then
-					for _, match in ipairs(args_matches_reversed) do
+					local __matches = nil
+					if args.direction.left then
+						__matches = args_matches_reversed
+					else
+						__matches = args.matches
+					end
+					for _, match in ipairs(__matches) do
 						if match < picked_match then
 							picked_match = match
 							api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
-							api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatch", line_nr - 1, match - 1, match)
+							api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatchCursor", line_nr - 1, match - 1, match)
 							break
 						end
 					end
@@ -485,7 +497,7 @@ function M.finder(config)
 	--                      Highlight virtual text                      --
 	----------------------------------------------------------------------
 	api.nvim_set_hl(0, "FEVirtualText", config.highlight_match)
-	api.nvim_set_hl(0, "FECurrentMatch", config.lh_curosr_hl)
+	api.nvim_set_hl(0, "FECurrentMatchCursor", config.lh_curosr_hl)
 
 	-- add the maps on setup function execution
 	set_maps()
