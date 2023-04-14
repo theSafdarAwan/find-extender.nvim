@@ -1,3 +1,5 @@
+-- TODO: write docs and create new demos.
+
 local deprecate = require("find-extender.deprecate")
 --- setup module.
 local M = {}
