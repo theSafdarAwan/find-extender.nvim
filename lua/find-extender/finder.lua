@@ -26,18 +26,91 @@ function M.finder(config)
 	local tm = require("find-extender.text-manipulation")
 	local get_chars = utils.get_chars
 
+	----------------------------------------------------------------------
+	--                          Picking match                           --
+	----------------------------------------------------------------------
 	--- pick next highlighted match
 	---@param args table includes matches and threshold
 	---@return number|nil picked count
 	local function pick_match(args)
-		args.alphabets = "abcdefgh"
-		utils.mark_matches(args)
-		local picked_match = get_chars({ chars_length = 1 })
-		if picked_match then
-			local match_pos = string.find(args.alphabets, picked_match)
-			picked_match = args.matches[match_pos]
+		local picked_match = nil
+		local buf_nr = api.nvim_get_current_buf()
+		local cursor_pos = fn.getpos(".")[3]
+		local line_nr = fn.line(".")
+		local ns_id = api.nvim_create_namespace("")
+		if config.movments.leap and not config.movments.lh then
+			args.alphabets = "abcdefgh"
+			local i = 1
+			for _, match in ipairs(args.matches) do
+				local extmark_opts = {
+					virt_text = { { string.sub(args.alphabets, i, i), "FEVirtualText" } },
+					virt_text_pos = "overlay",
+					hl_mode = "combine",
+					priority = 105,
+				}
+				api.nvim_buf_set_extmark(buf_nr, ns_id, line_nr - 1, match - 1, extmark_opts)
+				i = i + 1
+			end
+			api.nvim_create_autocmd({ "CursorMoved" }, {
+				once = true,
+				callback = function()
+					api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
+				end,
+			})
+			picked_match = get_chars({ chars_length = 1 })
+			if picked_match then
+				local match_pos = string.find(args.alphabets, picked_match)
+				picked_match = args.matches[match_pos]
+			end
+			vim.cmd("silent! do CursorMoved")
 		end
-		vim.cmd("silent! do CursorMoved")
+
+		if config.movments.lh then
+			-- this table of matches is for the use of h key for backward movmenet,
+			-- because we mapped the string from left to right in case of the h key it
+			-- will break the loop on the first match, that why we have to reverse this table.
+			local args_matches_reversed = utils.reverse_tbl(args.matches)
+			for _, match in ipairs(args.matches) do
+				api.nvim_buf_add_highlight(buf_nr, ns_id, "FEVirtualText", line_nr - 1, match - 1, match + 1)
+			end
+			picked_match = cursor_pos
+			local lh_cursor_ns = api.nvim_create_namespace("")
+			while true do
+				local key = get_chars({ chars_length = 1 })
+				if key == "l" then
+					for _, match in ipairs(args.matches) do
+						if match > picked_match then
+							picked_match = match
+							api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
+							api.nvim_buf_add_highlight(
+								buf_nr,
+								lh_cursor_ns,
+								"FECurrentMatch",
+								line_nr - 1,
+								picked_match - 1,
+								picked_match
+							)
+							break
+						end
+					end
+				end
+				if key == "h" then
+					for _, match in ipairs(args_matches_reversed) do
+						if match < picked_match then
+							picked_match = match
+							api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
+							api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatch", line_nr - 1, match - 1, match)
+							break
+						end
+					end
+				end
+				if key ~= "h" and key ~= "l" then
+					break
+				end
+			end
+			api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
+			api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
+		end
 		return picked_match
 	end
 
@@ -74,6 +147,9 @@ function M.finder(config)
 		return tbl
 	end
 
+	----------------------------------------------------------------------
+	--                            get match                             --
+	----------------------------------------------------------------------
 	--- gets the matches of the pattern
 	---@param args table
 	---@return nil|nil|number match
@@ -122,9 +198,9 @@ function M.finder(config)
 			matches = utils.trim_table({ index = count - 1, tbl = matches })
 		end
 		local match = nil
-		-- highlight match if pattern matches exceed the highlight_matches.max_matches
-		if #matches > config.highlight_matches.min_matches then
-			local picked_match = pick_match({ matches = matches })
+		-- highlight match if pattern matches exceed the virtual_text.max_matches
+		if #matches > config.movments.min_matches then
+			local picked_match = pick_match({ matches = matches, direction = args.match_direction })
 			if not picked_match then
 				return
 			end
@@ -404,8 +480,11 @@ function M.finder(config)
 		end, {})
 	end
 
-	--- add highlight group for highlighting virtual text
-	api.nvim_set_hl(0, "FEVirtualText", config.highlight_matches.hl)
+	----------------------------------------------------------------------
+	--                      Highlight virtual text                      --
+	----------------------------------------------------------------------
+	api.nvim_set_hl(0, "FEVirtualText", config.highlight_match)
+	api.nvim_set_hl(0, "FECurrentMatch", config.lh_curosr_hl)
 
 	-- add the maps on setup function execution
 	set_maps()

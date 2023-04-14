@@ -95,31 +95,6 @@ function M.on_yank(highlight_on_yank_opts, start, finish)
 	end, highlight_on_yank_opts.timeout)
 end
 
---- highlights the table matches, clears highlights when CursorMoved event happens.
----@param args table
-M.mark_matches = function(args)
-	local buf_nr = api.nvim_get_current_buf()
-	local line_nr = fn.line(".")
-	local ns_id = api.nvim_create_namespace("")
-	local i = 1
-	for _, match in ipairs(args.matches) do
-		local extmark_opts = {
-			virt_text = { { string.sub(args.alphabets, i, i), "FEVirtualText" } },
-			virt_text_pos = "overlay",
-			hl_mode = "combine",
-			priority = 105,
-		}
-		api.nvim_buf_set_extmark(buf_nr, ns_id, line_nr - 1, match - 1, extmark_opts)
-		i = i + 1
-	end
-	api.nvim_create_autocmd({ "CursorMoved" }, {
-		once = true,
-		callback = function()
-			api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
-		end,
-	})
-end
-
 --- adds a dummy cursor at the cursor position when the cursor is in the command
 --- line when getting cursor input
 M.add_dummy_cursor = function()

@@ -79,8 +79,8 @@ use {
 
 ```lua
 require("find-extender").setup({
-    ---@field highlight_matches table controls the highlighting of the pattern matches
-    highlight_matches = {
+    ---@field virtual_text table controls the highlighting of the pattern matches
+    virtual_text = {
         ---@field min_matches number minimum matches, if number of matches exceeds this amount
         --- then highlight the matches
         min_matches = 2,

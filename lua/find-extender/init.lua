@@ -7,14 +7,18 @@ local M = {}
 
 --- default config
 local DEFAULT_CONFIG = {
-	---@field highlight_matches table controls the highlighting of the pattern matches
-	highlight_matches = {
-		---@field min_matches number minimum matches, if number of matches exceeds this amount
-		--- then highlight the matches
+	movments = {
+		---@field min_matches number minimum number of matches required after which
+		--- you can use the leap or lh.
 		min_matches = 2,
-		---@field hl table highlight options for the Virtual text see :h nvim_set_hl
-		hl = { fg = "#c0caf5", bg = "#545c7e" },
+		---@field lh table this lets you move though the matches using `l` and `h` keys.
+		lh = false,
+		---@field leap boolean pick match, with virtual text symbol for that match.
+		leap = true,
 	},
+	---@field highlight_match table highlights the match
+	highlight_match = { fg = "#c0caf5", bg = "#545c7e" },
+	lh_curosr_hl = { fg = "#545c7e", bg = "#c0caf5" },
 	---@field keymaps table information for keymaps.
 	keymaps = {
 		---@field finding table finding keys config
