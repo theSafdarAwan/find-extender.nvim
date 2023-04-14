@@ -7,8 +7,6 @@ local M = {}
 
 --- default config
 local DEFAULT_CONFIG = {
-	---@field chars_length number how much characters to get input for finding.
-	chars_length = 2,
 	---@field highlight_matches table controls the highlighting of the pattern matches
 	highlight_matches = {
 		---@field min_matches number minimum matches, if number of matches exceeds this amount
@@ -17,12 +15,6 @@ local DEFAULT_CONFIG = {
 		---@field hl table highlight options for the Virtual text see :h nvim_set_hl
 		hl = { fg = "#c0caf5", bg = "#545c7e" },
 	},
-	---@field timeout number|boolean timeout before we find the characters input
-	--- at our disposal before the `chars_length` completes.
-	timeout = false,
-	---@field start_timeout_after_chars number how much characters should be
-	--- available before timeout triggers the character finder.
-	start_timeout_after_chars = 1,
 	---@field keymaps table information for keymaps.
 	keymaps = {
 		---@field finding table finding keys config
@@ -36,8 +28,6 @@ local DEFAULT_CONFIG = {
 		},
 		---@field text_manipulation table information about text manipulation keys including yank/delete/change.
 		text_manipulation = {
-			---@field modes string modes in which the text_manipulation keys should be added. By default only in normal mode.
-			modes = "n",
 			---@field yank table keys related to finding yanking area of text in a line.
 			yank = { "f", "F", "t", "T" },
 			---@field delete table keys related to finding deleting area of text in a line.

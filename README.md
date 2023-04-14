@@ -8,7 +8,7 @@ one at a time.
 
     f|F (find commands)
     t|T (till commands)
-    ;|, (last pattern commands)
+    ;|, (repat last pattern commands)
     c{t|T|f|f} (change command)
     d{t|T|f|f} (delete command)
     y{t|T|f|f} (yank command)
@@ -19,12 +19,11 @@ go to next position.
 
 ## ✨ Features
 
-- adds capability to add more characters to finding command's.
+- adds capability to find `2` characters rather then `1`.
 - yank/delete/change(y/d/c) text same as finding.
-- Highlight the yanked area(see :h vim.highlight.range()).
-- timeout to find pattern before the `chars_length` variable lenght has completed.
-- provide number like `2` before key to go to second position for the pattern.
-  This is universal for y/d/c or t/T/f/F commands.
+- highlight the yanked area.
+- count is also accepted.
+- highlight the matches, like [leap.nvim](https://github.com/ggandor/leap.nvim).
 
 ## 🚀 Usage
 
@@ -57,22 +56,19 @@ Plug 'TheSafdarAwan/find-extender.nvim'
 
 ```lua
 use {
-    opt = true,
     "TheSafdarAwan/find-extender.nvim",
-    -- to lazy load this plugin
-    keys = {
-        { "v", "f" },
-        { "v", "F" },
-        { "n", "f" },
-        { "n", "F" },
-        { "n", "T" },
-        { "n", "t" },
-        { "v", "T" },
-        { "v", "t" },
-        { "n", "c" },
-        { "n", "d" },
-        { "n", "y" },
-    },
+    config = function()
+        -- configuration here
+    end,
+}
+```
+
+[lazy.nvim](https://github.com/folke/lazy.nvim)
+
+```lua
+{
+    lazy = false,
+    "TheSafdarAwan/find-extender.nvim",
     config = function()
         -- configuration here
     end,
@@ -83,40 +79,44 @@ use {
 
 ```lua
 require("find-extender").setup({
-    -- if you want do disable the plugin the set this to false
-    enable = true,
-    -- how many characters to find for
-    chars_length = 2, -- default value is 2 chars
-    -- timeout before the find-extender.nvim goes to find the available
-    -- characters on timeout after the limit of start_timeout_after_chars
-    -- has been reached
-    -- timeout in ms
-    timeout = false, -- false by default
-    -- timeout starting point
-    start_timeout_after_chars = 2, -- 2 by default
-    -- key maps config
+    ---@field highlight_matches table controls the highlighting of the pattern matches
+    highlight_matches = {
+        ---@field min_matches number minimum matches, if number of matches exceeds this amount
+        --- then highlight the matches
+        min_matches = 2,
+        ---@field hl table highlight options for the Virtual text see :h nvim_set_hl
+        hl = { fg = "#c0caf5", bg = "#545c7e" },
+    },
+    ---@field keymaps table information for keymaps.
     keymaps = {
-        modes = "nv",
-        till = { "T", "t" },
-        find = { "F", "f" },
-        -- to delete, copy or change using t,f or T,F commands
+        ---@field finding table finding keys config
+        finding = {
+            ---@field modes string modes in which the finding keys should be added.
+            modes = "nv",
+            ---@field till table table of till keys backward and forward both by default.
+            till = { "T", "t" },
+            ---@field find table table of find keys backward and forward both by default.
+            find = { "F", "f" },
+        },
+        ---@field text_manipulation table information about text manipulation keys including yank/delete/change.
         text_manipulation = {
-            -- yank
+            ---@field yank table keys related to finding yanking area of text in a line.
             yank = { "f", "F", "t", "T" },
-            -- delete
+            ---@field delete table keys related to finding deleting area of text in a line.
             delete = { "f", "F", "t", "T" },
-            -- change
+            ---@field change table keys related to finding changing area of text in a line.
             change = { "f", "F", "t", "T" },
         },
     },
+    ---@field highlight_on_yank table highlight the yanked area
     highlight_on_yank = {
-        -- whether to highlight the yanked are or not
+        ---@field enable boolean to enable the highlight_on_yank
         enable = true,
-        -- time for which the area will be highlighted
+        ---@field timeout number timeout for the yank highlight
         timeout = 40,
-        -- highlight group for the yanked are color
+        ---@field hl_group string highlight groups for highlighting the yanked area
         hl_group = "IncSearch",
-    }
+    },
 })
 ```
 
@@ -130,70 +130,67 @@ There are three commands available.
 
 ## ⚙️ Configuration
 
-### chars_length
-
-You can change the amount of characters you want to find by specifying the amount in
-this key.
-
-```lua
--- how many characters to find for
-chars_length = 2 -- default value is 2 chars
-```
-
-Default is _2_ characters and more than that is not recommended because it will slow you down
-and that's not what i intend this plugin to do.
-
-### timeout
-
-Timeout before the find-extender.nvim goes to find the characters that you have entered.
-before you complete the chars_length character's limit.
-
-```lua
--- timeout in ms
-timeout = false -- false by default
-```
-
-### start_timeout_after_chars
-
-How many characters after which the timeout should be triggered.
-
-```lua
-start_timeout_after_chars = 1, -- 1 by default
-```
-
 ### ⌨ keymaps
 
-Keymaps are exposed to user if any key you want to remove just remove it from the
-tbl
+Keymaps are exposed to user, if any key you want to remove just remove it from the
+table.
 
 ```lua
 keymaps = {
+    ---@field finding table finding keys config
+    finding = {
+        ---@field modes string modes in which the finding keys should be added.
+        modes = "nv",
+        ---@field till table table of till keys backward and forward both by default.
+        till = { "T", "t" },
+        ---@field find table table of find keys backward and forward both by default.
+        find = { "F", "f" },
+    },
+    ---@field text_manipulation table information about text manipulation keys including yank/delete/change.
+    text_manipulation = {
+        ---@field yank table keys related to finding yanking area of text in a line.
+        yank = { "f", "F", "t", "T" },
+        ---@field delete table keys related to finding deleting area of text in a line.
+        delete = { "f", "F", "t", "T" },
+        ---@field change table keys related to finding changing area of text in a line.
+        change = { "f", "F", "t", "T" },
+    },
+},
+```
+
+### Finding keys
+
+Keys related to finding text. Remove any of the you want to disable.
+
+```lua
+---@field finding table finding keys config
+finding = {
+    ---@field modes string modes in which the finding keys should be added.
     modes = "nv",
+    ---@field till table table of till keys backward and forward both by default.
     till = { "T", "t" },
+    ---@field find table table of find keys backward and forward both by default.
     find = { "F", "f" },
 },
 ```
 
-Modes is a string with the modes name initials.
+modes is a string with the modes name initials.
 
 ### text_manipulation
 
-Mappings related to the text manipulation like change, delete and yank(copy).
-If you want to disable any of the macro then set it to false.
+Mappings related to the text manipulation change, delete and yank(copy).
+If you want to disable any of these keys then remove key from the table.
 
 ```lua
-keymaps = {
-    ...,
-    -- to delete, copy or change using t,f or T,F commands
-    text_manipulation = {
-        -- yank
-        yank = { "f", "F", "t", "T" },
-        -- delete
-        delete = { "f", "F", "t", "T" },
-        -- change
-        change = { "f", "F", "t", "T" },
-    },
-}
+-- to delete, copy or change using t,f or T,F commands
+text_manipulation = {
+    ---@field yank table keys related to finding yanking area of text in a line.
+    yank = { "f", "F", "t", "T" },
+    ---@field delete table keys related to finding deleting area of text in a line.
+    delete = { "f", "F", "t", "T" },
+    ---@field change table keys related to finding changing area of text in a line.
+    change = { "f", "F", "t", "T" },
+},
 ```
 
 ### highlight on yank
@@ -213,14 +210,14 @@ highlight_on_yank = {
 
 ### Related Plugins
 
-👉 Written in vimscript
-
-- [vim-easymotion](https://github.com/easymotion/vim-easymotion)
-- [vim-sneak](https://github.com/justinmk/vim-sneak)
-- [clever-f.vim](https://github.com/rhysd/clever-f.vim)
-
 👉 Written in lua
 
 - [leap.nvim](https://github.com/ggandor/leap.nvim),
 - [lightspeed.nvim](https://github.com/ggandor/lightspeed.nvim)
 - [flit.nvim](https://github.com/ggandor/flit.nvim/)
+
+👉 Written in vimscript
+
+- [vim-easymotion](https://github.com/easymotion/vim-easymotion)
+- [vim-sneak](https://github.com/justinmk/vim-sneak)
+- [clever-f.vim](https://github.com/rhysd/clever-f.vim)
