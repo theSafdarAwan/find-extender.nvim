@@ -18,6 +18,7 @@ local DEFAULT_CONFIG = {
 	},
 	---@field highlight_match table highlights the match
 	highlight_match = { fg = "#c0caf5", bg = "#545c7e" },
+	---@field lh_curosr_hl table highlight the cursor for the `lh` movment
 	lh_curosr_hl = { fg = "#545c7e", bg = "#c0caf5" },
 	---@field keymaps table information for keymaps.
 	keymaps = {

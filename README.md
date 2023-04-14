@@ -23,7 +23,11 @@ go to next position.
 - yank/delete/change(y/d/c) text same as finding.
 - highlight the yanked area.
 - count is also accepted.
-- highlight the matches, like [leap.nvim](https://github.com/ggandor/leap.nvim).
+- highlight the matches, like [leap.nvim](https://github.com/ggandor/leap.nvim) for movments.
+- movements: this plugins supports two type of movments
+  - leap: this movement is inspired from [leap.nvim](https://github.com/ggandor/leap.nvim),
+    this movement lets you move to the match by picking virtual text asymbol ssigned to it.
+  - lh: this movement will allow you to move in the matches using `h` and `l` keys.
 
 ## 🚀 Usage
 
@@ -79,14 +83,19 @@ use {
 
 ```lua
 require("find-extender").setup({
-    ---@field virtual_text table controls the highlighting of the pattern matches
-    virtual_text = {
-        ---@field min_matches number minimum matches, if number of matches exceeds this amount
-        --- then highlight the matches
+    movments = {
+        ---@field min_matches number minimum number of matches required after which
+        --- you can use the leap or lh.
         min_matches = 2,
-        ---@field hl table highlight options for the Virtual text see :h nvim_set_hl
-        hl = { fg = "#c0caf5", bg = "#545c7e" },
+        ---@field lh table this lets you move though the matches using `l` and `h` keys.
+        lh = false,
+        ---@field leap boolean pick match, with virtual text symbol for that match.
+        leap = true,
     },
+    ---@field highlight_match table highlights the match
+    highlight_match = { fg = "#c0caf5", bg = "#545c7e" },
+    ---@field lh_curosr_hl table highlight the cursor for the `lh` movment
+    lh_curosr_hl = { fg = "#545c7e", bg = "#c0caf5" },
     ---@field keymaps table information for keymaps.
     keymaps = {
         ---@field finding table finding keys config
@@ -191,6 +200,48 @@ text_manipulation = {
     ---@field change table keys related to finding changing area of text in a line.
     change = { "f", "F", "t", "T" },
 },
+```
+
+### Movments
+
+Movements allow you to move through matches.
+This plugin allows tow types of movements.
+
+1. Leap like movement, by picking match like [leap.nvim](https://github.com/ggandor/leap.nvim)
+2. lh this movement allows you to move through matches using the `l` and `h` key
+   you can pick your desired match by pressing any key other then `h` or `l`, and
+   this will pick that position for you, the position you cursor was on.
+   > NOTE: This uses a dummy cursor representation to make it seem like your
+   > cursor is moving you can customize the color of this dummy cursor by
+   > changing the `lh_curosr_hl` key in config.
+
+```lua
+movments = {
+    ---@field min_matches number minimum number of matches required after which
+    --- you can use the leap or lh.
+    min_matches = 2,
+    ---@field lh table this lets you move though the matches using `l` and `h` keys.
+    lh = false,
+    ---@field leap boolean pick match, with virtual text symbol for that match.
+    leap = true,
+},
+```
+
+### Matches highlighting
+
+You can highlight the match position by changing he color of `highlight_match`
+key in config.
+
+```lua
+---@field highlight_match table highlights the match
+highlight_match = { fg = "#c0caf5", bg = "#545c7e" },
+```
+
+The `lh` movement cursor can also be customized by changing the `lh_curosr_hl` key.
+
+```lua
+---@field lh_curosr_hl table highlight the cursor for the `lh` movment
+lh_curosr_hl = { fg = "#545c7e", bg = "#c0caf5" },
 ```
 
 ### highlight on yank
