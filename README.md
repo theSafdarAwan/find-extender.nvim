@@ -34,17 +34,29 @@ go to next position.
 I have only provided demos for find and delete commands y,c,t,y commands take characters
 input same as these.
 
-#### find forward
+### Finding
+
+##### f command
 
 <img alt="f command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/fir.gif">
 
-#### find backwards
+##### F command
 
 <img alt="F command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/backwards_Fir.gif">
 
-#### delete
+##### d command
 
 <img alt="d command" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/dtir.gif">
+
+#### Movmenets
+
+#### Leap
+
+<img alt="leap movement" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/movments-leap.gif">
+
+#### lh
+
+<img alt="leap movement" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/movments-lh.gif">
 
 ## 📦 Installation
 
