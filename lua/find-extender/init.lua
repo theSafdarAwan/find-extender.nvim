@@ -11,10 +11,11 @@ local DEFAULT_CONFIG = {
 	chars_length = 2,
 	---@field highlight_matches table controls the highlighting of the pattern matches
 	highlight_matches = {
-		---@field min_matches number minimum matches after which the matches should
-		-- be highlighted.
+		---@field min_matches number minimum matches, if number of matches exceeds this amount
+		--- then highlight the matches
 		min_matches = 2,
-		-- TODO: add highlights
+		---@field hl table highlight options for the Virtual text see :h nvim_set_hl
+		hl = { fg = "#c0caf5", bg = "#545c7e" },
 	},
 	---@field timeout number|boolean timeout before we find the characters input
 	--- at our disposal before the `chars_length` completes.

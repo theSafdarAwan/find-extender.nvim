@@ -14,7 +14,6 @@ local utils = require("find-extender.utils")
 function M.manipulate_text(args)
 	vim.validate({
 		match = { args.match, "number" },
-		threshold = { args.threshold, "number" },
 		match_direction = { args.match_direction, "table" },
 		type = { args.type, "table" },
 	})
@@ -33,9 +32,6 @@ function M.manipulate_text(args)
 	elseif match_pos_direction.left then
 		start = get_cursor[2]
 		finish = match + 2
-	end
-	if get_cursor[2] == 0 and match == 1 and args.threshold == 2 then
-		return
 	end
 	local in_range_str = string.sub(str, start, finish - 1)
 	if args.type.delete or args.type.change then

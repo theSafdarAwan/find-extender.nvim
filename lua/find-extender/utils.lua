@@ -34,10 +34,6 @@ function M.get_chars(args)
 		if type(c) ~= "number" then
 			return
 		end
-		-- if args.chars_type is present then check it as well
-		if args.chars_type and tonumber(fn.nr2char(c)) == args.chars_type then
-			return
-		end
 		if break_loop then
 			return chars
 		elseif c < 32 or c > 127 then
@@ -83,7 +79,7 @@ function M.on_yank(highlight_on_yank_opts, start, finish)
 	end
 
 	--- neovim function
-	require("vim.highlight").range(
+	vim.highlight.range(
 		buf_id,
 		ns_id,
 		highlight_on_yank_opts.hl_group,
@@ -101,17 +97,25 @@ end
 
 --- highlights the table matches, clears highlights when CursorMoved event happens.
 ---@param args table
-M.highlight_matches = function(args)
-	local buf = api.nvim_get_current_buf()
+M.mark_matches = function(args)
+	local buf_nr = api.nvim_get_current_buf()
 	local line_nr = fn.line(".")
 	local ns_id = api.nvim_create_namespace("")
-	for _, match in ipairs(args.matches_tbl) do
-		api.nvim_buf_add_highlight(buf, ns_id, "CursorColumn", line_nr - 1, match - 1, match + args.threshold)
+	local i = 1
+	for _, match in ipairs(args.matches) do
+		local extmark_opts = {
+			virt_text = { { string.sub(args.alphabets, i, i), "FEVirtualText" } },
+			virt_text_pos = "overlay",
+			hl_mode = "combine",
+			priority = 105,
+		}
+		api.nvim_buf_set_extmark(buf_nr, ns_id, line_nr - 1, match - 1, extmark_opts)
+		i = i + 1
 	end
 	api.nvim_create_autocmd({ "CursorMoved" }, {
 		once = true,
 		callback = function()
-			api.nvim_buf_clear_namespace(buf, ns_id, 0, -1)
+			api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
 		end,
 	})
 end
@@ -119,22 +123,29 @@ end
 --- adds a dummy cursor at the cursor position when the cursor is in the command
 --- line when getting cursor input
 M.add_dummy_cursor = function()
+	vim.cmd("redraw")
 	local buf_nr = api.nvim_get_current_buf()
 	local ns_id = api.nvim_create_namespace("")
 	local pos = vim.fn.getpos(".")
 	local line_num = pos[2] - 1
 	local col_num = pos[3] - 1
-	local opts = {
-		end_col = col_num + 1,
-		hl_group = "Cursor",
-		hl_mode = "blend",
-		priority = 106,
-	}
-	local extmark_id = api.nvim_buf_set_extmark(buf_nr, ns_id, line_num, col_num, opts)
+
+	local event = vim.v.event
+	vim.highlight.range(
+		buf_nr,
+		ns_id,
+		"IncSearch",
+		{ line_num, col_num },
+		{ line_num, col_num + 1 },
+		{ regtype = event.regtype, inclusive = event.inclusive, priority = 200 }
+	)
+
 	api.nvim_create_autocmd({ "CursorMoved" }, {
 		once = true,
 		callback = function()
-			api.nvim_buf_del_extmark(buf_nr, ns_id, extmark_id)
+			if api.nvim_buf_is_valid(buf_nr) then
+				api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
+			end
 		end,
 	})
 end

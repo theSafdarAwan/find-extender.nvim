@@ -1,9 +1,6 @@
 --- Finds characters and sets the cursor position to the target.
 local M = {}
 
--- TODO: The cursor is down on the command line during `getchar`,
--- so we set a temporary highlight on it to see where we are.
-
 local api = vim.api
 local fn = vim.fn
 
@@ -16,8 +13,6 @@ local keymap = {
 --- main finder function
 ---@param config table config
 function M.finder(config)
-	-- highlight matches
-	local highlight_matches = config.highlight_matches
 	-- timeout before the find-extender.nvim goes to the default behavior to find 1 char
 	-- * timeout in ms
 	local timeout = config.timeout
@@ -33,18 +28,27 @@ function M.finder(config)
 	local get_chars = utils.get_chars
 
 	--- pick next highlighted match
+	---@param args table includes matches and threshold
 	---@return number|nil picked count
-	local function pick_match()
-		local picked_match = fn.getchar()
-		picked_match = tonumber(fn.nr2char(picked_match))
-		if type(picked_match) ~= "number" then
-			-- TODO: add virtual text with numbers displayed on them
-			--
-			-- to remove the highlighted matches
-			vim.cmd("silent! do CursorMoved")
-			return
+	local function pick_match(args)
+		args.alphabets = "abcdefgh"
+		utils.mark_matches(args)
+		local picked_match = get_chars({ chars_length = 1 })
+		if picked_match then
+			local match_pos = string.find(args.alphabets, picked_match)
+			picked_match = args.matches[match_pos]
 		end
-		return tonumber(picked_match)
+		vim.cmd("silent! do CursorMoved")
+		return picked_match
+	end
+
+	--- check if string has has characters or not
+	---@param end_pos number string end position till which we have to sub string
+	---@param str string current line
+	---@return boolean|nil true if is valid
+	local string_sanity = function(str, end_pos)
+		local s = string.sub(str, 1, end_pos - 1)
+		return utils.string_has_chars(s)
 	end
 
 	--- helper function for determing the direction and type of the finding key
@@ -73,8 +77,8 @@ function M.finder(config)
 
 	--- gets the matches of the pattern
 	---@param args table
-	---@return table matches
-	local function get_matches_and_count(args)
+	---@return nil|nil|number match
+	local function get_target_match(args)
 		local str = api.nvim_get_current_line()
 		-- count sanity check
 		local count = nil
@@ -92,7 +96,41 @@ function M.finder(config)
 		if count then
 			matches = utils.trim_table({ index = count - 1, tbl = matches })
 		end
-		return matches
+		local match = nil
+		-- highlight match if pattern matches exceed the highlight_matches.max_matches
+		if #matches > config.highlight_matches.min_matches then
+			local picked_match = pick_match({ matches = matches })
+			if not picked_match then
+				return
+			end
+			matches = { picked_match }
+		end
+		match = get_match({
+			str_matches = matches,
+			match_direction = args.match_direction,
+		})
+
+		if not match then
+			return
+		end
+		local cursor_pos = fn.getpos(".")[3]
+		-- string.find returns the exact position for the match so we have to adjust
+		-- the cursor position based on the type of the command
+		-- tT/fF commands have different behaviour for settings cursor
+		-- till command      match | find command       match
+		--                  ^      |                    ^
+		if args.key_type.till then
+			if match > 2 and string_sanity(str, match) then
+				match = match - 2
+			else
+				match = match - 1
+			end
+		elseif args.key_type.find then
+			if match > 1 and cursor_pos > 0 then
+				match = match - 1
+			end
+		end
+		return match
 	end
 
 	----------------------------------------------------------------------
@@ -116,19 +154,6 @@ function M.finder(config)
 			match_direction.left = true
 		end
 
-		-- string.find returns the exact position for the match so we have to adjust
-		-- the cursor position base on the type of the command
-		-- tT/fF commands have different behaviour for settings cursor and threshold value
-		-- justifies that example for the cursor position settings:
-		-- till command      match | find command       match
-		--                  ^      |                    ^
-		local threshold = nil
-		if key_types.find_direction_left or key_types.find_direction_right then
-			threshold = 1
-		elseif key_types.till_direction_left or key_types.till_direction_right then
-			threshold = 2
-		end
-
 		local pattern = nil
 		if key_types.pattern_repeat_key then
 			-- if args.key is , or ; then use the previous pattern
@@ -144,27 +169,16 @@ function M.finder(config)
 			__previous_data.pattern = pattern
 		end
 
-		local matches = get_matches_and_count({ pattern = pattern, match_direction = match_direction })
+		local key_type = {
+			till = key_types.till_direction_left or key_types.till_direction_right,
+			find = key_types.find_direction_left or key_types.find_direction_right,
+		}
 
-		local match = nil
-		-- highlight match if pattern matches exceed the highlight_matches.max_matches
-		if #matches > highlight_matches.min_matches then
-			local picked_match = pick_match()
-			if not picked_match then
-				return
-			end
-			matches = utils.trim_table({ index = picked_match - 1, tbl = matches })
+		local match = get_target_match({ pattern = pattern, match_direction = match_direction, key_type = key_type })
+		if not match then
+			return
 		end
-		match = get_match({
-			str_matches = matches,
-			pattern = pattern,
-			match_direction = match_direction,
-			threshold = threshold,
-		})
-
-		if match then
-			utils.set_cursor(match)
-		end
+		utils.set_cursor(match)
 	end
 
 	----------------------------------------------------------------------
@@ -184,52 +198,34 @@ function M.finder(config)
 			type.yank = true
 		end
 
-		local second_key = string.sub(args.key, 2, 2)
-		local threshold = nil
-		if second_key == "F" or second_key == "f" then
-			threshold = 1
-		elseif second_key == "T" or second_key == "t" then
-			threshold = 2
-		end
-
 		local match_direction = { left = false, right = false }
+
+		local second_key = string.sub(args.key, 2, 2)
 		if second_key == "f" or second_key == "t" then
 			match_direction.left = true
 		else
 			match_direction.right = true
 		end
+
+		local key_type = {}
+		if second_key == "F" or second_key == "f" then
+			key_type.find = true
+		elseif second_key == "T" or second_key == "t" then
+			key_type.till = true
+		end
 		---------------------
 
-		local pattern = get_chars({ chars_length = 2, chars_type = "number" })
+		local pattern = get_chars({ chars_length = 2 })
 		if not pattern then
 			return
 		end
 
-		local matches = get_matches_and_count({ pattern = pattern, match_direction = match_direction })
-
-		local match = nil
-		-- highlight match if pattern matches exceed the highlight_matches.max_matches
-		-- and trim the matches table according to the user picked match
-		if #matches > highlight_matches.min_matches then
-			local picked_match = pick_match()
-			if not picked_match then
-				return
-			end
-			matches = utils.trim_table({ index = picked_match - 1, tbl = matches })
-		end
-		match = get_match({
-			str_matches = matches,
-			pattern = pattern,
-			match_direction = match_direction,
-			threshold = threshold,
-		})
-
+		local match = get_target_match({ pattern = pattern, match_direction = match_direction, key_type = key_type })
 		if not match then
 			return
 		end
 
 		tm.manipulate_text({
-			threshold = threshold,
 			match = match,
 			match_direction = match_direction,
 			type = type,
@@ -368,6 +364,9 @@ function M.finder(config)
 			cmd_func()
 		end, {})
 	end
+
+	--- add highlight group for highlighting virtual text
+	api.nvim_set_hl(0, "FEVirtualText", config.highlight_matches.hl)
 
 	-- add the maps on setup function execution
 	set_maps()
