@@ -96,13 +96,13 @@ function M.finder(config)
 			matches = utils.reverse_tbl(matches)
 		end
 
-		local cursor_pos = fn.getpos(".")[3] + 1 -- 0 indexed api
+		local cursor_pos = fn.getpos(".")[3]
 		-- trim the matches table and only have matches that are in the same
 		-- direction with respect to the key.
 		if args.match_direction.right then
 			local tbl = {}
 			for _, match in ipairs(matches) do
-				if match < cursor_pos then
+				if match <= cursor_pos then
 					table.insert(tbl, match)
 				end
 			end
@@ -111,7 +111,7 @@ function M.finder(config)
 		if args.match_direction.left then
 			local tbl = {}
 			for _, match in ipairs(matches) do
-				if match > cursor_pos then
+				if match >= cursor_pos then
 					table.insert(tbl, match)
 				end
 			end
@@ -153,8 +153,6 @@ function M.finder(config)
 		if not match then
 			return
 		end
-		-- need to normalize cursor back to zero indexed here
-		cursor_pos = cursor_pos - 1
 		-- string.find returns the exact position for the match so we have to adjust
 		-- the cursor position based on the type of the command
 		-- tT/fF commands have different behaviour for settings cursor
@@ -169,9 +167,7 @@ function M.finder(config)
 		end
 
 		if args.key_type.find then
-			if match > 1 and cursor_pos > 0 then
-				match = match - 1
-			end
+			match = match - 1
 		end
 		return match
 	end
