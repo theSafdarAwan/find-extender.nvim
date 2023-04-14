@@ -88,11 +88,35 @@ function M.finder(config)
 
 		local matches = nil
 		matches = utils.map_string_pattern_positions(str, args.pattern)
+		if not matches then
+			return
+		end
+		local cursor_pos = fn.getpos(".")[3]
+		if args.match_direction.right then
+			local tbl = {}
+			for _, match in ipairs(matches) do
+				if match < cursor_pos then
+					table.insert(tbl, match)
+				end
+			end
+			matches = tbl
+		end
+		if args.match_direction.left then
+			local tbl = {}
+			for _, match in ipairs(matches) do
+				if match > cursor_pos then
+					table.insert(tbl, match)
+				end
+			end
+			matches = tbl
+		end
+
 		-- in case of F/T commands we need to reverse the tbl of the matches because now we have
 		-- to start searching from the end of the string rather then from the start
 		if args.match_direction.right then
 			matches = utils.reverse_tbl(matches)
 		end
+
 		if count then
 			matches = utils.trim_table({ index = count - 1, tbl = matches })
 		end
