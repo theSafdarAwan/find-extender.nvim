@@ -23,7 +23,6 @@ function M.finder(config)
 
 	local utils = require("find-extender.utils")
 
-	local get_match = require("find-extender.get-match").get_match
 	local tm = require("find-extender.text-manipulation")
 	local get_chars = utils.get_chars
 
@@ -91,7 +90,15 @@ function M.finder(config)
 		if not matches then
 			return
 		end
-		local cursor_pos = fn.getpos(".")[3]
+		-- in case of F/T commands we need to reverse the tbl of the matches because now we have
+		-- to start searching from the end of the string rather then from the start
+		if args.match_direction.right then
+			matches = utils.reverse_tbl(matches)
+		end
+
+		local cursor_pos = fn.getpos(".")[3] + 1 -- 0 indexed api
+		-- trim the matches table and only have matches that are in the same
+		-- direction with respect to the key.
 		if args.match_direction.right then
 			local tbl = {}
 			for _, match in ipairs(matches) do
@@ -111,12 +118,6 @@ function M.finder(config)
 			matches = tbl
 		end
 
-		-- in case of F/T commands we need to reverse the tbl of the matches because now we have
-		-- to start searching from the end of the string rather then from the start
-		if args.match_direction.right then
-			matches = utils.reverse_tbl(matches)
-		end
-
 		if count then
 			matches = utils.trim_table({ index = count - 1, tbl = matches })
 		end
@@ -129,15 +130,31 @@ function M.finder(config)
 			end
 			matches = { picked_match }
 		end
-		match = get_match({
-			str_matches = matches,
-			match_direction = args.match_direction,
-		})
+
+		-- get the appropriate match
+		if args.match_direction.left then
+			for _, match_position in ipairs(matches) do
+				if cursor_pos < match_position then
+					match = match_position
+					break
+				end
+			end
+		end
+
+		if args.match_direction.right then
+			for _, match_position in ipairs(matches) do
+				if cursor_pos > match_position then
+					match = match_position
+					break
+				end
+			end
+		end
 
 		if not match then
 			return
 		end
-		local cursor_pos = fn.getpos(".")[3]
+		-- need to normalize cursor back to zero indexed here
+		cursor_pos = cursor_pos - 1
 		-- string.find returns the exact position for the match so we have to adjust
 		-- the cursor position based on the type of the command
 		-- tT/fF commands have different behaviour for settings cursor
@@ -149,7 +166,9 @@ function M.finder(config)
 			else
 				match = match - 1
 			end
-		elseif args.key_type.find then
+		end
+
+		if args.key_type.find then
 			if match > 1 and cursor_pos > 0 then
 				match = match - 1
 			end
