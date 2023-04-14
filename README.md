@@ -26,7 +26,7 @@ go to next position.
 - highlight the matches, like [leap.nvim](https://github.com/ggandor/leap.nvim) for movments.
 - movements: this plugins supports two type of movments
   - leap: this movement is inspired from [leap.nvim](https://github.com/ggandor/leap.nvim),
-    this movement lets you move to the match by picking virtual text asymbol ssigned to it.
+    this movement lets you move to the match by picking virtual text symbol assigned to it.
   - lh: this movement will allow you to move in the matches using `h` and `l` keys.
 
 ## 🚀 Usage
