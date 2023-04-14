@@ -76,6 +76,7 @@ function M.finder(config)
 			picked_match = cursor_pos
 			local lh_cursor_ns = api.nvim_create_namespace("")
 			while true do
+				vim.cmd("redraw")
 				local key = get_chars({ chars_length = 1 })
 				if key == "l" then
 					for _, match in ipairs(args.matches) do
