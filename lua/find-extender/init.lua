@@ -1,3 +1,4 @@
+local deprecate = require("find-extender.deprecate")
 --- setup module.
 local M = {}
 
@@ -56,9 +57,13 @@ local DEFAULT_CONFIG = {
 ---@param user_config table|nil user specified configuration for the plugin.
 function M.setup(user_config)
 	---@table config merged config from user and default
-	local config = vim.tbl_deep_extend("force", DEFAULT_CONFIG, user_config or {})
-	config.keymaps = vim.tbl_extend("force", DEFAULT_CONFIG.keymaps, user_config and user_config.keymaps or {})
+	local config = DEFAULT_CONFIG
+	local config_is_derecated = deprecate.old_syntax(user_config)
 
+	if not config_is_derecated then
+		config = vim.tbl_deep_extend("force", config, user_config or {})
+		config.keymaps = vim.tbl_extend("force", DEFAULT_CONFIG.keymaps, user_config and user_config.keymaps or {})
+	end
 	require("find-extender.finder").finder(config)
 end
 
