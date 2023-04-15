@@ -113,6 +113,7 @@ M.lh = function(args)
 			end
 		end
 		if key ~= "h" and key ~= "l" then
+			update_cursor(cursor_pos)
 			break
 		end
 	end
