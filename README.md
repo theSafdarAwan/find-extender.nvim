@@ -103,13 +103,13 @@ require("find-extender").setup({
         highlight_match = { fg = "#c0caf5", bg = "#545c7e" },
         ---@field lh table this lets you move though the matches using `l` and `h` keys.
         lh = {
-            use = false,
+            enable = false,
             ---@field lh_curosr_hl table highlight the cursor for the `lh` movment
             cursor_hl = { fg = "#545c7e", bg = "#ff9e64" },
         },
         ---@field leap table pick match, with virtual text symbol for that match.
         leap = {
-            use = true,
+            enable = true,
             ---@field symbols string symbols that represent matches, with virtual text
             symbols = "abcdefgh",
         },
@@ -242,13 +242,13 @@ movments = {
    highlight_match = { fg = "#c0caf5", bg = "#545c7e" },
    ---@field lh table this lets you move though the matches using `l` and `h` keys.
    lh = {
-       use = false,
+       enable = false,
        ---@field lh_curosr_hl table highlight the cursor for the `lh` movment
        cursor_hl = { fg = "#545c7e", bg = "#ff9e64" },
    },
    ---@field leap table pick match, with virtual text symbol for that match.
    leap = {
-       use = true,
+       enable = true,
        ---@field symbols string symbols that represent matches, with virtual text
        symbols = "abcdefgh",
    },
@@ -282,10 +282,16 @@ highlight_on_yank = {
     enable = true,
     -- time for which the area will be highlighted
     timeout = 40,
-    -- highlight group for the yanked are color
-    hl_group = "IncSearch",
+    -- highlight the yanked text
+    hl = { bg = "#565f89" },
 }
 ```
+
+### Highlight Groups
+
+- FEVirtualText
+- FECurrentMatchCursor
+- FEHighlightOnYank
 
 ### Related Plugins
 

@@ -18,13 +18,13 @@ local DEFAULT_CONFIG = {
 		highlight_match = { fg = "#c0caf5", bg = "#545c7e" },
 		---@field lh table this lets you move though the matches using `l` and `h` keys.
 		lh = {
-			use = false,
+			enable = false,
 			---@field lh_curosr_hl table highlight the cursor for the `lh` movment
 			cursor_hl = { fg = "#545c7e", bg = "#ff9e64" },
 		},
 		---@field leap table pick match, with virtual text symbol for that match.
 		leap = {
-			use = true,
+			enable = true,
 			---@field symbols string symbols that represent matches, with virtual text
 			symbols = "abcdefgh",
 		},
@@ -56,8 +56,8 @@ local DEFAULT_CONFIG = {
 		enable = true,
 		---@field timeout number timeout for the yank highlight
 		timeout = 40,
-		---@field hl_group string highlight groups for highlighting the yanked area
-		hl_group = "IncSearch",
+		---@field hl_group string highlight the yanked area
+		hl = { bg = "#565f89" },
 	},
 }
 

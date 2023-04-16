@@ -401,6 +401,7 @@ function M.finder(config)
 	----------------------------------------------------------------------
 	api.nvim_set_hl(0, "FEVirtualText", config.movments.highlight_match)
 	api.nvim_set_hl(0, "FECurrentMatchCursor", config.movments.lh.cursor_hl)
+	api.nvim_set_hl(0, "FEHighlightOnYank", config.highlight_on_yank.hl)
 
 	-- add the maps on setup function execution
 	set_maps()

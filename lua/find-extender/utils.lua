@@ -84,7 +84,7 @@ function M.on_yank(highlight_on_yank_opts, start, finish)
 	vim.highlight.range(
 		buf_id,
 		ns_id,
-		highlight_on_yank_opts.hl_group,
+		"FEHighlightOnYank",
 		{ line_nr, start },
 		{ line_nr, finish },
 		{ regtype = event.regtype, inclusive = event.inclusive, priority = 200 }
