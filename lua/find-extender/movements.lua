@@ -44,17 +44,6 @@ end
 ---@param args table
 ---@return number|nil picked match
 M.lh = function(args)
-	local win_nr = api.nvim_get_current_win()
-	local get_cursor = api.nvim_win_get_cursor(win_nr)
-	-- update cursor position temporarily
-	-- to avoid cursor flikering when using `vim.fn.getchar`
-	local function update_cursor(match)
-		vim.wait(0, function()
-			local set_cursor_on_match = vim.deepcopy(get_cursor)
-			set_cursor_on_match[2] = match - 1
-			api.nvim_win_set_cursor(win_nr, set_cursor_on_match)
-		end, 1, false)
-	end
 	local picked_match = nil
 	local buf_nr = api.nvim_get_current_buf()
 	local cursor_pos = fn.getpos(".")[3]
@@ -70,7 +59,16 @@ M.lh = function(args)
 	picked_match = cursor_pos
 	local lh_cursor_ns = api.nvim_create_namespace("")
 	utils.add_dummy_cursor()
+	local function update_highlights(match)
+		vim.wait(0, function()
+			api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
+			api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatchCursor", line_nr - 1, match - 1, match)
+		end, 1, false)
+	end
 	while true do
+		-- HACK: hack to avoid original cursor when `get_chars` has returned value flikering
+		vim.wait(0, function() end, 1, false)
+
 		local key = utils.get_chars({ chars_length = 1 })
 		vim.cmd("do CursorMoved")
 		if key == "l" then
@@ -82,17 +80,8 @@ M.lh = function(args)
 			end
 			for _, match in ipairs(__matches) do
 				if match > picked_match then
-					update_cursor(match)
 					picked_match = match
-					api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
-					api.nvim_buf_add_highlight(
-						buf_nr,
-						lh_cursor_ns,
-						"FECurrentMatchCursor",
-						line_nr - 1,
-						picked_match - 1,
-						picked_match
-					)
+					update_highlights(match)
 					break
 				end
 			end
@@ -106,16 +95,13 @@ M.lh = function(args)
 			end
 			for _, match in ipairs(__matches) do
 				if match < picked_match then
-					update_cursor(match)
 					picked_match = match
-					api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
-					api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatchCursor", line_nr - 1, match - 1, match)
+					update_highlights(match)
 					break
 				end
 			end
 		end
 		if key ~= "h" and key ~= "l" then
-			update_cursor(cursor_pos)
 			break
 		end
 	end
