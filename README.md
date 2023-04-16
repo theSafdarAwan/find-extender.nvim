@@ -187,7 +187,8 @@ keymaps = {
 
 ### Finding keys
 
-Keys related to finding text. Remove any of the you want to disable.
+Keys related to finding text. Remove any of the key you want to disable.
+modes is a string with the modes name initials.
 
 ```lua
 ---@field finding table finding keys config
@@ -200,8 +201,6 @@ finding = {
     find = { "F", "f" },
 },
 ```
-
-modes is a string with the modes name initials.
 
 ### text_manipulation
 
@@ -270,6 +269,26 @@ The `lh` movement cursor can also be customized by changing the `lh.curosr_hl` k
 ```lua
 ---@field lh_curosr_hl table highlight the cursor for the `lh` movment
 lh.curosr_hl = { fg = "#545c7e", bg = "#c0caf5" },
+```
+
+### `no_wait`
+
+Don't for second char if the first one is present in this table.
+
+```lua
+---@field no_wait table don't wait for second char if one of these is the first
+--- char, very helpful if you don't wait to enter 2 chars if the first one
+--- is a punctuation.
+no_wait = {
+    "}",
+    "{",
+    "[",
+    "]",
+    "(",
+    ")",
+    ",",
+},
+
 ```
 
 ### highlight on yank

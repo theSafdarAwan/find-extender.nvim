@@ -1,10 +1,9 @@
--- TODO: write docs and create new demos.
-
-local deprecate = require("find-extender.deprecate")
 --- setup module.
 local M = {}
 
--- TODO: add strategy when first input char is a character and expose an option
+local deprecate = require("find-extender.deprecate")
+
+-- TODO: add strategy when first input char is a punctuation and expose an option
 -- for user to decide what to do
 -- TODO: add strategy for cursor movement when searching backwards
 
@@ -28,6 +27,18 @@ local DEFAULT_CONFIG = {
 			---@field symbols string symbols that represent matches, with virtual text
 			symbols = "abcdefgh",
 		},
+	},
+	---@field no_wait table don't wait for second char if one of these is the first
+	--- char, very helpful if you don't wait to enter 2 chars if the first one
+	--- is a punctuation.
+	no_wait = {
+		"}",
+		"{",
+		"[",
+		"]",
+		"(",
+		")",
+		",",
 	},
 	---@field keymaps table information for keymaps.
 	keymaps = {

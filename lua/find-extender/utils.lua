@@ -30,6 +30,16 @@ function M.get_chars(args)
 			end, args.timeout)
 		end
 		local c = fn.getchar()
+		-- return if first char is included included in `args.no_wait`
+		if #chars == 0 and args.no_wait then
+			for _, char in ipairs(args.no_wait) do
+				if char == fn.nr2char(c) then
+					chars = fn.nr2char(c)
+					break_loop = true
+					break
+				end
+			end
+		end
 		if type(c) ~= "number" then
 			return
 		end
@@ -41,6 +51,7 @@ function M.get_chars(args)
 			return
 		end
 		chars = chars .. fn.nr2char(c)
+		-- accepts how many characters to get input for
 		if #chars == args.chars_length then
 			break
 		end

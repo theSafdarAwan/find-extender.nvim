@@ -194,7 +194,7 @@ function M.finder(config)
 			-- if args.key is , or ; then use the previous pattern
 			pattern = __previous_data.pattern
 		else
-			pattern = get_chars({ chars_length = 2, timeout = timeout })
+			pattern = get_chars({ chars_length = 2, no_wait = config.no_wait, timeout = timeout })
 			if not pattern then
 				return
 			end
@@ -250,7 +250,7 @@ function M.finder(config)
 		end
 		---------------------
 
-		local pattern = get_chars({ chars_length = 2 })
+		local pattern = get_chars({ chars_length = 2, no_wait = config.no_wait })
 		if not pattern then
 			return
 		end
@@ -330,6 +330,7 @@ function M.finder(config)
 			opts.callback = function()
 				utils.add_dummy_cursor()
 				finding_keys_helper({ key = key })
+				vim.cmd("do CursorMoved")
 			end
 			keymap.set(modes.finding, key, "", opts)
 		end
@@ -342,6 +343,7 @@ function M.finder(config)
 				opts.callback = function()
 					utils.add_dummy_cursor()
 					tm_keys_helper({ key = key })
+					vim.cmd("do CursorMoved")
 				end
 				keymap.set("n", key, "", opts)
 			end
