@@ -12,21 +12,31 @@ local keymap = {
 --- main finder function
 ---@param config table config
 function M.finder(config)
-	-- timeout before the find-extender.nvim goes to the default behavior to find 1 char
-	-- * timeout in ms
+	-- timeout after which the find-extender searches for only one char.
 	local timeout = config.timeout
 	-- to highlight the yanked area
 	local highlight_on_yank = config.highlight_on_yank
-	-- to remember the last pattern and the command when using the ; and , command
+
+	-- need to store the command and the pattern for the user of , and ; commands
 	local __previous_data = { pattern = nil, key = nil }
 
 	local utils = require("find-extender.utils")
-
-	local tm = require("find-extender.text-manipulation")
 	local get_chars = utils.get_chars
-
+	local tm = require("find-extender.text-manipulation")
 	local movments = require("find-extender.movements")
 
+	--- check if string has has characters or not
+	---@param end_pos number string end position till which we have to sub string
+	---@param str string current line
+	---@return boolean|nil true if is valid
+	local string_sanity = function(str, end_pos)
+		local s = string.sub(str, 1, end_pos - 1)
+		return utils.string_has_chars(s)
+	end
+
+	----------------------------------------------------------------------
+	--                            Pick Match                            --
+	----------------------------------------------------------------------
 	--- pick match
 	---@param args table
 	local function pick_match(args)
@@ -38,39 +48,6 @@ function M.finder(config)
 			picked_match = movments.leap(args)
 		end
 		return picked_match
-	end
-
-	--- check if string has has characters or not
-	---@param end_pos number string end position till which we have to sub string
-	---@param str string current line
-	---@return boolean|nil true if is valid
-	local string_sanity = function(str, end_pos)
-		local s = string.sub(str, 1, end_pos - 1)
-		return utils.string_has_chars(s)
-	end
-
-	--- helper function for determing the direction and type of the finding key
-	---@param args table of keys with current key and the previous key.
-	---@return table
-	local function get_finding_key_info(args)
-		local tbl = {}
-		-- find
-		tbl.find_direction_left = args.key == "f"
-			or args.prev_key == "F" and args.key == ","
-			or args.prev_key == "f" and args.key == ";"
-		tbl.find_direction_right = args.key == "F"
-			or args.prev_key == "f" and args.key == ","
-			or args.prev_key == "F" and args.key == ";"
-		-- till
-		tbl.till_direction_left = args.key == "t"
-			or args.prev_key == "T" and args.key == ","
-			or args.prev_key == "t" and args.key == ";"
-		tbl.till_direction_right = args.key == "T"
-			or __previous_data.key == "t" and args.key == ","
-			or __previous_data.key == "T" and args.key == ";"
-		-- is args.key is pattern repeat key
-		tbl.pattern_repeat_key = args.key == ";" or args.key == ","
-		return tbl
 	end
 
 	----------------------------------------------------------------------
@@ -177,6 +154,7 @@ function M.finder(config)
 	----------------------------------------------------------------------
 	--                           Finding Keys                           --
 	----------------------------------------------------------------------
+
 	--- helper for finding keys, gets the match and then sets the cursor.
 	---@param args table contains arguments needed for finding the next/prev match
 	---@field args.key string to determine direction, etc.
@@ -186,17 +164,33 @@ function M.finder(config)
 			return
 		end
 
-		local key_types = get_finding_key_info({ key = args.key, prev_key = __previous_data.key })
+		-- find
+		local find_direction_left = args.key == "f"
+			or args.prev_key == "F" and args.key == ","
+			or args.prev_key == "f" and args.key == ";"
+		local find_direction_right = args.key == "F"
+			or args.prev_key == "f" and args.key == ","
+			or args.prev_key == "F" and args.key == ";"
+		-- till
+		local till_direction_left = args.key == "t"
+			or args.prev_key == "T" and args.key == ","
+			or args.prev_key == "t" and args.key == ";"
+		local till_direction_right = args.key == "T"
+			or __previous_data.key == "t" and args.key == ","
+			or __previous_data.key == "T" and args.key == ";"
+		-- is args.key is pattern repeat key
+		local pattern_repeat_key = args.key == ";" or args.key == ","
+
 		-- match position direction determined by the input key
 		local match_direction = { left = false, right = false }
-		if key_types.find_direction_right or key_types.till_direction_right then
+		if find_direction_right or till_direction_right then
 			match_direction.right = true
-		elseif key_types.find_direction_left or key_types.till_direction_left then
+		elseif find_direction_left or till_direction_left then
 			match_direction.left = true
 		end
 
 		local pattern = nil
-		if key_types.pattern_repeat_key then
+		if pattern_repeat_key then
 			-- if args.key is , or ; then use the previous pattern
 			pattern = __previous_data.pattern
 		else
@@ -211,8 +205,8 @@ function M.finder(config)
 		end
 
 		local key_type = {
-			till = key_types.till_direction_left or key_types.till_direction_right,
-			find = key_types.find_direction_left or key_types.find_direction_right,
+			till = till_direction_left or till_direction_right,
+			find = find_direction_left or find_direction_right,
 		}
 
 		local match = get_target_match({ pattern = pattern, match_direction = match_direction, key_type = key_type })
