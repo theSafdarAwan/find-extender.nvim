@@ -99,16 +99,22 @@ require("find-extender").setup({
         ---@field min_matches number minimum number of matches required after which
         --- you can use the leap or lh.
         min_matches = 2,
+        ---@field highlight_match table highlights the match
+        highlight_match = { fg = "#c0caf5", bg = "#545c7e" },
         ---@field lh table this lets you move though the matches using `l` and `h` keys.
-        lh = false,
-        ---@field leap boolean pick match, with virtual text symbol for that match.
-        leap = true,
+        lh = {
+            use = false,
+            ---@field lh_curosr_hl table highlight the cursor for the `lh` movment
+            cursor_hl = { fg = "#545c7e", bg = "#ff9e64" },
+        },
+        ---@field leap table pick match, with virtual text symbol for that match.
+        leap = {
+            use = true,
+            ---@field symbols string symbols that represent matches, with virtual text
+            symbols = "abcdefgh",
+        },
     },
-    ---@field highlight_match table highlights the match
-    highlight_match = { fg = "#c0caf5", bg = "#545c7e" },
-    ---@field lh_curosr_hl table highlight the cursor for the `lh` movment
-    lh_curosr_hl = { fg = "#545c7e", bg = "#c0caf5" },
-    ---@field keymaps table information for keymaps.
+    ---@field highlight_on_yank table highlight the yanked area
     keymaps = {
         ---@field finding table finding keys config
         finding = {
@@ -229,17 +235,27 @@ This plugin allows tow types of movements.
 
 ```lua
 movments = {
-    ---@field min_matches number minimum number of matches required after which
-    --- you can use the leap or lh.
-    min_matches = 2,
-    ---@field lh table this lets you move though the matches using `l` and `h` keys.
-    lh = false,
-    ---@field leap boolean pick match, with virtual text symbol for that match.
-    leap = true,
+   ---@field min_matches number minimum number of matches required after which
+   --- you can use the leap or lh.
+   min_matches = 2,
+   ---@field highlight_match table highlights the match
+   highlight_match = { fg = "#c0caf5", bg = "#545c7e" },
+   ---@field lh table this lets you move though the matches using `l` and `h` keys.
+   lh = {
+       use = false,
+       ---@field lh_curosr_hl table highlight the cursor for the `lh` movment
+       cursor_hl = { fg = "#545c7e", bg = "#ff9e64" },
+   },
+   ---@field leap table pick match, with virtual text symbol for that match.
+   leap = {
+       use = true,
+       ---@field symbols string symbols that represent matches, with virtual text
+       symbols = "abcdefgh",
+   },
 },
 ```
 
-### Matches highlighting
+##### Matches highlighting
 
 You can highlight the match position by changing he color of `highlight_match`
 key in config.
@@ -249,11 +265,11 @@ key in config.
 highlight_match = { fg = "#c0caf5", bg = "#545c7e" },
 ```
 
-The `lh` movement cursor can also be customized by changing the `lh_curosr_hl` key.
+The `lh` movement cursor can also be customized by changing the `lh.curosr_hl` key.
 
 ```lua
 ---@field lh_curosr_hl table highlight the cursor for the `lh` movment
-lh_curosr_hl = { fg = "#545c7e", bg = "#c0caf5" },
+lh.curosr_hl = { fg = "#545c7e", bg = "#c0caf5" },
 ```
 
 ### highlight on yank

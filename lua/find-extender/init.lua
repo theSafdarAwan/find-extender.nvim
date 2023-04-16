@@ -14,15 +14,21 @@ local DEFAULT_CONFIG = {
 		---@field min_matches number minimum number of matches required after which
 		--- you can use the leap or lh.
 		min_matches = 2,
+		---@field highlight_match table highlights the match
+		highlight_match = { fg = "#c0caf5", bg = "#545c7e" },
 		---@field lh table this lets you move though the matches using `l` and `h` keys.
-		lh = false,
-		---@field leap boolean pick match, with virtual text symbol for that match.
-		leap = true,
+		lh = {
+			use = false,
+			---@field lh_curosr_hl table highlight the cursor for the `lh` movment
+			cursor_hl = { fg = "#545c7e", bg = "#ff9e64" },
+		},
+		---@field leap table pick match, with virtual text symbol for that match.
+		leap = {
+			use = true,
+			---@field symbols string symbols that represent matches, with virtual text
+			symbols = "abcdefgh",
+		},
 	},
-	---@field highlight_match table highlights the match
-	highlight_match = { fg = "#c0caf5", bg = "#545c7e" },
-	---@field lh_curosr_hl table highlight the cursor for the `lh` movment
-	lh_curosr_hl = { fg = "#545c7e", bg = "#c0caf5" },
 	---@field keymaps table information for keymaps.
 	keymaps = {
 		---@field finding table finding keys config

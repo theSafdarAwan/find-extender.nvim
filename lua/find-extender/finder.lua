@@ -6,7 +6,6 @@ local fn = vim.fn
 
 local keymap = {
 	set = vim.keymap.set,
-	del = vim.keymap.del,
 	opts = { silent = true, noremap = true },
 }
 
@@ -32,9 +31,10 @@ function M.finder(config)
 	---@param args table
 	local function pick_match(args)
 		local picked_match = nil
-		if config.movments.lh then
+		if config.movments.lh.use then
 			picked_match = movments.lh(args)
 		else
+			args.symbols = config.movments.leap.symbols
 			picked_match = movments.leap(args)
 		end
 		return picked_match
@@ -332,26 +332,22 @@ function M.finder(config)
 	----------------------------------------------------------------------
 	local function set_maps()
 		for _, key in ipairs(finding_keys) do
-			keymap.set(modes.finding, key, key, {
-				---@diagnostic disable-next-line: deprecated
-				unpack(keymap.opts),
-				callback = function()
-					finding_keys_helper({ key = key })
-				end,
-			})
+			local opts = vim.deepcopy(keymap.opts)
+			opts.callback = function()
+				finding_keys_helper({ key = key })
+			end
+			keymap.set(modes.finding, key, "", opts)
 		end
 		for key_name, keys in pairs(tm_keys) do
 			-- to get the first character of delete/change/yank
 			local tm_key_init_char = string.sub(tostring(key_name), 1, 1)
 			for _, key in ipairs(keys) do
 				key = tm_key_init_char .. key
-				keymap.set("n", key, key, {
-					---@diagnostic disable-next-line: deprecated
-					unpack(keymap.opts),
-					callback = function()
-						tm_keys_helper({ key = key })
-					end,
-				})
+				local opts = vim.deepcopy(keymap.opts)
+				opts.callback = function()
+					tm_keys_helper({ key = key })
+				end
+				keymap.set("n", key, "", opts)
 			end
 		end
 	end
@@ -361,12 +357,12 @@ function M.finder(config)
 	----------------------------------------------------------------------
 	local function remove_maps()
 		for _, key in ipairs(finding_keys) do
-			keymap.set(modes.finding, key, key, keymap.opts)
+			keymap.set(modes.finding, key, "", keymap.opts)
 		end
 		for key_name, _ in pairs(tm_keys) do
 			local key = string.sub(tostring(key_name), 1, 1)
 			keymap.set(modes.text_manipulation, key, function()
-				keymap.set(keymaps.text_manipulation, key, key, keymap.opts)
+				keymap.set(keymaps.text_manipulation, key, "", keymap.opts)
 			end)
 		end
 	end
@@ -409,8 +405,8 @@ function M.finder(config)
 	----------------------------------------------------------------------
 	--                      Highlight virtual text                      --
 	----------------------------------------------------------------------
-	api.nvim_set_hl(0, "FEVirtualText", config.highlight_match)
-	api.nvim_set_hl(0, "FECurrentMatchCursor", config.lh_curosr_hl)
+	api.nvim_set_hl(0, "FEVirtualText", config.movments.highlight_match)
+	api.nvim_set_hl(0, "FECurrentMatchCursor", config.movments.lh.cursor_hl)
 
 	-- add the maps on setup function execution
 	set_maps()

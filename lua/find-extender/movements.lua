@@ -12,16 +12,23 @@ function M.leap(args)
 	local buf_nr = api.nvim_get_current_buf()
 	local line_nr = fn.line(".")
 	local ns_id = api.nvim_create_namespace("")
-	args.alphabets = "abcdefgh"
+	-- need exact location to highlight target position with respect to the key
+	-- type threshold, which differs in find and till
+	local threshold = nil
+	if args.key_type.find then
+		threshold = 1
+	elseif args.key_type.till then
+		threshold = 2
+	end
 	local i = 1
 	for _, match in ipairs(args.matches) do
 		local extmark_opts = {
-			virt_text = { { string.sub(args.alphabets, i, i), "FEVirtualText" } },
+			virt_text = { { string.sub(args.symbols, i, i), "FEVirtualText" } },
 			virt_text_pos = "overlay",
 			hl_mode = "combine",
 			priority = 105,
 		}
-		api.nvim_buf_set_extmark(buf_nr, ns_id, line_nr - 1, match - 1, extmark_opts)
+		api.nvim_buf_set_extmark(buf_nr, ns_id, line_nr - 1, match - threshold, extmark_opts)
 		i = i + 1
 	end
 	api.nvim_create_autocmd({ "CursorMoved" }, {
@@ -32,7 +39,7 @@ function M.leap(args)
 	})
 	picked_match = utils.get_chars({ chars_length = 1 })
 	if picked_match then
-		local match_pos = string.find(args.alphabets, picked_match)
+		local match_pos = string.find(args.symbols, picked_match)
 		picked_match = args.matches[match_pos]
 	end
 	vim.cmd("silent! do CursorMoved")
@@ -59,7 +66,7 @@ M.lh = function(args)
 	picked_match = cursor_pos
 	local lh_cursor_ns = api.nvim_create_namespace("")
 	utils.add_dummy_cursor()
-	local function update_highlights(match)
+	local function render_cursor(match)
 		vim.wait(0, function()
 			api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
 			-- need to add the cursor highlight at the exact location relative to the key type
@@ -73,7 +80,7 @@ M.lh = function(args)
 		end, 1, false)
 	end
 	while true do
-		-- HACK: hack to avoid original cursor when `get_chars` has returned value flikering
+		-- HACK: hack to avoid original cursor flikering when `get_chars` has returned value
 		vim.wait(0, function() end, 1, false)
 
 		local key = utils.get_chars({ chars_length = 1 })
@@ -88,7 +95,7 @@ M.lh = function(args)
 			for _, match in ipairs(__matches) do
 				if match > picked_match then
 					picked_match = match
-					update_highlights(match)
+					render_cursor(match)
 					break
 				end
 			end
@@ -103,7 +110,7 @@ M.lh = function(args)
 			for _, match in ipairs(__matches) do
 				if match < picked_match then
 					picked_match = match
-					update_highlights(match)
+					render_cursor(match)
 					break
 				end
 			end
