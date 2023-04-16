@@ -334,6 +334,7 @@ function M.finder(config)
 		for _, key in ipairs(finding_keys) do
 			local opts = vim.deepcopy(keymap.opts)
 			opts.callback = function()
+				utils.add_dummy_cursor()
 				finding_keys_helper({ key = key })
 			end
 			keymap.set(modes.finding, key, "", opts)
@@ -345,6 +346,7 @@ function M.finder(config)
 				key = tm_key_init_char .. key
 				local opts = vim.deepcopy(keymap.opts)
 				opts.callback = function()
+					utils.add_dummy_cursor()
 					tm_keys_helper({ key = key })
 				end
 				keymap.set("n", key, "", opts)
