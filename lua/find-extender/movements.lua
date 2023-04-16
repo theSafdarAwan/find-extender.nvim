@@ -62,7 +62,14 @@ M.lh = function(args)
 	local function update_highlights(match)
 		vim.wait(0, function()
 			api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
-			api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatchCursor", line_nr - 1, match - 1, match)
+			-- need to add the cursor highlight at the exact location relative to the key type
+			local threshold = nil
+			if args.key_type.find then
+				threshold = 1
+			elseif args.key_type.till then
+				threshold = 2
+			end
+			api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatchCursor", line_nr - 1, match - threshold, match)
 		end, 1, false)
 	end
 	while true do

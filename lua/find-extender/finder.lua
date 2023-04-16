@@ -126,7 +126,7 @@ function M.finder(config)
 		local match = nil
 		-- highlight match if pattern matches exceed the virtual_text.max_matches
 		if #matches > config.movments.min_matches then
-			local picked_match = pick_match({ matches = matches, direction = args.match_direction })
+			local picked_match = pick_match({ matches = matches, direction = args.match_direction, key_type = args.key_type })
 			if not picked_match then
 				return
 			end
