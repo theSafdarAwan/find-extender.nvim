@@ -148,7 +148,6 @@ function M.finder(config)
 		if args.key_type.find then
 			match = match - 1
 		end
-		print(match)
 		return match
 	end
 
