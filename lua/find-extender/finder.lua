@@ -148,6 +148,7 @@ function M.finder(config)
 		if args.key_type.find then
 			match = match - 1
 		end
+		print(match)
 		return match
 	end
 
@@ -166,15 +167,15 @@ function M.finder(config)
 
 		-- find
 		local find_direction_left = args.key == "f"
-			or args.prev_key == "F" and args.key == ","
-			or args.prev_key == "f" and args.key == ";"
+			or __previous_data.key == "F" and args.key == ","
+			or __previous_data.key == "f" and args.key == ";"
 		local find_direction_right = args.key == "F"
-			or args.prev_key == "f" and args.key == ","
-			or args.prev_key == "F" and args.key == ";"
+			or __previous_data.key == "f" and args.key == ","
+			or __previous_data.key == "F" and args.key == ";"
 		-- till
 		local till_direction_left = args.key == "t"
-			or args.prev_key == "T" and args.key == ","
-			or args.prev_key == "t" and args.key == ";"
+			or __previous_data.key == "T" and args.key == ","
+			or __previous_data.key == "t" and args.key == ";"
 		local till_direction_right = args.key == "T"
 			or __previous_data.key == "t" and args.key == ","
 			or __previous_data.key == "T" and args.key == ";"
@@ -357,9 +358,7 @@ function M.finder(config)
 		end
 		for key_name, _ in pairs(tm_keys) do
 			local key = string.sub(tostring(key_name), 1, 1)
-			keymap.set(modes.text_manipulation, key, function()
-				keymap.set(keymaps.text_manipulation, key, "", keymap.opts)
-			end)
+			keymap.set(keymaps.text_manipulation, key, "", keymap.opts)
 		end
 	end
 
