@@ -1,8 +1,22 @@
-## Description
+This Plugin extend's the capability of **find** and **till** commands.
 
-This Plugin extend's the capability of find, till and text manipulation(yank/delete/change)
-command's in nvim. With the help of this Plugin you can find multiple characters rather than
-one at a time.
+## ✨ Features
+
+- extends the find characters limit to `2` characters form `1`.
+- adds support for yank/delete/change(y/d/c) commands same behaviour like finding
+  commands.
+- Accepts count.
+- Adds movements to navigate through the matches. Two type of movements are
+  supported:
+  - **leap**: this movement is inspired from [leap.nvim](https://github.com/ggandor/leap.nvim),
+    this movement lets you pick the match by picking virtual text symbol assigned to it.
+  - **lh**: this movement will allow you to move through matches using `h` and `l` keys.
+- Lets you ignore certain characters. Using this feature you can use default `1`
+  character search for certain characters like punctuations(`{`,`(`,`,`, etc).
+
+Text Manipulation(yank/delete/change) command's are also supported, if the second
+key after y/d/c keys is either one of `t|T` or `f|F` command's. That means it won't
+hijack the movements like `{c|d|y}w`, `{c|d|y}e`, etc.
 
 🔥 This Plugins Effects the following commands:
 
@@ -16,18 +30,6 @@ one at a time.
 By default after pressing any of these commands now you have to type two
 characters(or more you can specify characters length) rather than One to
 go to next position.
-
-## ✨ Features
-
-- adds capability to find `2` characters rather then `1`.
-- yank/delete/change(y/d/c) text same as finding.
-- highlight the yanked area.
-- count is also accepted.
-- highlight the matches, like [leap.nvim](https://github.com/ggandor/leap.nvim) for movments.
-- movements: this plugins supports two type of movments
-  - leap: this movement is inspired from [leap.nvim](https://github.com/ggandor/leap.nvim),
-    this movement lets you move to the match by picking virtual text symbol assigned to it.
-  - lh: this movement will allow you to move in the matches using `h` and `l` keys.
 
 ## 🚀 Usage
 
