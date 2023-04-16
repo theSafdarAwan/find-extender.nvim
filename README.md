@@ -3,6 +3,7 @@ This Plugin extend's the capability of **find** and **till** commands.
 ## ✨ Features
 
 - extends the find characters limit to `2` characters form `1`.
+- Repeat the last pattern using `;` and `,` commands.
 - adds support for yank/delete/change(y/d/c) commands same behaviour like finding
   commands.
 - Accepts count.
@@ -27,14 +28,12 @@ hijack the movements like `{c|d|y}w`, `{c|d|y}e`, etc.
     d{t|T|f|f} (delete command)
     y{t|T|f|f} (yank command)
 
-By default after pressing any of these commands now you have to type two
-characters(or more you can specify characters length) rather than One to
-go to next position.
+After pressing any of these commands, now you have to type `2` characters rather than `1`
+to go to next match.
 
 ## 🚀 Usage
 
-I have only provided demos for find and delete commands y,c,t,y commands take characters
-input same as these.
+TODO: Add demos
 
 ### Finding
 
