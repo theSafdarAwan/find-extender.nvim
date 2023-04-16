@@ -8,8 +8,7 @@ local fn = vim.fn
 --- timeout or chars limit, next target input chars, if nil(out of eng alphabets, numbers,
 --- or punctuations) character was provided.
 function M.get_chars(args)
-	M.add_dummy_cursor()
-	-- add dummy cursor because now cursor is in the command line
+	vim.cmd("redraw")
 	local chars = ""
 	local break_loop = false
 	local i = 0
@@ -98,7 +97,6 @@ end
 --- adds a dummy cursor at the cursor position when the cursor is in the command
 --- line when getting cursor input
 M.add_dummy_cursor = function()
-	vim.cmd("redraw")
 	local buf_nr = api.nvim_get_current_buf()
 	local ns_id = api.nvim_create_namespace("")
 	local pos = vim.fn.getpos(".")
@@ -109,7 +107,7 @@ M.add_dummy_cursor = function()
 	vim.highlight.range(
 		buf_nr,
 		ns_id,
-		"IncSearch",
+		"Cursor",
 		{ line_num, col_num },
 		{ line_num, col_num + 1 },
 		{ regtype = event.regtype, inclusive = event.inclusive, priority = 200 }
@@ -123,6 +121,7 @@ M.add_dummy_cursor = function()
 			end
 		end,
 	})
+	vim.cmd("redraw")
 end
 
 --- validates if any character or punctuation is present in string

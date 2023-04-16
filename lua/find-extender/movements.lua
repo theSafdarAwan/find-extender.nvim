@@ -69,8 +69,10 @@ M.lh = function(args)
 	end
 	picked_match = cursor_pos
 	local lh_cursor_ns = api.nvim_create_namespace("")
+	utils.add_dummy_cursor()
 	while true do
 		local key = utils.get_chars({ chars_length = 1 })
+		vim.cmd("do CursorMoved")
 		if key == "l" then
 			local __matches = nil
 			if args.direction.left then
