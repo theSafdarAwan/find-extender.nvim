@@ -1,6 +1,11 @@
 --- setup module.
 local M = {}
 
+-- TODO: add capability to use count in the leap movement.
+--
+-- TODO: add capability to use different movements for different finding commands
+-- like leap for deleting but lh moving through
+
 -- TODO: add support for prefix
 
 local deprecate = require("find-extender.deprecate")
