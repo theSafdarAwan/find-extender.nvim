@@ -67,22 +67,19 @@ M.lh = function(args)
 	local lh_cursor_ns = api.nvim_create_namespace("")
 	utils.add_dummy_cursor()
 	local function render_cursor(match)
-		vim.wait(0, function()
-			api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
-			-- need to add the cursor highlight at the exact location relative to the key type
-			local threshold = nil
-			if args.key_type.find then
-				threshold = 1
-			elseif args.key_type.till then
-				threshold = 2
-			end
-			api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatchCursor", line_nr - 1, match - threshold, match)
-		end, 1, false)
+		api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
+		-- need to add the cursor highlight at the exact location relative to the key type
+		local threshold = nil
+		if args.key_type.find then
+			threshold = 1
+		elseif args.key_type.till then
+			threshold = 2
+		end
+		api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatchCursor", line_nr - 1, match - threshold, match)
 	end
 	while true do
-		-- HACK: hack to avoid original cursor flikering when `get_chars` has returned value
+		-- HACK: hack to avoid original cursor flickering when `get_chars` has returned value
 		vim.wait(0, function() end, 1, false)
-
 		local key = utils.get_chars({ chars_length = 1 })
 		vim.cmd("do CursorMoved")
 		if key == "l" then

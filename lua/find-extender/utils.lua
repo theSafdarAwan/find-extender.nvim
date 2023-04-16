@@ -29,10 +29,7 @@ function M.get_chars(args)
 				end
 			end, args.timeout)
 		end
-		local c = nil
-		vim.wait(0, function()
-			c = fn.getchar()
-		end, 1, false)
+		local c = fn.getchar()
 		if type(c) ~= "number" then
 			return
 		end
