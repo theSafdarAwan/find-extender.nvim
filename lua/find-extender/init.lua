@@ -1,6 +1,8 @@
 --- setup module.
 local M = {}
 
+-- TODO: add support for prefix
+
 local deprecate = require("find-extender.deprecate")
 
 -- TODO: add strategy when first input char is a punctuation and expose an option
@@ -9,6 +11,9 @@ local deprecate = require("find-extender.deprecate")
 
 --- default config
 local DEFAULT_CONFIG = {
+	---@field prefix string if you don't want this plugin to hijack the default
+	--- finding commands use a prefix to use this plugin.
+	prefix = "",
 	movments = {
 		---@field min_matches number minimum number of matches required after which
 		--- you can use the leap or lh.

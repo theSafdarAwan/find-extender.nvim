@@ -1,5 +1,7 @@
 This Plugin extend's the capability of **find** and **till** commands.
 
+> NOTE: This Plugin only finds pattern's in the current line.
+
 ## ✨ Features
 
 - extends the find characters limit to `2` characters form `1`.
@@ -30,6 +32,14 @@ hijack the movements like `{c|d|y}w`, `{c|d|y}e`, etc.
 
 After pressing any of these commands, now you have to type `2` characters rather than `1`
 to go to next match.
+
+## Commands
+
+There are three commands available.
+
+- FindExtenderDisable
+- FindExtenderEnable
+- FindExtenderToggle
 
 ## 🚀 Usage
 
@@ -147,14 +157,6 @@ require("find-extender").setup({
     },
 })
 ```
-
-## Commands
-
-There are three commands available.
-
-- FindExtenderDisable
-- FindExtenderEnable
-- FindExtenderToggle
 
 ## ⚙️ Configuration
 
