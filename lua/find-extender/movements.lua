@@ -37,6 +37,7 @@ function M.leap(args)
 			api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
 		end,
 	})
+	utils.add_dummy_cursor()
 	picked_match = utils.get_chars({ chars_length = 1 })
 	if picked_match then
 		local match_pos = string.find(args.symbols, picked_match)
@@ -78,8 +79,7 @@ M.lh = function(args)
 		api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatchCursor", line_nr - 1, match - threshold, match)
 	end
 	while true do
-		-- HACK: hack to avoid original cursor flickering when `get_chars` has returned value
-		vim.wait(0, function() end, 1, false)
+		utils.add_dummy_cursor()
 		local key = utils.get_chars({ chars_length = 1 })
 		vim.cmd("do CursorMoved")
 		if key == "l" then

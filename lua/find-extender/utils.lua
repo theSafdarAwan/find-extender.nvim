@@ -115,14 +115,18 @@ M.add_dummy_cursor = function()
 	local col_num = pos[3] - 1
 
 	local event = vim.v.event
-	vim.highlight.range(
-		buf_nr,
-		ns_id,
-		"Cursor",
-		{ line_num, col_num },
-		{ line_num, col_num + 1 },
-		{ regtype = event.regtype, inclusive = event.inclusive, priority = 200 }
-	)
+	vim.wait(3000, function()
+		vim.highlight.range(
+			buf_nr,
+			ns_id,
+			"Cursor",
+			{ line_num, col_num },
+			{ line_num, col_num + 1 },
+			{ regtype = event.regtype, inclusive = event.inclusive, priority = 200 }
+		)
+		return true
+	end, 1, false)
+	vim.cmd("redraw")
 
 	api.nvim_create_autocmd({ "CursorMoved" }, {
 		once = true,
