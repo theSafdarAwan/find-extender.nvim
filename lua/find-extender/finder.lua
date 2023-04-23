@@ -194,6 +194,7 @@ function M.finder(config)
 			-- if args.key is , or ; then use the previous pattern
 			pattern = __previous_data.pattern
 		else
+			utils.add_dummy_cursor()
 			pattern = get_chars({ chars_length = 2, no_wait = config.no_wait, timeout = timeout })
 			if not pattern then
 				return
@@ -250,6 +251,7 @@ function M.finder(config)
 		end
 		---------------------
 
+		utils.add_dummy_cursor()
 		local pattern = get_chars({ chars_length = 2, no_wait = config.no_wait })
 		if not pattern then
 			return
