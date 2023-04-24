@@ -89,6 +89,10 @@ function M.setup(user_config)
 	local config = DEFAULT_CONFIG
 	local config_is_derecated = deprecate.old_syntax(user_config)
 
+	if user_config and user_config.no_wait then
+		config.no_wait = user_config.no_wait
+	end
+
 	if not config_is_derecated then
 		config = vim.tbl_deep_extend("force", config, user_config or {})
 		config.keymaps = vim.tbl_extend("force", DEFAULT_CONFIG.keymaps, user_config and user_config.keymaps or {})
