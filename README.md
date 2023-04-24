@@ -109,7 +109,7 @@ require("find-extender").setup({
     movments = {
         ---@field min_matches number minimum number of matches required after which
         --- you can use the leap or lh.
-        min_matches = 2,
+        min_matches = 1,
         ---@field highlight_match table highlights the match
         highlight_match = { fg = "#c0caf5", bg = "#545c7e" },
         ---@field lh table this lets you move though the matches using `l` and `h` keys.
