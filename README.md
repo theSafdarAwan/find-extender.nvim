@@ -106,6 +106,8 @@ use {
 
 ```lua
 require("find-extender").setup({
+    ---@field ignore_case boolean whether to ignore case or not when searching
+    ignore_case = false,
     movments = {
         ---@field min_matches number minimum number of matches required after which
         --- you can use the leap or lh.
@@ -203,6 +205,13 @@ finding = {
     ---@field find table table of find keys backward and forward both by default.
     find = { "F", "f" },
 },
+```
+
+### ignore case
+You can ignore case by setting this to `true`
+```lua
+---@field ignore_case boolean whether to ignore case or not when searching
+ignore_case = false,
 ```
 
 ### text_manipulation

@@ -1,24 +1,15 @@
 --- setup module.
 local M = {}
 
--- TODO: add capability to use count in the leap movement.
---
--- TODO: add capability to use different movements for different finding commands
--- like leap for deleting but lh moving through
-
--- TODO: add support for prefix
-
 local deprecate = require("find-extender.deprecate")
-
--- TODO: add strategy when first input char is a punctuation and expose an option
--- for user to decide what to do
--- TODO: add strategy for cursor movement when searching backwards
 
 --- default config
 local DEFAULT_CONFIG = {
 	---@field prefix string if you don't want this plugin to hijack the default
 	--- finding commands use a prefix to use this plugin.
 	prefix = "",
+	---@field ignore_case boolean whether to ignore case or not when searching
+	ignore_case = false,
 	movments = {
 		---@field min_matches number minimum number of matches required after which
 		--- you can use the leap or lh.
