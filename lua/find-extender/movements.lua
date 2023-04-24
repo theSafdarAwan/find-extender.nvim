@@ -37,7 +37,6 @@ function M.leap(args)
 			api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
 		end,
 	})
-	utils.add_dummy_cursor()
 	picked_match = utils.get_chars({ chars_length = 1 })
 	if picked_match then
 		local match_pos = string.find(args.symbols, picked_match)
@@ -66,7 +65,6 @@ M.lh = function(args)
 	end
 	picked_match = cursor_pos
 	local lh_cursor_ns = api.nvim_create_namespace("")
-	utils.add_dummy_cursor()
 	local function render_cursor(match)
 		api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
 		-- need to add the cursor highlight at the exact location relative to the key type
@@ -79,8 +77,7 @@ M.lh = function(args)
 		api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatchCursor", line_nr - 1, match - threshold, match)
 	end
 	while true do
-		utils.add_dummy_cursor()
-		local key = utils.get_chars({ chars_length = 1 })
+		local key = utils.get_chars({ chars_length = 1, accept_keymaps = { 27, 13 }, no_dummy_cursor = true })
 		vim.cmd("do CursorMoved")
 		if key == "l" then
 			local __matches = nil
@@ -112,7 +109,12 @@ M.lh = function(args)
 				end
 			end
 		end
-		if key ~= "h" and key ~= "l" then
+		-- if <CR> then accept the current position
+		-- else go to the original position
+		if key == 13 then
+			break
+		elseif key == 27 then
+			picked_match = nil
 			break
 		end
 	end

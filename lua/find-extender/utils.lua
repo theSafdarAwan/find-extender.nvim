@@ -11,23 +11,9 @@ function M.get_chars(args)
 	vim.cmd("redraw")
 	local chars = ""
 	local break_loop = false
-	local i = 0
 	while true do
-		if args.timeout and #chars > 0 then
-			-- this is a trick to solve issue of multiple timers being created in every
-			-- loop iteration and once the guard condition becomes true the previous timers
-			-- jeopardised the timeout So for now the i and id variable's acts as a id
-			-- validation
-			i = i + 1
-			local id = i
-			vim.defer_fn(function()
-				if i == id then
-					-- to get rid of the getchar will throw dummy value which won't
-					-- be added to the chars list
-					api.nvim_feedkeys("�", "n", false)
-					break_loop = true
-				end
-			end, args.timeout)
+		if not args.no_dummy_cursor then
+			M.add_dummy_cursor()
 		end
 		local c = fn.getchar()
 		-- return if first char is included included in `args.no_wait`
@@ -45,11 +31,17 @@ function M.get_chars(args)
 		end
 		if break_loop then
 			return chars
-		elseif c < 32 or c > 127 then
-			-- only accept ASCII value for the letters and punctuations including
-			-- space as input
-			return
 		end
+
+		-- accept these keys -> represented as ASCII values
+		if args.accept_keymaps and type(args.accept_keymaps) == "table" then
+			for _, key in ipairs(args.accept_keymaps) do
+				if key == c then
+					return c
+				end
+			end
+		end
+
 		chars = chars .. fn.nr2char(c)
 		-- accepts how many characters to get input for
 		if #chars == args.chars_length then
