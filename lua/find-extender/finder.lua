@@ -41,7 +41,7 @@ function M.finder(config)
 	---@param args table
 	local function pick_match(args)
 		local picked_match = nil
-		if config.movments.lh.use then
+		if config.movments.lh.enable then
 			picked_match = movments.lh(args)
 		else
 			args.symbols = config.movments.leap.symbols
