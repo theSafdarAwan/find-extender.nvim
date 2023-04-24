@@ -68,16 +68,11 @@ function M.finder(config)
 		if config.ignore_case then
 			local char_1 = string.upper(string.sub(args.pattern, 1, 1))
 			local char_2 = string.upper(string.sub(args.pattern, 2, 2))
-			-- example pattern -> xx
-			-- case 1 -> xX
-			local case_1 = utils.map_string_pattern_positions(str, string.upper(char_1) .. string.lower(char_2))
-			-- case 2 -> Xx
-			local case_2 = utils.map_string_pattern_positions(str, string.lower(char_1) .. string.upper(char_2))
-			-- case 2 -> XX
-			local case_3 = utils.map_string_pattern_positions(str, string.upper(char_1) .. string.upper(char_2))
-			-- case 2 -> xx
-			local case_4 = utils.map_string_pattern_positions(str, string.lower(char_1) .. string.lower(char_2))
-			matches = utils.merge_tables({}, case_1, case_2, case_3, case_4)
+			local xX = utils.map_string_pattern_positions(str, string.upper(char_1) .. string.lower(char_2))
+			local Xx = utils.map_string_pattern_positions(str, string.lower(char_1) .. string.upper(char_2))
+			local XX = utils.map_string_pattern_positions(str, string.upper(char_1) .. string.upper(char_2))
+			local xx = utils.map_string_pattern_positions(str, string.lower(char_1) .. string.lower(char_2))
+			matches = utils.merge_tables({}, xX, Xx, XX, xx)
 			table.sort(matches, function(x, y)
 				return x < y
 			end)
