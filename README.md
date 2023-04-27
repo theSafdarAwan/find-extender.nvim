@@ -63,11 +63,11 @@ TODO: Add demos
 
 #### Leap
 
-<img alt="leap movement" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/movments-leap.gif">
+<img alt="leap movement" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/movements-leap.gif">
 
 #### lh
 
-<img alt="leap movement" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/movments-lh.gif">
+<img alt="leap movement" src="https://github.com/TheSafdarAwan/assets/blob/main/find-extender.nvim/movements-lh.gif">
 
 ## 📦 Installation
 
@@ -108,7 +108,7 @@ use {
 require("find-extender").setup({
     ---@field ignore_case boolean whether to ignore case or not when searching
     ignore_case = false,
-    movments = {
+    movements = {
         ---@field min_matches number minimum number of matches required after which
         --- you can use the leap or lh.
         min_matches = 1,
@@ -117,7 +117,7 @@ require("find-extender").setup({
         ---@field lh table this lets you move though the matches using `l` and `h` keys.
         lh = {
             enable = false,
-            ---@field lh_curosr_hl table highlight the cursor for the `lh` movment
+            ---@field lh_curosr_hl table highlight the cursor for the `lh` movement
             cursor_hl = { fg = "#545c7e", bg = "#ff9e64" },
         },
         ---@field leap table pick match, with virtual text symbol for that match.
@@ -231,7 +231,7 @@ text_manipulation = {
 },
 ```
 
-### Movments
+### movements
 
 Movements allow you to move through matches.
 This plugin allows tow types of movements.
@@ -245,7 +245,7 @@ This plugin allows tow types of movements.
    > changing the `lh_curosr_hl` key in config.
 
 ```lua
-movments = {
+movements = {
    ---@field min_matches number minimum number of matches required after which
    --- you can use the leap or lh.
    min_matches = 2,
@@ -254,7 +254,7 @@ movments = {
    ---@field lh table this lets you move though the matches using `l` and `h` keys.
    lh = {
        enable = false,
-       ---@field lh_curosr_hl table highlight the cursor for the `lh` movment
+       ---@field lh_curosr_hl table highlight the cursor for the `lh` movement
        cursor_hl = { fg = "#545c7e", bg = "#ff9e64" },
    },
    ---@field leap table pick match, with virtual text symbol for that match.
@@ -279,7 +279,7 @@ highlight_match = { fg = "#c0caf5", bg = "#545c7e" },
 The `lh` movement cursor can also be customized by changing the `lh.curosr_hl` key.
 
 ```lua
----@field lh_curosr_hl table highlight the cursor for the `lh` movment
+---@field lh_curosr_hl table highlight the cursor for the `lh` movement
 lh.curosr_hl = { fg = "#545c7e", bg = "#c0caf5" },
 ```
 

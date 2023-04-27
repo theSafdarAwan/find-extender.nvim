@@ -4,7 +4,7 @@ local api = vim.api
 local fn = vim.fn
 local utils = require("find-extender.utils")
 
---- leap movment
+--- leap movement
 ---@param args table
 ---@return number|nil picked match
 function M.leap(args)
@@ -47,13 +47,13 @@ function M.leap(args)
 	return picked_match
 end
 
---- lh movment
+--- lh movement
 ---@param args table
 ---@return number|nil picked match
 M.lh = function(args)
 	local picked_match = nil
 	local buf_nr = api.nvim_get_current_buf()
-	local cursor_pos = fn.getpos(".")[3]
+	local cursor_pos = api.nvim_win_get_cursor(0)
 	local line_nr = fn.line(".")
 	local ns_id = api.nvim_create_namespace("")
 	-- this table of matches is for the use of h key for backward movmenet,
@@ -63,7 +63,7 @@ M.lh = function(args)
 	for _, match in ipairs(args.matches) do
 		api.nvim_buf_add_highlight(buf_nr, ns_id, "FEVirtualText", line_nr - 1, match - 1, match + 1)
 	end
-	picked_match = cursor_pos
+	picked_match = cursor_pos[2]
 	local lh_cursor_ns = api.nvim_create_namespace("")
 	local function render_cursor(match)
 		api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
@@ -76,9 +76,25 @@ M.lh = function(args)
 		end
 		api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatchCursor", line_nr - 1, match - threshold, match)
 	end
+	local function reset_cursor_and_clear_highlights()
+		api.nvim_win_set_cursor(0, cursor_pos)
+		api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
+		api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
+	end
+	-- if count was given in the lh movement
+	local count = nil
 	while true do
-		local key = utils.get_chars({ chars_length = 1, accept_keymaps = { 27, 13 }, no_dummy_cursor = true })
+		local key = utils.get_chars({
+			chars_length = 1,
+			action_keys = args.action_keys,
+			no_dummy_cursor = true,
+		})
 		vim.cmd("do CursorMoved")
+		-- if a number was input -> to be used as count
+		-- store this info for the next loop iteration to be used as count
+		if tonumber(key) and tonumber(key) > 1 then
+			count = tonumber(key) - 1
+		end
 		if key == "l" then
 			local __matches = nil
 			if args.direction.left then
@@ -86,10 +102,21 @@ M.lh = function(args)
 			else
 				__matches = args_matches_reversed
 			end
-			for _, match in ipairs(__matches) do
-				if match > picked_match then
+			for idx, match in ipairs(__matches) do
+				if count and __matches[idx + count] and __matches[idx + count] > picked_match then
+					picked_match = __matches[idx + count]
+					if picked_match then
+						render_cursor(picked_match)
+					else
+						reset_cursor_and_clear_highlights()
+						return
+					end
+					-- need to remove the count after it has been used
+					count = nil
+					break
+				elseif match > picked_match then
 					picked_match = match
-					render_cursor(match)
+					render_cursor(picked_match)
 					break
 				end
 			end
@@ -101,25 +128,36 @@ M.lh = function(args)
 			else
 				__matches = args.matches
 			end
-			for _, match in ipairs(__matches) do
-				if match < picked_match then
+			for idx, match in ipairs(__matches) do
+				if count and __matches[idx - count] and __matches[idx - count] > picked_match then
+					picked_match = __matches[idx + count]
+					if picked_match then
+						render_cursor(picked_match)
+					else
+						reset_cursor_and_clear_highlights()
+						return
+					end
+					-- need to remove the count after it has been used
+					count = nil
+					break
+				elseif match < picked_match then
 					picked_match = match
-					render_cursor(match)
+					render_cursor(picked_match)
 					break
 				end
 			end
 		end
-		-- if <CR> then accept the current position
-		-- else go to the original position
-		if key == 13 then
+		-- if key == args.actions_keys.accept -> accept the current position
+		if key == args.action_keys.accept then
 			break
-		elseif key == 27 then
+		end
+		-- if key == args.actions_keys.escape then don't return a match
+		if key == args.action_keys.escape then
 			picked_match = nil
 			break
 		end
 	end
-	api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
-	api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
+	reset_cursor_and_clear_highlights()
 	return picked_match
 end
 

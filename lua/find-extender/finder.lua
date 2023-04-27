@@ -23,15 +23,22 @@ function M.finder(config)
 	local utils = require("find-extender.utils")
 	local get_chars = utils.get_chars
 	local tm = require("find-extender.text-manipulation")
-	local movments = require("find-extender.movements")
+	local movements = require("find-extender.movements")
 
-	--- check if string has has characters or not
-	---@param end_pos number string end position till which we have to sub string
-	---@param str string current line
-	---@return boolean|nil true if is valid
-	local string_sanity = function(str, end_pos)
-		local s = string.sub(str, 1, end_pos - 1)
-		return utils.string_has_chars(s)
+	--- check if string has has characters or punctuations, Tabs and spaces are not
+	--- counted as characters
+	---@param str string
+	---@param str_last_idx number string ending position
+	---@return boolean true if is valid
+	local string_sanity = function(str, str_last_idx)
+		local i = nil
+		if str_last_idx then
+			i = str_last_idx - 1
+		else
+			i = -1
+		end
+		local sub_str = string.sub(str, 1, i)
+		return utils.string_has_chars(sub_str)
 	end
 
 	----------------------------------------------------------------------
@@ -41,11 +48,12 @@ function M.finder(config)
 	---@param args table
 	local function pick_match(args)
 		local picked_match = nil
-		if config.movments.lh.enable then
-			picked_match = movments.lh(args)
+		if config.movements.lh.enable then
+			args.action_keys = config.movements.lh.action_keys
+			picked_match = movements.lh(args)
 		else
-			args.symbols = config.movments.leap.symbols
-			picked_match = movments.leap(args)
+			args.symbols = config.movements.leap.symbols
+			picked_match = movements.leap(args)
 		end
 		return picked_match
 	end
@@ -68,11 +76,18 @@ function M.finder(config)
 		if config.ignore_case then
 			local char_1 = string.upper(string.sub(args.pattern, 1, 1))
 			local char_2 = string.upper(string.sub(args.pattern, 2, 2))
+			-- ignore case matching sequences
+			-- example match str: sS
+			-- case 1: sS
 			local xX = utils.map_string_pattern_positions(str, string.upper(char_1) .. string.lower(char_2))
+			-- case 2: Ss
 			local Xx = utils.map_string_pattern_positions(str, string.lower(char_1) .. string.upper(char_2))
+			-- case 3: SS
 			local XX = utils.map_string_pattern_positions(str, string.upper(char_1) .. string.upper(char_2))
+			-- case 4: ss
 			local xx = utils.map_string_pattern_positions(str, string.lower(char_1) .. string.lower(char_2))
 			matches = utils.merge_tables({}, xX, Xx, XX, xx)
+			-- sort positions correctly -> numerically
 			table.sort(matches, function(x, y)
 				return x < y
 			end)
@@ -89,7 +104,7 @@ function M.finder(config)
 		end
 
 		local cursor_pos = fn.getpos(".")[3]
-		-- trim the matches table and only have matches that are in the same
+		-- trim the matches table and only leave matches that are in the same
 		-- direction with respect to the key.
 		if args.match_direction.right then
 			local tbl = {}
@@ -111,33 +126,35 @@ function M.finder(config)
 		end
 
 		if count then
+			-- trim tables if count was available -> to skip matches, we don't need
 			matches = utils.trim_table({ index = count - 1, tbl = matches })
 		end
 		local match = nil
-		-- highlight match if pattern matches exceed the virtual_text.max_matches
-		if #matches > config.movments.min_matches then
+
+		-- use the movements if matches exceed -> config.movements.min_matches
+		if #matches > config.movements.min_matches then
 			local picked_match = pick_match({ matches = matches, direction = args.match_direction, key_type = args.key_type })
 			if not picked_match then
 				return
 			end
-			matches = { picked_match }
-		end
-
-		-- get the appropriate match
-		if args.match_direction.left then
-			for _, match_position in ipairs(matches) do
-				if cursor_pos < match_position then
-					match = match_position
-					break
+			match = picked_match
+		else
+			-- get the appropriate match
+			if args.match_direction.left then
+				for _, match_position in ipairs(matches) do
+					if cursor_pos < match_position then
+						match = match_position
+						break
+					end
 				end
 			end
-		end
 
-		if args.match_direction.right then
-			for _, match_position in ipairs(matches) do
-				if cursor_pos > match_position then
-					match = match_position
-					break
+			if args.match_direction.right then
+				for _, match_position in ipairs(matches) do
+					if cursor_pos > match_position then
+						match = match_position
+						break
+					end
 				end
 			end
 		end
@@ -161,6 +178,7 @@ function M.finder(config)
 		if args.key_type.find then
 			match = match - 1
 		end
+
 		return match
 	end
 
@@ -223,9 +241,11 @@ function M.finder(config)
 		}
 
 		local match = get_target_match({ pattern = pattern, match_direction = match_direction, key_type = key_type })
+
 		if not match then
 			return
 		end
+
 		utils.set_cursor(match)
 	end
 
@@ -412,8 +432,8 @@ function M.finder(config)
 	----------------------------------------------------------------------
 	--                      Highlight virtual text                      --
 	----------------------------------------------------------------------
-	api.nvim_set_hl(0, "FEVirtualText", config.movments.highlight_match)
-	api.nvim_set_hl(0, "FECurrentMatchCursor", config.movments.lh.cursor_hl)
+	api.nvim_set_hl(0, "FEVirtualText", config.movements.highlight_match)
+	api.nvim_set_hl(0, "FECurrentMatchCursor", config.movements.lh.cursor_hl)
 	api.nvim_set_hl(0, "FEHighlightOnYank", config.highlight_on_yank.hl)
 
 	-- add the maps on setup function execution

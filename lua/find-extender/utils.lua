@@ -4,10 +4,12 @@ local fn = vim.fn
 
 --- gets user input
 ---@param args table includes information about chars and timeout.
----@return nil|string|nil|string nil if nil character, if loop broke either because of
+---@return nil|string|number|nil|string nil if nil character, if loop broke either because of
 --- timeout or chars limit, next target input chars, if nil(out of eng alphabets, numbers,
 --- or punctuations) character was provided.
 function M.get_chars(args)
+	-- TODO: this function is messy refactor this, its not predictable what will
+	-- this function return
 	vim.cmd("redraw")
 	local chars = ""
 	local break_loop = false
@@ -33,12 +35,11 @@ function M.get_chars(args)
 			return chars
 		end
 
-		-- accept these keys -> represented as ASCII values
-		if args.accept_keymaps and type(args.accept_keymaps) == "table" then
-			for _, key in ipairs(args.accept_keymaps) do
-				if key == c then
-					return c
-				end
+		if args.action_keys and type(args.action_keys) == "table" then
+			if args.action_keys.accept == c then
+				return c
+			elseif args.action_keys.escape == c then
+				return
 			end
 		end
 
@@ -131,9 +132,18 @@ M.add_dummy_cursor = function()
 	vim.cmd("redraw")
 end
 
+-- convert the action keys to the ASCII values
+---@param action_keys table
+function M.convert_key_to_ASCII_num(action_keys)
+	for action_name, action_key in pairs(action_keys) do
+		action_keys[action_name] = vim.fn.char2nr(vim.api.nvim_replace_termcodes(action_key, true, false, true))
+	end
+	return action_keys
+end
+
 --- validates if any character or punctuation is present in string
 ---@param str string validate this string.
----@return boolean|nil return true if contains any English alphabet or punctuation.
+---@return boolean return true if contains any English alphabet or punctuation.
 function M.string_has_chars(str)
 	local i = 0
 	for _ in string.gmatch(str, "[%a%p]") do
@@ -141,6 +151,8 @@ function M.string_has_chars(str)
 	end
 	if i > 0 then
 		return true
+	else
+		return false
 	end
 end
 

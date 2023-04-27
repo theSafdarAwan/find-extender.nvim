@@ -2,6 +2,7 @@
 local M = {}
 
 local deprecate = require("find-extender.deprecate")
+local utils = require("find-extender.utils")
 
 --- default config
 local DEFAULT_CONFIG = {
@@ -10,7 +11,7 @@ local DEFAULT_CONFIG = {
 	prefix = "",
 	---@field ignore_case boolean whether to ignore case or not when searching
 	ignore_case = false,
-	movments = {
+	movements = {
 		---@field min_matches number minimum number of matches required after which
 		--- you can use the leap or lh.
 		min_matches = 1,
@@ -19,8 +20,13 @@ local DEFAULT_CONFIG = {
 		---@field lh table this lets you move though the matches using `l` and `h` keys.
 		lh = {
 			enable = false,
-			---@field lh_curosr_hl table highlight the cursor for the `lh` movment
+			---@field lh_curosr_hl table highlight the cursor for the `lh` movement
 			cursor_hl = { fg = "#545c7e", bg = "#ff9e64" },
+			---@field action_keys table
+			action_keys = {
+				accept = "<CR>",
+				escape = "<ESC>",
+			},
 		},
 		---@field leap table pick match, with virtual text symbol for that match.
 		leap = {
@@ -40,6 +46,10 @@ local DEFAULT_CONFIG = {
 		"(",
 		")",
 		",",
+		"\"",
+		"'",
+		"`",
+		".",
 	},
 	---@field keymaps table information for keymaps.
 	keymaps = {
@@ -84,10 +94,20 @@ function M.setup(user_config)
 		config.no_wait = user_config.no_wait
 	end
 
+	config.movements.lh.action_keys = utils.convert_key_to_ASCII_num(config.movements.lh.action_keys)
+
 	if not config_is_derecated then
 		config = vim.tbl_deep_extend("force", config, user_config or {})
 		config.keymaps = vim.tbl_extend("force", DEFAULT_CONFIG.keymaps, user_config and user_config.keymaps or {})
 	end
+
+	if user_config and user_config.movments then
+		config.movements = vim.tbl_deep_extend("force", config.movements, user_config.movments)
+		vim.defer_fn(function()
+			vim.notify("find-extender: please use `movements` instead of `movments` which has wrong spelling")
+		end, 3000)
+	end
+
 	require("find-extender.finder").finder(config)
 end
 
