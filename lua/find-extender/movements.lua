@@ -83,9 +83,7 @@ M.lh = function(args)
 			virt_text_pos = "overlay",
 			hl_mode = "combine",
 			priority = 105,
-			end_row = match - 1,
 		}
-		print(match - threshold)
 		api.nvim_buf_set_extmark(buf_nr, lh_cursor_ns, line_nr - 1, match - threshold, extmark_opts)
 	end
 
