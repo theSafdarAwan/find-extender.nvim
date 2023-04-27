@@ -36,10 +36,8 @@ function M.get_chars(args)
 		end
 
 		if args.action_keys and type(args.action_keys) == "table" then
-			if args.action_keys.accept == c then
+			if args.action_keys.accept == c or args.action_keys.accept then
 				return c
-			elseif args.action_keys.escape == c then
-				return
 			end
 		end
 

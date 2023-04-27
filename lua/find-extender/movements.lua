@@ -47,8 +47,6 @@ function M.leap(args)
 	return picked_match
 end
 
--- TODO: you need to render and clear the highlights on every input
-
 --- lh movement
 ---@param args table
 ---@return number|nil picked match
@@ -63,7 +61,7 @@ M.lh = function(args)
 	-- will break the loop on the first match, that why we have to reverse this table.
 	local args_matches_reversed = utils.reverse_tbl(args.matches)
 
-	picked_match = cursor_pos[2]
+	picked_match = cursor_pos[2] + 1 -- nvim_win_get_cursor is 0 indexed
 	local lh_cursor_ns = api.nvim_create_namespace("")
 
 	local function renader_matches()
@@ -71,14 +69,14 @@ M.lh = function(args)
 			api.nvim_buf_add_highlight(buf_nr, ns_id, "FEVirtualText", line_nr - 1, match - 1, match + 1)
 		end
 	end
-	local function clear_highlights()
-		api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
-		api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
+	local function clear_cursor_and_matches_highlights()
+		vim.wait(3000, function()
+			api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
+			api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
+			return true
+		end, 1, false)
 	end
 	local function render_cursor(match)
-		if match <= 1 then
-			return
-		end
 		api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
 		-- need to add the cursor highlight at the exact location relative to the key type
 		local threshold = nil
@@ -87,25 +85,45 @@ M.lh = function(args)
 		elseif args.key_type.till then
 			threshold = 2
 		end
-		clear_highlights()
-		renader_matches()
-		api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatchCursor", line_nr - 1, match - threshold, match)
+		clear_cursor_and_matches_highlights()
+		vim.wait(3000, function()
+			renader_matches()
+			return api.nvim_buf_add_highlight(
+				buf_nr,
+				lh_cursor_ns,
+				"FECurrentMatchCursor",
+				line_nr - 1,
+				match - threshold,
+				match
+			)
+		end, 2, false)
 	end
+	-- need to highlight the matches after the lh movement has started
+	renader_matches()
 	-- if count was given in the lh movement
 	local count = nil
+	local dummy_cursor_is_visible = true
 	while true do
+		if dummy_cursor_is_visible then
+			-- need to remove the dummy cursor
+			vim.cmd("do CursorMoved")
+			dummy_cursor_is_visible = false
+		end
+		-- render the cursor
+		render_cursor(picked_match)
+		-- get input
 		local key = utils.get_chars({
 			chars_length = 1,
 			action_keys = args.action_keys,
 			no_dummy_cursor = true,
 		})
-		vim.cmd("do CursorMoved")
 		-- if a number was input -> to be used as count
 		-- store this info for the next loop iteration to be used as count
 		if tonumber(key) and tonumber(key) > 1 then
 			count = tonumber(key) - 1
 		end
-		if key == "l" then
+
+		if vim.fn.nr2char(key) == "l" then
 			local __matches = nil
 			if args.direction.left then
 				__matches = args.matches
@@ -117,8 +135,6 @@ M.lh = function(args)
 					picked_match = __matches[idx + count]
 					if picked_match then
 						render_cursor(picked_match)
-					else
-						clear_highlights()
 						return
 					end
 					-- need to remove the count after it has been used
@@ -131,7 +147,7 @@ M.lh = function(args)
 				end
 			end
 		end
-		if key == "h" then
+		if vim.fn.nr2char(key) == "h" then
 			local __matches = nil
 			if args.direction.left then
 				__matches = args_matches_reversed
@@ -143,8 +159,6 @@ M.lh = function(args)
 					picked_match = __matches[idx + count]
 					if picked_match then
 						render_cursor(picked_match)
-					else
-						clear_highlights()
 						return
 					end
 					-- need to remove the count after it has been used
@@ -167,7 +181,7 @@ M.lh = function(args)
 			break
 		end
 	end
-	clear_highlights()
+	clear_cursor_and_matches_highlights()
 	return picked_match
 end
 
