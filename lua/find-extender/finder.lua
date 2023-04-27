@@ -50,7 +50,16 @@ function M.finder(config)
 		local picked_match = nil
 		if config.movements.lh.enable then
 			args.action_keys = config.movements.lh.action_keys
+
+			-- hide cursor
+			vim.cmd.hi("Cursor", "blend=100")
+			vim.opt.guicursor:append({ "a:Cursor/lCursor" })
+
 			picked_match = movements.lh(args)
+
+			-- show cursor
+			vim.cmd.hi("Cursor", "blend=0")
+			vim.opt.guicursor:remove({ "a:Cursor/lCursor" })
 		else
 			args.symbols = config.movements.leap.symbols
 			picked_match = movements.leap(args)

@@ -77,7 +77,6 @@ M.lh = function(args)
 		api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatchCursor", line_nr - 1, match - threshold, match)
 	end
 	local function reset_cursor_and_clear_highlights()
-		api.nvim_win_set_cursor(0, cursor_pos)
 		api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
 		api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
 	end
