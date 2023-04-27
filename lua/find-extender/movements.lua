@@ -55,14 +55,14 @@ M.lh = function(args)
 	local buf_nr = api.nvim_get_current_buf()
 	local cursor_pos = api.nvim_win_get_cursor(0)
 	local line_nr = fn.line(".")
-	local ns_id = api.nvim_create_namespace("")
+	local ns_id = api.nvim_create_namespace("FElhMatchesHihglight")
 	-- this table of matches is for the use of h key for backward movmenet,
 	-- because we mapped the string from left to right in case of the h key it
 	-- will break the loop on the first match, that why we have to reverse this table.
 	local args_matches_reversed = utils.reverse_tbl(args.matches)
 
 	picked_match = cursor_pos[2] + 1 -- nvim_win_get_cursor is 0 indexed
-	local lh_cursor_ns = api.nvim_create_namespace("")
+	local lh_cursor_ns = api.nvim_create_namespace("FElhCursor")
 
 	local function renader_matches()
 		for _, match in ipairs(args.matches) do
@@ -73,7 +73,6 @@ M.lh = function(args)
 		vim.wait(3000, function()
 			api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
 			api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
-			return true
 		end, 1, false)
 	end
 	local function render_cursor(match)
