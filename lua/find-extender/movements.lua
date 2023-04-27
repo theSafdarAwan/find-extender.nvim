@@ -74,9 +74,12 @@ M.lh = function(args)
 		elseif args.key_type.till then
 			threshold = 2
 		end
-		api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatchCursor", line_nr - 1, match - threshold, match)
+		vim.wait(3000, function()
+			api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatchCursor", line_nr - 1, match - threshold, match)
+			return true
+		end, 1, false)
 	end
-	local function reset_cursor_and_clear_highlights()
+	local function clear_cursor_highlights()
 		api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
 		api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
 	end
@@ -107,7 +110,7 @@ M.lh = function(args)
 					if picked_match then
 						render_cursor(picked_match)
 					else
-						reset_cursor_and_clear_highlights()
+						clear_cursor_highlights()
 						return
 					end
 					-- need to remove the count after it has been used
@@ -133,7 +136,7 @@ M.lh = function(args)
 					if picked_match then
 						render_cursor(picked_match)
 					else
-						reset_cursor_and_clear_highlights()
+						clear_cursor_highlights()
 						return
 					end
 					-- need to remove the count after it has been used
@@ -156,7 +159,7 @@ M.lh = function(args)
 			break
 		end
 	end
-	reset_cursor_and_clear_highlights()
+	clear_cursor_highlights()
 	return picked_match
 end
 
