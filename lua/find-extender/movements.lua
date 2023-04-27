@@ -51,7 +51,6 @@ end
 ---@param args table
 ---@return number|nil picked match
 M.lh = function(args)
-	local picked_match = nil
 	local buf_nr = api.nvim_get_current_buf()
 	local cursor_pos = api.nvim_win_get_cursor(0)
 	local line_nr = fn.line(".")
@@ -61,7 +60,6 @@ M.lh = function(args)
 	-- will break the loop on the first match, that why we have to reverse this table.
 	local args_matches_reversed = utils.reverse_tbl(args.matches)
 
-	picked_match = cursor_pos[2] + 1 -- nvim_win_get_cursor is 0 indexed
 	for _, match in ipairs(args.matches) do
 		api.nvim_buf_add_highlight(buf_nr, ns_id, "FEVirtualText", line_nr - 1, match - 1, match + 1)
 	end
@@ -98,6 +96,10 @@ M.lh = function(args)
 		vim.cmd("do CursorMoved")
 	end)
 
+	local picked_match = nil
+	-- for the first loop iteration use the cursor position as the picked match
+	picked_match = cursor_pos[2] + 1 -- nvim_win_get_cursor api i 0 indexed
+
 	-- if count was given in the lh movement
 	local count = nil
 	while true do
@@ -108,18 +110,25 @@ M.lh = function(args)
 			action_keys = args.action_keys,
 			no_dummy_cursor = true,
 		})
+		-- get out of loop if previously count was provided but now no `l|h` movement
+		-- key is provided
+		if count and key ~= "l" and not key ~= "h" then
+			clear_highlights()
+			return
+		end
 		-- if a number was input -> to be used as count
 		-- store this info for the next loop iteration to be used as count
 		local key_as_count = tonumber(key)
-		if key_as_count and key_as_count > 1 then
-			count = key_as_count - 1
+		if key_as_count then
+			count = key_as_count
 		end
-
 		if key == "l" then
 			local __matches = args.matches
 			for idx, match in ipairs(__matches) do
 				if count and match > picked_match then
-					match = __matches[idx + count] and __matches[idx + count] > picked_match + 1
+					-- also need to skip the current cursor position
+					count = count - 1
+					match = __matches[idx + count] and __matches[idx + count] > picked_match
 					picked_match = __matches[idx + count]
 					if not picked_match then
 						clear_highlights()
@@ -139,7 +148,7 @@ M.lh = function(args)
 			local __matches = args_matches_reversed
 			for idx, match in ipairs(__matches) do
 				if count and __matches[idx + count] and __matches[idx + count] < picked_match then
-					picked_match = __matches[idx + count + 1]
+					picked_match = __matches[idx + count]
 					if not picked_match then
 						clear_highlights()
 						return
