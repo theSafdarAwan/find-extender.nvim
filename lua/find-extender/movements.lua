@@ -47,6 +47,8 @@ function M.leap(args)
 	return picked_match
 end
 
+-- TODO: you need to render and clear the highlights on every input
+
 --- lh movement
 ---@param args table
 ---@return number|nil picked match
@@ -60,12 +62,23 @@ M.lh = function(args)
 	-- because we mapped the string from left to right in case of the h key it
 	-- will break the loop on the first match, that why we have to reverse this table.
 	local args_matches_reversed = utils.reverse_tbl(args.matches)
-	for _, match in ipairs(args.matches) do
-		api.nvim_buf_add_highlight(buf_nr, ns_id, "FEVirtualText", line_nr - 1, match - 1, match + 1)
-	end
+
 	picked_match = cursor_pos[2]
 	local lh_cursor_ns = api.nvim_create_namespace("")
+
+	local function renader_matches()
+		for _, match in ipairs(args.matches) do
+			api.nvim_buf_add_highlight(buf_nr, ns_id, "FEVirtualText", line_nr - 1, match - 1, match + 1)
+		end
+	end
+	local function clear_highlights()
+		api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
+		api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
+	end
 	local function render_cursor(match)
+		if match <= 1 then
+			return
+		end
 		api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
 		-- need to add the cursor highlight at the exact location relative to the key type
 		local threshold = nil
@@ -74,14 +87,9 @@ M.lh = function(args)
 		elseif args.key_type.till then
 			threshold = 2
 		end
-		vim.wait(3000, function()
-			api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatchCursor", line_nr - 1, match - threshold, match)
-			return true
-		end, 1, false)
-	end
-	local function clear_cursor_highlights()
-		api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
-		api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
+		clear_highlights()
+		renader_matches()
+		api.nvim_buf_add_highlight(buf_nr, lh_cursor_ns, "FECurrentMatchCursor", line_nr - 1, match - threshold, match)
 	end
 	-- if count was given in the lh movement
 	local count = nil
@@ -110,7 +118,7 @@ M.lh = function(args)
 					if picked_match then
 						render_cursor(picked_match)
 					else
-						clear_cursor_highlights()
+						clear_highlights()
 						return
 					end
 					-- need to remove the count after it has been used
@@ -136,7 +144,7 @@ M.lh = function(args)
 					if picked_match then
 						render_cursor(picked_match)
 					else
-						clear_cursor_highlights()
+						clear_highlights()
 						return
 					end
 					-- need to remove the count after it has been used
@@ -159,7 +167,7 @@ M.lh = function(args)
 			break
 		end
 	end
-	clear_cursor_highlights()
+	clear_highlights()
 	return picked_match
 end
 

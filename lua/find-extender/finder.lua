@@ -52,14 +52,20 @@ function M.finder(config)
 			args.action_keys = config.movements.lh.action_keys
 
 			-- hide cursor
-			vim.cmd.hi("Cursor", "blend=100")
-			vim.opt.guicursor:append({ "a:Cursor/lCursor" })
+			vim.wait(3000, function()
+				vim.cmd.hi("Cursor", "blend=100")
+				vim.opt.guicursor:append({ "a:Cursor/lCursor" })
+				return true
+			end, 1, false)
 
 			picked_match = movements.lh(args)
 
 			-- show cursor
-			vim.cmd.hi("Cursor", "blend=0")
-			vim.opt.guicursor:remove({ "a:Cursor/lCursor" })
+			vim.wait(3000, function()
+				vim.cmd.hi("Cursor", "blend=0")
+				vim.opt.guicursor:remove({ "a:Cursor/lCursor" })
+				return true
+			end, 1, false)
 		else
 			args.symbols = config.movements.leap.symbols
 			picked_match = movements.leap(args)

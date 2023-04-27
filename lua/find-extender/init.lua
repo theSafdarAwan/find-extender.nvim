@@ -53,6 +53,9 @@ local DEFAULT_CONFIG = {
 		"'",
 		"`",
 		".",
+		"+",
+		"-",
+		"*",
 	},
 	---@field keymaps table information for keymaps.
 	keymaps = {
