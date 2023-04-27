@@ -28,6 +28,7 @@ function M.get_chars(args)
 				end
 			end
 		end
+		-- sanity check
 		if type(c) ~= "number" then
 			return
 		end
@@ -36,8 +37,8 @@ function M.get_chars(args)
 		end
 
 		if args.action_keys and type(args.action_keys) == "table" then
-			if args.action_keys.accept == c or args.action_keys.accept then
-				return c
+			if args.action_keys.accept == c or args.action_keys.escape == c then
+				return fn.nr2char(c)
 			end
 		end
 
@@ -137,6 +138,18 @@ function M.convert_key_to_ASCII_num(action_keys)
 		action_keys[action_name] = vim.fn.char2nr(vim.api.nvim_replace_termcodes(action_key, true, false, true))
 	end
 	return action_keys
+end
+
+--- executes code without any latency
+---@param func function function to execute
+function M.wait(func)
+	local wait = true
+	vim.wait(0, function()
+		func()
+		if not wait then
+			return true
+		end
+	end, 1, false)
 end
 
 --- validates if any character or punctuation is present in string

@@ -93,16 +93,15 @@ M.lh = function(args)
 		api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
 	end
 
+	-- need to remove the dummy cursor
+	utils.wait(function()
+		vim.cmd("do CursorMoved")
+	end)
+
 	-- if count was given in the lh movement
 	local count = nil
-	local dummy_cursor_is_visible = true
 	while true do
 		render_cursor(picked_match)
-		if dummy_cursor_is_visible then
-			-- need to remove the dummy cursor
-			vim.cmd("do CursorMoved")
-			dummy_cursor_is_visible = false
-		end
 		-- get input
 		local key = utils.get_chars({
 			chars_length = 1,
@@ -111,62 +110,56 @@ M.lh = function(args)
 		})
 		-- if a number was input -> to be used as count
 		-- store this info for the next loop iteration to be used as count
-		if tonumber(key) and tonumber(key) > 1 then
-			count = tonumber(key) - 1
+		local key_as_count = tonumber(key)
+		if key_as_count and key_as_count > 1 then
+			count = key_as_count - 1
 		end
 
-		if vim.fn.nr2char(key) == "l" then
-			local __matches = nil
-			if args.direction.left then
-				__matches = args.matches
-			else
-				__matches = args_matches_reversed
-			end
+		if key == "l" then
+			local __matches = args.matches
 			for idx, match in ipairs(__matches) do
-				if count and __matches[idx + count] and __matches[idx + count] > picked_match then
+				if count and match > picked_match then
+					match = __matches[idx + count] and __matches[idx + count] > picked_match + 1
 					picked_match = __matches[idx + count]
-					if picked_match then
+					if not picked_match then
 						clear_highlights()
 						return
 					end
 					-- need to remove the count after it has been used
 					count = nil
 					break
-				elseif match > picked_match then
+				end
+				if not count and match > picked_match then
 					picked_match = match
 					break
 				end
 			end
 		end
-		if vim.fn.nr2char(key) == "h" then
-			local __matches = nil
-			if args.direction.left then
-				__matches = args_matches_reversed
-			else
-				__matches = args.matches
-			end
+		if key == "h" then
+			local __matches = args_matches_reversed
 			for idx, match in ipairs(__matches) do
-				if count and __matches[idx - count] and __matches[idx - count] > picked_match then
-					picked_match = __matches[idx + count]
-					if picked_match then
+				if count and __matches[idx + count] and __matches[idx + count] < picked_match then
+					picked_match = __matches[idx + count + 1]
+					if not picked_match then
 						clear_highlights()
 						return
 					end
 					-- need to remove the count after it has been used
 					count = nil
 					break
-				elseif match < picked_match then
+				end
+				if not count and match < picked_match then
 					picked_match = match
 					break
 				end
 			end
 		end
 		-- if key == args.actions_keys.accept -> accept the current position
-		if key == args.action_keys.accept then
+		if fn.char2nr(key) == args.action_keys.accept then
 			break
 		end
 		-- if key == args.actions_keys.escape then don't return a match
-		if key == args.action_keys.escape then
+		if fn.char2nr(key) == args.action_keys.escape then
 			picked_match = nil
 			break
 		end
