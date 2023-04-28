@@ -98,9 +98,16 @@ M.lh = function(args)
 	-- for the first loop iteration use the cursor position as the picked match
 	picked_match = cursor_pos[2] + 1 -- nvim_win_get_cursor api i 0 indexed
 
-	-- if count was given in the lh movement
+	-- to keep track of count given in the loop
 	local count = nil
+
 	while true do
+		-- if picked match was invalid in the previous iteration then return
+		if not picked_match then
+			clear_highlights_and_reset_cursor()
+			return
+		end
+		-- render cursor
 		render_and_set_cursor(picked_match)
 		-- get input
 		local key = utils.get_chars({
@@ -111,11 +118,6 @@ M.lh = function(args)
 		-- get out of loop if previously count was provided but now no `l|h` movement
 		-- key is provided
 		if count and key ~= "l" and key ~= "h" then
-			clear_highlights_and_reset_cursor()
-			return
-		end
-		-- if picked match was invalid in the previous iteration then return
-		if not picked_match then
 			clear_highlights_and_reset_cursor()
 			return
 		end
