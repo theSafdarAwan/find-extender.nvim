@@ -112,7 +112,12 @@ M.lh = function(args)
 		})
 		-- get out of loop if previously count was provided but now no `l|h` movement
 		-- key is provided
-		if count and key ~= "l" and not key ~= "h" then
+		if count and key ~= "l" and key ~= "h" then
+			clear_highlights()
+			return
+		end
+		-- if picked match was invalid in the previous iteration then return
+		if not picked_match then
 			clear_highlights()
 			return
 		end
@@ -128,12 +133,7 @@ M.lh = function(args)
 				if count and match > picked_match then
 					-- also need to skip the current cursor position
 					count = count - 1
-					match = __matches[idx + count] and __matches[idx + count] > picked_match
 					picked_match = __matches[idx + count]
-					if not picked_match then
-						clear_highlights()
-						return
-					end
 					-- need to remove the count after it has been used
 					count = nil
 					break
@@ -147,12 +147,8 @@ M.lh = function(args)
 		if key == "h" then
 			local __matches = args_matches_reversed
 			for idx, match in ipairs(__matches) do
-				if count and __matches[idx + count] and __matches[idx + count] < picked_match then
-					picked_match = __matches[idx + count]
-					if not picked_match then
-						clear_highlights()
-						return
-					end
+				if count and match < picked_match then
+					picked_match = __matches[idx + count - 1]
 					-- need to remove the count after it has been used
 					count = nil
 					break
