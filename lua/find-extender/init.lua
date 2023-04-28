@@ -8,9 +8,6 @@ local utils = require("find-extender.utils")
 local DEFAULT_CONFIG = {
 	---@field prefix table if you don't want this plugin to hijack the default
 	--- finding commands use a prefix to use this plugin.
-	--- Although i wouldn't recommend this because i developed this plugin to
-	--- compliment find command. And using this instead of default find command's
-	--- makes you more efficient in movement.
 	prefix = {
 		key = "g",
 		enable = false,
@@ -62,9 +59,9 @@ local DEFAULT_CONFIG = {
 		finding = {
 			---@field modes string modes in which the finding keys should be added.
 			modes = "nv",
-			---@field till table table of till keys backward and forward both by default.
+			---@field till table table of till keys backward and forward
 			till = { "T", "t" },
-			---@field find table table of find keys backward and forward both by default.
+			---@field find table table of find keys backward and forward
 			find = { "F", "f" },
 		},
 		---@field text_manipulation table information about text manipulation keys including yank/delete/change.
