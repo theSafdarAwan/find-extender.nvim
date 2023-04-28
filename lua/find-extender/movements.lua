@@ -58,7 +58,9 @@ M.lh = function(args)
 	end
 
 	local lh_cursor_ns = api.nvim_create_namespace("FElhCursor")
-	local function render_cursor(match)
+	local function render_and_set_cursor(match)
+		-- set cursor
+		utils.set_cursor(match)
 		-- need to add the cursor highlight at the exact location relative to the key type
 		local threshold = nil
 		if args.key_type.find then
@@ -78,13 +80,16 @@ M.lh = function(args)
 		api.nvim_buf_set_extmark(buf_nr, lh_cursor_ns, line_nr - 1, match - threshold, extmark_opts)
 	end
 
-	-- clear all the highlights
-	local function clear_highlights()
+	-- clear all the highlights and resets the cursor to the original position
+	local function clear_highlights_and_reset_cursor()
+		-- reset cursor position
+		utils.set_cursor(cursor_pos[2])
+		-- clear highlights
 		api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
 		api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
 	end
 
-	-- need to remove the dummy cursor
+	-- need to remove the dummy cursor set by the find command input
 	utils.wait(function()
 		vim.cmd("do CursorMoved")
 	end)
@@ -96,7 +101,7 @@ M.lh = function(args)
 	-- if count was given in the lh movement
 	local count = nil
 	while true do
-		render_cursor(picked_match)
+		render_and_set_cursor(picked_match)
 		-- get input
 		local key = utils.get_chars({
 			chars_length = 1,
@@ -106,12 +111,12 @@ M.lh = function(args)
 		-- get out of loop if previously count was provided but now no `l|h` movement
 		-- key is provided
 		if count and key ~= "l" and key ~= "h" then
-			clear_highlights()
+			clear_highlights_and_reset_cursor()
 			return
 		end
 		-- if picked match was invalid in the previous iteration then return
 		if not picked_match then
-			clear_highlights()
+			clear_highlights_and_reset_cursor()
 			return
 		end
 		-- if a number was input -> to be used as count
@@ -162,7 +167,7 @@ M.lh = function(args)
 			break
 		end
 	end
-	clear_highlights()
+	clear_highlights_and_reset_cursor()
 	return picked_match
 end
 

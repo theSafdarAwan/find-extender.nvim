@@ -61,6 +61,11 @@ function M.set_cursor(pos)
 	api.nvim_win_set_cursor(win_nr, get_cursor)
 end
 
+--- center match if its outside of the current ui window
+function M.center_match(match)
+	---
+end
+
 --- highlights the yanked area
 ---@param highlight_on_yank_opts table options related to highlight on yank includes,
 --- highlight group and timeout.
@@ -129,13 +134,13 @@ M.add_dummy_cursor = function()
 	vim.cmd("redraw")
 end
 
--- convert the action keys to the ASCII values
----@param action_keys table
-function M.convert_key_to_ASCII_num(action_keys)
-	for action_name, action_key in pairs(action_keys) do
-		action_keys[action_name] = vim.fn.char2nr(vim.api.nvim_replace_termcodes(action_key, true, false, true))
+-- convert the keymaps to the ASCII values
+---@param keymap table
+function M.convert_key_to_ASCII_num(keymap)
+	for action_name, action_key in pairs(keymap) do
+		keymap[action_name] = vim.fn.char2nr(vim.api.nvim_replace_termcodes(action_key, true, false, true))
 	end
-	return action_keys
+	return keymap
 end
 
 --- executes code without any latency
