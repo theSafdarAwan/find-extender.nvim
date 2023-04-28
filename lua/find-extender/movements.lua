@@ -8,7 +8,6 @@ local utils = require("find-extender.utils")
 ---@param args table
 ---@return number|nil picked match
 function M.leap(args)
-	local picked_match = nil
 	local buf_nr = api.nvim_get_current_buf()
 	local line_nr = fn.line(".")
 	local ns_id = api.nvim_create_namespace("")
@@ -29,12 +28,15 @@ function M.leap(args)
 			api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
 		end,
 	})
-	-- TODO: ??
-	picked_match = utils.get_chars({ chars_length = 1 })
-	if picked_match then
-		local match_pos = string.find(args.symbols, picked_match)
+	local picked_match = nil
+	local picked_virt_text = utils.get_chars({ chars_length = 1 })
+	if picked_virt_text and type(picked_virt_text) == "string" then
+		-- get the index for the match
+		local match_pos = string.find(args.symbols, picked_virt_text)
+		-- retrieve match from the matches
 		picked_match = args.matches[match_pos]
 	end
+	-- need to remove the dummy cursor
 	vim.cmd("silent! do CursorMoved")
 
 	return picked_match
@@ -130,7 +132,7 @@ M.lh = function(args)
 		if key_as_count and key_as_count > 0 then
 			count = key_as_count
 		end
-		-- add support for 0 or ^ 
+		-- add support for 0 or ^
 		if key_as_count and key_as_count == 0 or key == "^" then
 			picked_match = args.matches[1]
 		end
