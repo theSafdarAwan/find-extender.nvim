@@ -127,8 +127,16 @@ M.lh = function(args)
 		-- if a number was input -> to be used as count
 		-- store this info for the next loop iteration to be used as count
 		local key_as_count = tonumber(key)
-		if key_as_count then
+		if key_as_count and key_as_count > 0 then
 			count = key_as_count
+		end
+		-- add support for 0 or ^ 
+		if key_as_count and key_as_count == 0 or key == "^" then
+			picked_match = args.matches[1]
+		end
+		-- add support for $
+		if key == "$" then
+			picked_match = args.matches[#args.matches]
 		end
 		if key == "l" then
 			local __matches = nil
