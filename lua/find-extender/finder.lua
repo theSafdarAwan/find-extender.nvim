@@ -144,7 +144,14 @@ function M.finder(config)
 
 		-- use the movements if matches exceed -> config.movements.min_matches
 		if #matches > config.movements.min_matches then
-			local picked_match = pick_match({ matches = matches, direction = args.match_direction, key_type = args.key_type })
+			local picked_match = pick_match({
+				matches = matches,
+				direction = args.match_direction,
+				key_type = args.key_type,
+				-- need to remove one char behind -> because that's how vim movements
+				-- works one char behind the actual char
+				virt_hl_length = #args.pattern - 1,
+			})
 			if not picked_match then
 				return
 			end

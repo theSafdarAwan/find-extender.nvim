@@ -8,8 +8,6 @@ local fn = vim.fn
 --- timeout or chars limit, next target input chars, if nil(out of eng alphabets, numbers,
 --- or punctuations) character was provided.
 function M.get_chars(args)
-	-- TODO: this function is messy refactor this, its not predictable what will
-	-- this function return
 	vim.cmd("redraw")
 	local chars = ""
 	local break_loop = false
@@ -18,8 +16,8 @@ function M.get_chars(args)
 			M.add_dummy_cursor()
 		end
 		local c = fn.getchar()
-		-- return if first char is included included in `args.no_wait`
-		if #chars == 0 and args.no_wait then
+		-- return if first char is included in `args.no_wait`
+		if args.chars_length == 2 and #chars == 0 and args.no_wait then
 			for _, char in ipairs(args.no_wait) do
 				if char == fn.nr2char(c) then
 					chars = fn.nr2char(c)
@@ -28,7 +26,7 @@ function M.get_chars(args)
 				end
 			end
 		end
-		-- sanity check
+		-- sanity check -> if input was unrecognized ASCII value
 		if type(c) ~= "number" then
 			return
 		end

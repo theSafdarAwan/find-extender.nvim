@@ -12,14 +12,6 @@ function M.leap(args)
 	local buf_nr = api.nvim_get_current_buf()
 	local line_nr = fn.line(".")
 	local ns_id = api.nvim_create_namespace("")
-	-- need exact location to highlight target position with respect to the key
-	-- type threshold, which differs in find and till
-	local threshold = nil
-	if args.key_type.find then
-		threshold = 1
-	elseif args.key_type.till then
-		threshold = 2
-	end
 	local i = 1
 	for _, match in ipairs(args.matches) do
 		local extmark_opts = {
@@ -28,7 +20,7 @@ function M.leap(args)
 			hl_mode = "combine",
 			priority = 105,
 		}
-		api.nvim_buf_set_extmark(buf_nr, ns_id, line_nr - 1, match - threshold, extmark_opts)
+		api.nvim_buf_set_extmark(buf_nr, ns_id, line_nr - 1, match - args.virt_hl_length, extmark_opts)
 		i = i + 1
 	end
 	api.nvim_create_autocmd({ "CursorMoved" }, {
@@ -37,6 +29,7 @@ function M.leap(args)
 			api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
 		end,
 	})
+	-- TODO: ??
 	picked_match = utils.get_chars({ chars_length = 1 })
 	if picked_match then
 		local match_pos = string.find(args.symbols, picked_match)
@@ -61,7 +54,7 @@ M.lh = function(args)
 	local args_matches_reversed = utils.reverse_tbl(args.matches)
 
 	for _, match in ipairs(args.matches) do
-		api.nvim_buf_add_highlight(buf_nr, ns_id, "FEVirtualText", line_nr - 1, match - 1, match + 1)
+		api.nvim_buf_add_highlight(buf_nr, ns_id, "FEVirtualText", line_nr - 1, match - 1, match + args.virt_hl_length)
 	end
 
 	local lh_cursor_ns = api.nvim_create_namespace("FElhCursor")
