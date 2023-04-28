@@ -25,22 +25,6 @@ function M.finder(config)
 	local tm = require("find-extender.text-manipulation")
 	local movements = require("find-extender.movements")
 
-	--- check if string has has characters or punctuations, Tabs and spaces are not
-	--- counted as characters
-	---@param str string
-	---@param str_last_idx number string ending position
-	---@return boolean true if is valid
-	local string_sanity = function(str, str_last_idx)
-		local i = nil
-		if str_last_idx then
-			i = str_last_idx - 1
-		else
-			i = -1
-		end
-		local sub_str = string.sub(str, 1, i)
-		return utils.string_has_chars(sub_str)
-	end
-
 	----------------------------------------------------------------------
 	--                            Pick Match                            --
 	----------------------------------------------------------------------
@@ -186,7 +170,8 @@ function M.finder(config)
 		-- till command      match | find command       match
 		--                  ^      |                    ^
 		if args.key_type.till then
-			if match > 2 and string_sanity(str, match) then
+			-- need to check if there are any valid characters before match
+			if utils.string_sanity(match) then
 				match = match - 2
 			else
 				match = match - 1

@@ -155,15 +155,23 @@ function M.wait(func)
 	end, 1, false)
 end
 
---- validates if any character or punctuation is present in string
----@param str string validate this string.
----@return boolean return true if contains any English alphabet or punctuation.
-function M.string_has_chars(str)
-	local i = 0
-	for _ in string.gmatch(str, "[%a%p]") do
-		i = i + 1
+-- check if there are valid characters before the match, tabs and spaces are not
+-- considered to be valid
+---@field match number
+M.string_sanity = function(match)
+	local str = api.nvim_get_current_line()
+	local idx = nil
+	if match then
+		idx = match - 1
+	else
+		idx = -1
 	end
-	if i > 0 then
+	local sub_str = string.sub(str, 1, idx)
+	local valid_chars = 0
+	for _ in string.gmatch(sub_str, "[%a%p]") do
+		valid_chars = valid_chars + 1
+	end
+	if valid_chars > 0 then
 		return true
 	else
 		return false

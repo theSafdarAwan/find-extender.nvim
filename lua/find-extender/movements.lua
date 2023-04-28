@@ -44,6 +44,7 @@ end
 ---@param args table
 ---@return number|nil picked match
 M.lh = function(args)
+	local cur_line = api.nvim_get_current_line()
 	local buf_nr = api.nvim_get_current_buf()
 	local cursor_pos = api.nvim_win_get_cursor(0)
 	local line_nr = fn.line(".")
@@ -59,6 +60,9 @@ M.lh = function(args)
 
 	local lh_cursor_ns = api.nvim_create_namespace("FElhCursor")
 	local function render_and_set_cursor(match)
+		if args.key_type.till and not utils.string_sanity(match) then
+			match = match + 1
+		end
 		-- set cursor
 		utils.set_cursor(match)
 		-- need to add the cursor highlight at the exact location relative to the key type
@@ -69,7 +73,6 @@ M.lh = function(args)
 			threshold = 2
 		end
 		api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
-		local cur_line = vim.api.nvim_get_current_line()
 		local text = string.sub(cur_line, match, match)
 		local extmark_opts = {
 			virt_text = { { text, "FECurrentMatchCursor" } },
