@@ -31,9 +31,11 @@ local DEFAULT_CONFIG = {
 			---@field action_keys table
 			action_keys = {
 				---@field accept table of keys that will trigger the accept action
-				accept = { "<CR>", "i", "a" },
+				accept = { "<CR>", "n" },
 				---@field escape table of keys that will trigger the escape action
 				escape = { "<ESC>", "j", "k" },
+				---@field accept_and_feed table accept the current match and feed this key
+				accept_and_feed = { "i", "a" },
 			},
 		},
 		---@field leap table pick match, with virtual text symbol for that match.

@@ -370,11 +370,6 @@ function M.finder(config)
 		end
 	end
 
-	vim.defer_fn(function()
-		print(vim.inspect(config))
-		print(vim.inspect(finding_keys, tm_keys))
-	end, 1000)
-
 	----------------------------------------------------------------------
 	--                       set user added keys                        --
 	----------------------------------------------------------------------
