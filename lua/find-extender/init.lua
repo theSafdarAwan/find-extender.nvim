@@ -6,9 +6,15 @@ local utils = require("find-extender.utils")
 
 --- default config
 local DEFAULT_CONFIG = {
-	---@field prefix string if you don't want this plugin to hijack the default
+	---@field prefix table if you don't want this plugin to hijack the default
 	--- finding commands use a prefix to use this plugin.
-	prefix = "",
+	--- Although i wouldn't recommend this because i developed this plugin to
+	--- compliment find command. And using this instead of default find command's
+	--- makes you more efficient in movement.
+	prefix = {
+		key = "g",
+		enable = false,
+	},
 	---@field ignore_case boolean whether to ignore case or not when searching
 	ignore_case = false,
 	movements = {
@@ -38,7 +44,7 @@ local DEFAULT_CONFIG = {
 		},
 	},
 	---@field no_wait table don't wait for second char if one of these is the first
-	--- char, very helpful if you don't wait to enter 2 chars if the first one
+	--- char, very helpful if you don't want to enter 2 chars if the first one
 	--- is a punctuation.
 	no_wait = {
 		"}",
@@ -48,7 +54,7 @@ local DEFAULT_CONFIG = {
 		"(",
 		")",
 	},
-	---@field keymaps table information for keymaps.
+	---@field keymaps table
 	keymaps = {
 		---@field finding table finding keys config
 		finding = {

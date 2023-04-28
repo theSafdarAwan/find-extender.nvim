@@ -197,23 +197,27 @@ function M.finder(config)
 		if not __previous_data.pattern and args.key == "," or args.key == ";" and not __previous_data.pattern then
 			return
 		end
+		local prefix = ""
+		if config.prefix.enable then
+			prefix = config.prefix.key
+		end
 
 		-- find
-		local find_direction_left = args.key == "f"
-			or __previous_data.key == "F" and args.key == ","
-			or __previous_data.key == "f" and args.key == ";"
-		local find_direction_right = args.key == "F"
-			or __previous_data.key == "f" and args.key == ","
-			or __previous_data.key == "F" and args.key == ";"
+		local find_direction_left = args.key == prefix .. "f"
+			or __previous_data.key == prefix .. "F" and args.key == prefix .. ","
+			or __previous_data.key == prefix .. "f" and args.key == prefix .. ";"
+		local find_direction_right = args.key == prefix .. "F"
+			or __previous_data.key == prefix .. "f" and args.key == prefix .. ","
+			or __previous_data.key == prefix .. "F" and args.key == prefix .. ";"
 		-- till
-		local till_direction_left = args.key == "t"
-			or __previous_data.key == "T" and args.key == ","
-			or __previous_data.key == "t" and args.key == ";"
-		local till_direction_right = args.key == "T"
-			or __previous_data.key == "t" and args.key == ","
-			or __previous_data.key == "T" and args.key == ";"
+		local till_direction_left = args.key == prefix .. "t"
+			or __previous_data.key == prefix .. "T" and args.key == prefix .. ","
+			or __previous_data.key == prefix .. "t" and args.key == prefix .. ";"
+		local till_direction_right = args.key == prefix .. "T"
+			or __previous_data.key == prefix .. "t" and args.key == prefix .. ","
+			or __previous_data.key == prefix .. "T" and args.key == prefix .. ";"
 		-- is args.key is pattern repeat key
-		local pattern_repeat_key = args.key == ";" or args.key == ","
+		local pattern_repeat_key = args.key == prefix .. ";" or args.key == prefix .. ","
 
 		-- match position direction determined by the input key
 		local match_direction = { left = false, right = false }
@@ -356,6 +360,20 @@ function M.finder(config)
 	}
 	finding_keys = utils.merge_tables(finding_keys, keymaps.finding.find, keymaps.finding.till)
 	local tm_keys = config.keymaps.text_manipulation
+
+	if config.prefix.enable then
+		for idx, key in ipairs(finding_keys) do
+			finding_keys[idx] = config.prefix.key .. key
+		end
+		for idx, key in ipairs(tm_keys) do
+			tm_keys[idx] = config.prefix.key .. key
+		end
+	end
+
+	vim.defer_fn(function()
+		print(vim.inspect(config))
+		print(vim.inspect(finding_keys, tm_keys))
+	end, 1000)
 
 	----------------------------------------------------------------------
 	--                       set user added keys                        --
