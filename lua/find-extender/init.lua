@@ -24,14 +24,16 @@ local DEFAULT_CONFIG = {
 			cursor_hl = { fg = "#545c7e", bg = "#ff9e64" },
 			---@field action_keys table
 			action_keys = {
-				accept = "<CR>",
-				escape = "<ESC>",
+				---@field accept table of keys that will trigger the accept action
+				accept = { "<CR>", "i", "a" },
+				---@field escape table of keys that will trigger the escape action
+				escape = { "<ESC>", "j", "k" },
 			},
 		},
 		---@field leap table pick match, with virtual text symbol for that match.
 		leap = {
 			enable = true,
-			---@field symbols string symbols that represent matches, with virtual text
+			---@field symbols string virtual text symbols, that represent matches
 			symbols = "abcdefgh",
 		},
 	},

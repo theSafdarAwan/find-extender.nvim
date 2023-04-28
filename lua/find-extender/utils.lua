@@ -35,8 +35,15 @@ function M.get_chars(args)
 		end
 
 		if args.action_keys and type(args.action_keys) == "table" then
-			if args.action_keys.accept == c or args.action_keys.escape == c then
-				return fn.nr2char(c)
+			for _, accept_action_key in ipairs(args.action_keys.accept) do
+				if accept_action_key == c then
+					return fn.nr2char(c)
+				end
+			end
+			for _, escape_action_key in ipairs(args.action_keys.escape) do
+				if escape_action_key == c then
+					return fn.nr2char(c)
+				end
 			end
 		end
 
@@ -135,12 +142,14 @@ M.add_dummy_cursor = function()
 end
 
 -- convert the keymaps to the ASCII values
----@param keymap table
-function M.convert_key_to_ASCII_num(keymap)
-	for action_name, action_key in pairs(keymap) do
-		keymap[action_name] = vim.fn.char2nr(vim.api.nvim_replace_termcodes(action_key, true, false, true))
+---@param keymaps table
+function M.convert_key_to_ASCII_num(keymaps)
+	for action_name, action_keys_tbl in pairs(keymaps) do
+		for idx, action_key in pairs(action_keys_tbl) do
+			keymaps[action_name][idx] = vim.fn.char2nr(vim.api.nvim_replace_termcodes(action_key, true, false, true))
+		end
 	end
-	return keymap
+	return keymaps
 end
 
 --- executes code without any latency

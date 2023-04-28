@@ -186,13 +186,22 @@ M.lh = function(args)
 				end
 			end
 		end
-		-- if key == args.actions_keys.accept -> accept the current position
-		if fn.char2nr(key) == args.action_keys.accept then
-			break
+		local break_loop = false
+		-- if key == args.actions_keys.accept[] -> accept the current position
+		for _, accept_action_key in ipairs(args.action_keys.accept) do
+			if fn.char2nr(key) == accept_action_key then
+				break_loop = true
+				break
+			end
 		end
-		-- if key == args.actions_keys.escape then don't return a match
-		if fn.char2nr(key) == args.action_keys.escape then
-			picked_match = nil
+		-- if key == args.actions_keys.escape[] then don't return a match
+		for _, escape_action_key in ipairs(args.action_keys.escape) do
+			if fn.char2nr(key) == escape_action_key then
+				picked_match = nil
+				break
+			end
+		end
+		if break_loop then
 			break
 		end
 	end
