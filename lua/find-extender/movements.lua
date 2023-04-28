@@ -126,7 +126,14 @@ M.lh = function(args)
 			count = key_as_count
 		end
 		if key == "l" then
-			local __matches = args.matches
+			local __matches = nil
+			if args.direction.left then
+				-- f/t
+				__matches = args.matches
+			else
+				-- F/T
+				__matches = args_matches_reversed
+			end
 			for idx, match in ipairs(__matches) do
 				if count and match > picked_match then
 					-- also need to skip the current cursor position
@@ -143,7 +150,14 @@ M.lh = function(args)
 			end
 		end
 		if key == "h" then
-			local __matches = args_matches_reversed
+			local __matches = nil
+			if args.direction.right then
+				-- f/t
+				__matches = args.matches
+			else
+				-- F/T
+				__matches = args_matches_reversed
+			end
 			for idx, match in ipairs(__matches) do
 				if count and match < picked_match then
 					picked_match = __matches[idx + count - 1]
