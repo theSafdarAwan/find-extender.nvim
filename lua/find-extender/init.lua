@@ -12,6 +12,9 @@ local DEFAULT_CONFIG = {
 		key = "g",
 		enable = false,
 	},
+	---@field input_length number how much characters should we take input for
+	--- default is `2` you can change it to `1`.
+	input_length = 2,
 	---@field ignore_case boolean whether to ignore case or not when searching
 	ignore_case = false,
 	movements = {
@@ -92,10 +95,12 @@ function M.setup(user_config)
 	local config = DEFAULT_CONFIG
 	local config_is_derecated = deprecate.old_syntax(user_config)
 
+	-- override no_wait
 	if user_config and user_config.no_wait then
 		config.no_wait = user_config.no_wait
 	end
 
+	-- convert the action_keys to ASCII num values
 	config.movements.lh.action_keys = utils.convert_key_to_ASCII_num(config.movements.lh.action_keys)
 
 	if not config_is_derecated then

@@ -29,7 +29,7 @@ function M.leap(args)
 		end,
 	})
 	local picked_match = nil
-	local picked_virt_text = utils.get_chars({ chars_length = 1 })
+	local picked_virt_text = utils.get_chars({ input_length = 1 })
 	if picked_virt_text and type(picked_virt_text) == "string" then
 		-- get the index for the match
 		local match_pos = string.find(args.symbols, picked_virt_text)
@@ -116,7 +116,7 @@ M.lh = function(args)
 		render_and_set_cursor(picked_match)
 		-- get input
 		local key = utils.get_chars({
-			chars_length = 1,
+			input_length = 1,
 			action_keys = args.action_keys,
 			no_dummy_cursor = true,
 		})

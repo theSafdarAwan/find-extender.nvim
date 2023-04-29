@@ -4,8 +4,8 @@ This Plugin extend's the capability of **find** and **till** and **text manipula
 
 - supports prefix: you can use this to not let this plugin hijack the default finding commands.
 - extends the find characters limit to `2` characters form `1`.
-- adds support for yank/delete/change(y/d/c) commands has same behaviour like finding
-  commands.
+- adds support for yank/delete/change(y/d/c) commands(same behaviour like finding
+  commands).
 - Repeat the last pattern using `;` and `,` commands.
 - Accepts count before commands.
 - Adds movements to navigate through the matches. Two type of movements are
@@ -14,16 +14,19 @@ This Plugin extend's the capability of **find** and **till** and **text manipula
     this movement lets you pick the match by picking virtual text symbol assigned to it.
   - **lh**: this movement will allow you to move through matches using `h` and `l` keys.
     This movement acts as a mode and provides some useful features:
-    - count is accepted and can be used to move faster between multiple matches.
+    - count is supported and can be used to move faster between multiple matches.
     - adds support for `$`, `0` and `^` motions like normal mode but this moves you through matches.
 - Lets you ignore certain characters. Using this feature you can use default `1`
   character search for certain characters like punctuations(`{`,`(`,`,`, etc).
 
-Text Manipulation(yank/delete/change) command's are also supported, only if the second
-key after y/d/c keys is either one of `t|T` or `f|F` command's. That means it won't
-hijack the movements like `{c|d|y}w`, `{c|d|y}e`, etc.
+Text Manipulation(yank/delete/change) command's are invoked, only if the second
+key after y/d/c is a finding command's. That means it won't hijack the movements
+like `{c|d|y}w`, `{c|d|y}e`, etc.
 
 🔥 This Plugins Effects the following commands:
+
+> If you enable prefix key then it will be `prefix{key}`. Which won't effect
+> these keys instead you would have to specify prefix key before any of these keys.
 
 ```
 f|F (find commands)
@@ -36,6 +39,7 @@ y{t|T|f|f} (yank command)
 
 After pressing any of these commands, now you have to type `2` characters rather than `1`
 to go to next match.
+You can change this behaviour by changing the `input_length`.
 
 ## Commands
 
@@ -116,6 +120,9 @@ require("find-extender").setup({
     key = "g",
     enable = false,
   },
+  ---@field input_length number how much characters should we take input for
+  --- default is `2` you can change it to `1`.
+  input_length = 2,
   ---@field ignore_case boolean whether to ignore case or not when searching
   ignore_case = false,
   movements = {
@@ -194,8 +201,10 @@ require("find-extender").setup({
 ## ⚙️ Configuration
 
 ### prefix
+If you don't like this plugin hijacking the default finding commands. Then you
+can enable **prefix** key.
 
-Use a **prefix** key same as `<leader>` key to activate the finding Commands.
+Use **prefix** key same as `<leader>` key to activate the finding Commands.
 
 Although i wouldn't recommend this because this plugin was developed to
 compliment default finding commands. And using this instead of default find
@@ -222,7 +231,7 @@ ignore_case = false,
 ### movements
 
 Movements allow you to move through matches.
-This plugin allows tow types of movements.
+This plugin allows two types of movements.
 
 1. Leap like movement, by picking match like [leap.nvim](https://github.com/ggandor/leap.nvim).
 2. lh this movement allows you to move through matches using the `l` and `h` keys
@@ -267,8 +276,11 @@ movements = {
 
 ##### Matches highlighting
 
-You can highlight the match position by changing he color of `highlight_match`
-key in config.
+If there are multiple matches, then the matches will be highlighted to give you
+map of where all the match positions are. You can change the default highlighting
+colors using the `highlight_match` table.
+
+This table accepts all the options you can specify to the `nvim_set_hl`.
 
 ```lua
 ---@field highlight_match table highlights the match
@@ -276,6 +288,8 @@ highlight_match = { fg = "#c0caf5", bg = "#545c7e" },
 ```
 
 The `lh` movement cursor can also be customized by changing the `lh.curosr_hl` key.
+
+<!-- TODO: create a different section for movements options -->
 
 ```lua
 ---@field lh_curosr_hl table highlight the cursor for the `lh` movement

@@ -17,7 +17,7 @@ function M.get_chars(args)
 		end
 		local c = fn.getchar()
 		-- return if first char is included in `args.no_wait`
-		if args.chars_length == 2 and #chars == 0 and args.no_wait then
+		if args.input_length == 2 and #chars == 0 and args.no_wait then
 			for _, char in ipairs(args.no_wait) do
 				if char == fn.nr2char(c) then
 					chars = fn.nr2char(c)
@@ -49,7 +49,7 @@ function M.get_chars(args)
 
 		chars = chars .. fn.nr2char(c)
 		-- accepts how many characters to get input for
-		if #chars == args.chars_length then
+		if #chars == args.input_length then
 			break
 		end
 	end
