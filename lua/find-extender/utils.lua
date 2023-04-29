@@ -35,14 +35,11 @@ function M.get_chars(args)
 		end
 
 		if args.action_keys and type(args.action_keys) == "table" then
-			for _, accept_action_key in ipairs(args.action_keys.accept) do
-				if accept_action_key == c then
-					return fn.nr2char(c)
-				end
-			end
-			for _, escape_action_key in ipairs(args.action_keys.escape) do
-				if escape_action_key == c then
-					return fn.nr2char(c)
+			for _, action_keys_tbl in ipairs(args.action_keys) do
+				for _, action_key in pairs(action_keys_tbl) do
+					if action_key == c then
+						return fn.nr2char(c)
+					end
 				end
 			end
 		end

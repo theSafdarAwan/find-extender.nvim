@@ -36,8 +36,6 @@ function M.leap(args)
 		-- retrieve match from the matches
 		picked_match = args.matches[match_pos]
 	end
-	-- need to remove the dummy cursor
-	vim.cmd("silent! do CursorMoved")
 
 	return picked_match
 end
@@ -198,6 +196,21 @@ M.lh = function(args)
 		for _, escape_action_key in ipairs(args.action_keys.escape) do
 			if fn.char2nr(key) == escape_action_key then
 				picked_match = nil
+				break
+			end
+		end
+		-- if key == args.action_keys.accept_and_feed[] then accept the current match
+		-- and the feed the action key
+		for _, accept_and_feed_action_key in ipairs(args.action_keys.accept_and_feed) do
+			if accept_and_feed_action_key == fn.char2nr(key) then
+				-- add autocmd to feed this key when the CursorMoved event happens
+				api.nvim_create_autocmd({ "CursorMoved" }, {
+					once = true,
+					callback = function()
+						api.nvim_feedkeys(key, "n", false)
+					end,
+				})
+				break_loop = true
 				break
 			end
 		end

@@ -1,4 +1,4 @@
-This Plugin extend's the capability of **find** and **till** and **text manipulation** commands.
+This Plugin extend's the capability of **find**, **till** and **text manipulation** commands.
 
 ## ✨ Features
 
@@ -20,7 +20,7 @@ This Plugin extend's the capability of **find** and **till** and **text manipula
   character search for certain characters like punctuations(`{`,`(`,`,`, etc).
 
 Text Manipulation(yank/delete/change) command's are invoked, only if the second
-key after y/d/c is a finding command's. That means it won't hijack the movements
+key after y/d/c is a finding command. That means it won't hijack the movements
 like `{c|d|y}w`, `{c|d|y}e`, etc.
 
 🔥 This Plugins Effects the following commands:
@@ -139,12 +139,11 @@ require("find-extender").setup({
       ---@field action_keys table
       action_keys = {
         ---@field accept table of keys that will trigger the accept action
-        accept = { "<CR>", "n" },
+        accept = { "<CR>", "j", "k" },
         ---@field escape table of keys that will trigger the escape action
-        escape = { "<ESC>", "j", "k" },
-        -- TODO: comming soon...
-        ---@field accept_and_feed table accept the current match and feed this key
-        accept_and_feed = { "i", "a" },
+        escape = { "<ESC>" },
+        ---@field accept_and_feed table accept the current match and feed this key as a normal mode command
+        accept_and_feed = { "i", "a", "w", "b" },
       },
     },
     ---@field leap table pick match, with virtual text symbol for that match.
@@ -201,6 +200,7 @@ require("find-extender").setup({
 ## ⚙️ Configuration
 
 ### prefix
+
 If you don't like this plugin hijacking the default finding commands. Then you
 can enable **prefix** key.
 
