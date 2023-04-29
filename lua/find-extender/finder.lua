@@ -232,7 +232,6 @@ function M.finder(config)
 			-- if args.key is , or ; then use the previous pattern
 			pattern = __previous_data.pattern
 		else
-			print(config.input_length)
 			pattern = get_chars({ input_length = config.input_length, no_wait = config.no_wait, timeout = timeout })
 			if not pattern then
 				return
