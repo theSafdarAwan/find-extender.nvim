@@ -133,8 +133,8 @@ function M.finder(config)
 				matches = matches,
 				direction = args.match_direction,
 				key_type = args.key_type,
-				-- need to remove one char behind -> because that's how vim movements
-				-- works one char behind the actual char
+				-- how many chars do we need to highlight and we need to remove one char
+				-- from this length because our cursor will be one char behind this pattern.
 				virt_hl_length = #args.pattern - 1,
 			})
 			if not picked_match then
