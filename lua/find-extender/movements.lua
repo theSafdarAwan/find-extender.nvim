@@ -135,12 +135,12 @@ M.lh = function(args)
 		end
 
 		-- add support for 0 or ^
-		if key_as_count and key_as_count == 0 or key == "^" then
+		if key_as_count and key_as_count == 0 and not count or key == "^" and not count then
 			picked_match = args.matches[1]
 			feed_key = false
 		end
 		-- add support for $
-		if key == "$" then
+		if key == "$" and not count then
 			picked_match = args.matches[#args.matches]
 			feed_key = false
 		end
@@ -194,19 +194,21 @@ M.lh = function(args)
 			end
 		end
 		local break_loop = false
-		-- if key == args.actions_keys.accept[] -> accept the current position
-		for _, accept_action_key in ipairs(args.action_keys.accept) do
-			if fn.char2nr(key) == accept_action_key then
-				break_loop = true
-				break
+		if not count then
+			-- if key == args.actions_keys.accept[] -> accept the current position
+			for _, accept_action_key in ipairs(args.action_keys.accept) do
+				if fn.char2nr(key) == accept_action_key then
+					break_loop = true
+					break
+				end
 			end
-		end
-		-- if key == args.actions_keys.escape[] then don't return a match
-		for _, escape_action_key in ipairs(args.action_keys.escape) do
-			if fn.char2nr(key) == escape_action_key then
-				picked_match = nil
-				break_loop = true
-				break
+			-- if key == args.actions_keys.escape[] then don't return a match
+			for _, escape_action_key in ipairs(args.action_keys.escape) do
+				if fn.char2nr(key) == escape_action_key then
+					picked_match = nil
+					break_loop = true
+					break
+				end
 			end
 		end
 		-- feed key if its not one of the action keys
