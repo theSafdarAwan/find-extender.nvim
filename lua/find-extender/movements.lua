@@ -119,7 +119,6 @@ M.lh = function(args)
 		-- get input
 		local key = utils.get_chars({
 			input_length = 1,
-			action_keys = args.action_keys,
 			no_dummy_cursor = true,
 		})
 

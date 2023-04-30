@@ -33,7 +33,6 @@ function M.finder(config)
 	local function pick_match(args)
 		local picked_match = nil
 		if config.movements.lh.enable then
-			args.action_keys = config.movements.lh.action_keys
 			args.go_to_first_match = config.movements.lh.go_to_first_match
 
 			-- hide cursor
