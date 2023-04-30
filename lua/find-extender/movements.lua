@@ -76,7 +76,6 @@ M.lh = function(args)
 		local extmark_opts = {
 			virt_text = { { text, "FECurrentMatchCursor" } },
 			virt_text_pos = "overlay",
-			hl_mode = "combine",
 			priority = 105,
 		}
 		api.nvim_buf_set_extmark(buf_nr, lh_cursor_ns, line_nr - 1, match - threshold, extmark_opts)
@@ -224,6 +223,14 @@ M.lh = function(args)
 								key = tostring(count) .. key
 							end
 							api.nvim_feedkeys(key, "n", false)
+
+							-- need to clear highlights now
+							api.nvim_create_autocmd({ "TextChanged", "CursorMoved" }, {
+								once = true,
+								callback = function()
+									clear_highlights_and_reset_cursor()
+								end,
+							})
 						end,
 					})
 				end,
@@ -236,7 +243,6 @@ M.lh = function(args)
 			break
 		end
 	end
-	clear_highlights_and_reset_cursor()
 	return picked_match
 end
 
