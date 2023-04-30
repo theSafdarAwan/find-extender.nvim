@@ -29,17 +29,8 @@ local DEFAULT_CONFIG = {
 			---@field lh_curosr_hl table highlight the cursor for the `lh` movement
 			cursor_hl = { fg = "#545c7e", bg = "#ff9e64" },
 			---@field go_to_first_match boolean leave the current cursor position and
-			--- go to the first match. As soon as the input is give and then highlight
-			--- the matches. If you don't want cursor to leave the current position
-			--- then set this to false
+			--- go to the first match.
 			go_to_first_match = true,
-			---@field action_keys table
-			action_keys = {
-				---@field accept table of keys that will trigger the accept action
-				accept = { "<CR>", "j", "k" },
-				---@field escape table of keys that will trigger the escape action
-				escape = { "<ESC>" },
-			},
 		},
 		---@field leap table pick match, with virtual text symbol for that match.
 		leap = {
@@ -102,9 +93,6 @@ function M.setup(user_config)
 	if user_config and user_config.no_wait then
 		config.no_wait = user_config.no_wait
 	end
-
-	-- convert the action_keys to ASCII num values
-	config.movements.lh.action_keys = utils.convert_key_to_ASCII_num(config.movements.lh.action_keys)
 
 	if not config_is_derecated then
 		config = vim.tbl_deep_extend("force", config, user_config or {})

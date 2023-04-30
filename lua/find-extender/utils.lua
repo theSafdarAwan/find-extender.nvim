@@ -34,14 +34,9 @@ function M.get_chars(args)
 			return chars
 		end
 
-		if args.action_keys and type(args.action_keys) == "table" then
-			for _, action_keys_tbl in ipairs(args.action_keys) do
-				for _, action_key in pairs(action_keys_tbl) do
-					if action_key == c then
-						return fn.nr2char(c)
-					end
-				end
-			end
+		-- <CR>
+		if c == 13 then
+			return fn.nr2char(c)
 		end
 
 		chars = chars .. fn.nr2char(c)
@@ -136,17 +131,6 @@ M.add_dummy_cursor = function()
 		end,
 	})
 	vim.cmd("redraw")
-end
-
--- convert the keymaps to the ASCII values
----@param keymaps table
-function M.convert_key_to_ASCII_num(keymaps)
-	for action_name, action_keys_tbl in pairs(keymaps) do
-		for idx, action_key in pairs(action_keys_tbl) do
-			keymaps[action_name][idx] = vim.fn.char2nr(vim.api.nvim_replace_termcodes(action_key, true, false, true))
-		end
-	end
-	return keymaps
 end
 
 --- executes code without any latency

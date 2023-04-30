@@ -193,25 +193,15 @@ M.lh = function(args)
 				end
 			end
 		end
+
 		local break_loop = false
-		if not count then
-			-- if key == args.actions_keys.accept[] -> accept the current position
-			for _, accept_action_key in ipairs(args.action_keys.accept) do
-				if fn.char2nr(key) == accept_action_key then
-					break_loop = true
-					break
-				end
-			end
-			-- if key == args.actions_keys.escape[] then don't return a match
-			for _, escape_action_key in ipairs(args.action_keys.escape) do
-				if fn.char2nr(key) == escape_action_key then
-					picked_match = nil
-					break_loop = true
-					break
-				end
-			end
+		-- if <CR> then accept the current match
+		if fn.char2nr(key) == 13 then
+			break_loop = true
+			break
 		end
-		-- feed key if its not one of the action keys
+
+		-- feed key if its not one of the lh movement keys
 		if not break_loop and feed_key then
 			-- add autocmd to feed this key when the CursorMoved event happens
 			-- this event eventually happens at the end of the vim.set.keymap function
@@ -229,6 +219,7 @@ M.lh = function(args)
 			break_loop = true
 			break
 		end
+
 		if break_loop then
 			break
 		end

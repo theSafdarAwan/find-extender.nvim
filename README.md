@@ -141,13 +141,6 @@ require("find-extender").setup({
       --- the matches. If you don't want cursor to leave the current position
       --- then set this to false
       go_to_first_match = true,
-      ---@field action_keys table
-      action_keys = {
-        ---@field accept table of keys that will trigger the accept action
-        accept = { "<CR>", "j", "k" },
-        ---@field escape table of keys that will trigger the escape action
-        escape = { "<ESC>" },
-      },
     },
     ---@field leap table pick match, with virtual text symbol for that match.
     leap = {
@@ -263,13 +256,6 @@ movements = {
       --- the matches. If you don't want cursor to leave the current position
       --- then set this to false
       go_to_first_match = true,
-      ---@field action_keys table
-      action_keys = {
-        ---@field accept table of keys that will trigger the accept action
-        accept = { "<CR>", "j", "k" },
-        ---@field escape table of keys that will trigger the escape action
-        escape = { "<ESC>" },
-      },
   },
   ---@field leap table pick match, with virtual text symbol for that match.
   leap = {
