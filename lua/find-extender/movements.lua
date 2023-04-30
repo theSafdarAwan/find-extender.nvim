@@ -158,7 +158,10 @@ M.lh = function(args)
 				if count and match > picked_match then
 					-- also need to skip the current cursor position
 					count = count - 1
-					picked_match = __matches[idx + count]
+					local _match = __matches[idx + count]
+					if _match then
+						picked_match = _match
+					end
 					-- need to remove the count after it has been used
 					count = nil
 					break
@@ -181,7 +184,10 @@ M.lh = function(args)
 			end
 			for idx, match in ipairs(__matches) do
 				if count and match < picked_match then
-					picked_match = __matches[idx + count - 1]
+					local _match = __matches[idx + count - 1]
+					if _match then
+						picked_match = _match
+					end
 					-- need to remove the count after it has been used
 					count = nil
 					break
