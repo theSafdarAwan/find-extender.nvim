@@ -123,8 +123,10 @@ M.lh = function(args)
 			action_keys = args.action_keys,
 			no_dummy_cursor = true,
 		})
+
 		-- if the keys wasn't any of keys bound to actions then feed it and break the loop
 		local feed_key = true
+
 		-- if a number was input -> to be used as count
 		-- store this info for the next loop iteration to be used as count
 		local key_as_count = tonumber(key)
@@ -132,6 +134,7 @@ M.lh = function(args)
 			feed_key = false
 			count = key_as_count
 		end
+
 		-- add support for 0 or ^
 		if key_as_count and key_as_count == 0 or key == "^" then
 			picked_match = args.matches[1]
@@ -142,6 +145,7 @@ M.lh = function(args)
 			picked_match = args.matches[#args.matches]
 			feed_key = false
 		end
+
 		if key == "l" then
 			feed_key = false
 			local __matches = nil
