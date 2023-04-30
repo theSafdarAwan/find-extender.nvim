@@ -214,11 +214,18 @@ M.lh = function(args)
 			api.nvim_create_autocmd({ "CursorMoved" }, {
 				once = true,
 				callback = function()
-					-- also feed the count if it was available
-					if count then
-						key = tostring(count) .. key
-					end
-					api.nvim_feedkeys(key, "n", false)
+					-- need to nest this because first CursorMoved will happen to set the
+					-- cursor to the picked_match then these keys should be fed
+					api.nvim_create_autocmd({ "CursorMoved" }, {
+						once = true,
+						callback = function()
+							-- also feed the count if it was available
+							if count then
+								key = tostring(count) .. key
+							end
+							api.nvim_feedkeys(key, "n", false)
+						end,
+					})
 				end,
 			})
 			break_loop = true
