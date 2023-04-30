@@ -32,7 +32,7 @@ function M.finder(config)
 	---@param args table
 	local function pick_match(args)
 		local picked_match = nil
-		if config.movements.lh.enable then
+		if not config.movements.leap.enable then
 			args.go_to_first_match = config.movements.lh.go_to_first_match
 
 			-- hide cursor
