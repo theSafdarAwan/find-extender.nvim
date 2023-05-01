@@ -34,8 +34,15 @@ function M.get_chars(args)
 			return chars
 		end
 
-		if c == fn.char2nr(api.nvim_replace_termcodes("<CR>", true, false, true)) then
-			return chars
+		if
+			c == fn.char2nr(api.nvim_replace_termcodes("<CR>", true, false, true))
+			or c == fn.char2nr(api.nvim_replace_termcodes("<ESC>", true, false, true))
+		then
+			if chars == "" then
+				return
+			else
+				return chars
+			end
 		end
 
 		chars = chars .. fn.nr2char(c)

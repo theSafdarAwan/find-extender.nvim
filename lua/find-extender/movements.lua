@@ -199,8 +199,8 @@ M.lh = function(args)
 		end
 
 		local break_loop = false
-		-- if <CR> was pressed and no chars were returned then accept the current match
-		if key == "" then
+		-- this will be caused by <CR> or <ESC> so accept the current Match and break
+		if not key then
 			break_loop = true
 			break
 		end
