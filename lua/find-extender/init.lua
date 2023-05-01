@@ -38,6 +38,18 @@ local DEFAULT_CONFIG = {
 			---@field symbols string virtual text symbols, that represent matches
 			symbols = "abcdefgh",
 		},
+		---@field search table this movement behaves likes search(/ or ?) features of vim
+		--- this movement behaves like `lh` but i doesn't respects the `input_length`
+		--- and you can add as many characters as you want until you have only one
+		--- match left in the current line Or you can press the `<CR> or <ESC>` to
+		--- activate the `lh` movement on the current matches
+		--TODO: comming soon...
+		search = {
+			---@field real_time_highlight boolean highlight the matches in real time as
+			--you enter the input it will start highlighting the matches
+			real_time_highlight = true,
+			enable = false,
+		},
 	},
 	---@field no_wait table don't wait for second char if one of these is the first
 	--- char, very helpful if you don't want to enter 2 chars if the first one

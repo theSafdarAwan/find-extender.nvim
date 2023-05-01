@@ -12,8 +12,6 @@ local keymap = {
 --- main finder function
 ---@param config table config
 function M.finder(config)
-	-- timeout after which the find-extender searches for only one char.
-	local timeout = config.timeout
 	-- to highlight the yanked area
 	local highlight_on_yank = config.highlight_on_yank
 
@@ -221,7 +219,7 @@ function M.finder(config)
 			-- if args.key is , or ; then use the previous pattern
 			pattern = __previous_data.pattern
 		else
-			pattern = get_chars({ input_length = config.input_length, no_wait = config.no_wait, timeout = timeout })
+			pattern = get_chars({ input_length = config.input_length, no_wait = config.no_wait })
 			if not pattern then
 				return
 			end
