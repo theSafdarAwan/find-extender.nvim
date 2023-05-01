@@ -34,9 +34,8 @@ function M.get_chars(args)
 			return chars
 		end
 
-		-- <CR>
-		if c == 13 then
-			return fn.nr2char(c)
+		if c == fn.char2nr(api.nvim_replace_termcodes("<CR>", true, false, true)) then
+			return chars
 		end
 
 		chars = chars .. fn.nr2char(c)

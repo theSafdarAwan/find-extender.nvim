@@ -199,8 +199,8 @@ M.lh = function(args)
 		end
 
 		local break_loop = false
-		-- if <CR> then accept the current match
-		if fn.char2nr(key) == 13 then
+		-- if <CR> was pressed and no chars were returned then accept the current match
+		if key == "" then
 			break_loop = true
 			break
 		end
