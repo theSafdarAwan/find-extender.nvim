@@ -31,7 +31,7 @@ function M.finder(config)
 	--- pick match
 	---@param args table
 	local function pick_match(args)
-		local picked_match = nil
+		local picked_match
 		if not config.movements.leap.enable then
 			args.go_to_first_match = config.movements.lh.go_to_first_match
 
@@ -67,7 +67,7 @@ function M.finder(config)
 			count = vim.v.count
 		end
 
-		local matches = nil
+		local matches
 		if config.ignore_case then
 			local char_1 = string.upper(string.sub(args.pattern, 1, 1))
 			local char_2 = string.upper(string.sub(args.pattern, 2, 2))

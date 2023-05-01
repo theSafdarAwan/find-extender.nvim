@@ -83,6 +83,8 @@ M.lh = function(args)
 
 	-- clear all the highlights and resets the cursor to the original position
 	local function clear_highlights_and_reset_cursor()
+		-- reset cursor position
+		utils.set_cursor(cursor_pos[2])
 		-- clear highlights
 		api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
 		api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)

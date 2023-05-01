@@ -82,6 +82,7 @@ function M.on_yank(highlight_on_yank_opts, start, finish)
 		yank_timer.close()
 	end
 
+	-- TODO: ??
 	--- neovim function
 	vim.highlight.range(
 		buf_id,
