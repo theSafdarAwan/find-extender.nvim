@@ -83,8 +83,6 @@ M.lh = function(args)
 
 	-- clear all the highlights and resets the cursor to the original position
 	local function clear_highlights_and_reset_cursor()
-		-- reset cursor position
-		utils.set_cursor(cursor_pos[2])
 		-- clear highlights
 		api.nvim_buf_clear_namespace(buf_nr, ns_id, 0, -1)
 		api.nvim_buf_clear_namespace(buf_nr, lh_cursor_ns, 0, -1)
@@ -223,14 +221,6 @@ M.lh = function(args)
 								key = tostring(count) .. key
 							end
 							api.nvim_feedkeys(key, "n", false)
-
-							-- need to clear highlights now
-							api.nvim_create_autocmd({ "TextChanged", "CursorMoved" }, {
-								once = true,
-								callback = function()
-									clear_highlights_and_reset_cursor()
-								end,
-							})
 						end,
 					})
 				end,
@@ -243,6 +233,7 @@ M.lh = function(args)
 			break
 		end
 	end
+	clear_highlights_and_reset_cursor()
 	return picked_match
 end
 
