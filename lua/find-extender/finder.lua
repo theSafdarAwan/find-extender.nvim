@@ -31,7 +31,7 @@ function M.finder(config)
 	--- pick match
 	---@param args table
 	local function pick_match(args)
-		local picked_match
+		local picked_match = nil
 		if not config.movements.leap.enable then
 			args.go_to_first_match = config.movements.lh.go_to_first_match
 
@@ -67,21 +67,10 @@ function M.finder(config)
 			count = vim.v.count
 		end
 
-		local matches
+		local matches = nil
 		if config.ignore_case then
-			local char_1 = string.upper(string.sub(args.pattern, 1, 1))
-			local char_2 = string.upper(string.sub(args.pattern, 2, 2))
-			-- ignore case matching sequences
-			-- example match str: sS
-			-- case 1: sS
-			local xX = utils.map_string_pattern_positions(str, string.upper(char_1) .. string.lower(char_2))
-			-- case 2: Ss
-			local Xx = utils.map_string_pattern_positions(str, string.lower(char_1) .. string.upper(char_2))
-			-- case 3: SS
-			local XX = utils.map_string_pattern_positions(str, string.upper(char_1) .. string.upper(char_2))
-			-- case 4: ss
-			local xx = utils.map_string_pattern_positions(str, string.lower(char_1) .. string.lower(char_2))
-			matches = utils.merge_tables({}, xX, Xx, XX, xx)
+			local ignore_case_str = string.upper(api.nvim_get_current_line())
+			matches = utils.map_string_pattern_positions(ignore_case_str, string.upper(args.pattern))
 			-- sort positions correctly -> numerically
 			table.sort(matches, function(x, y)
 				return x < y
