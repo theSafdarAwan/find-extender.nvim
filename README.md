@@ -206,6 +206,9 @@ Although i wouldn't recommend this because this plugin was developed to
 compliment default finding commands. And using this instead of default find
 command's makes you more efficient in movement. But its up to you to decide.
 
+> NOTE: using `<leader>` or `<localleader>` won't work use the key like
+> `<space>`, if that's your leader.
+
 ```lua
 ---@field prefix table if you don't want this plugin to hijack the default
 --- finding commands use a prefix to use this plugin.
